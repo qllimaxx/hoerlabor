@@ -187,7 +187,7 @@
    Konfiguration (alle externen Quellen, Versionen fest angepinnt)
    ===================================================================== */
 const CONFIG = {
-  version: 'v0.4 · Wort melden',
+  version: 'v0.4.1 · Aufzählungen',
   ortBase:  'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/',
   phonBase: 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/',
   hfBase:   'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/de/de_DE/',
@@ -296,15 +296,86 @@ const ABBR = new Set(('vgl bzw ca nr abb tab kap al hrsg ff jh jhd dr prof ggf s
 
 // Nummerierte Überschrift ohne Zeilenumbruch („1 Einleitung In der täglichen …“): Nummer + Überschriftswörter,
 // danach ein großgeschriebenes typisches Satzanfangswort.
-const HEAD_INLINE = /^\d{1,2}(?:\.\d{1,2})*\.?[ \t]+(?:\p{Lu}[\p{L}-]*)(?:[ \t]+(?:\p{Lu}[\p{L}-]*|und|als|im|in|der|die|des|von|zur|zum|für|mit|zwischen))*?(?=[ \t]+(?:In|Im|Die|Der|Das|Den|Dem|Des|Ein|Eine|Einer|Zu|Zur|Zum|Mit|Bei|Für|Nach|Seit|Um|Ziel|Diese|Dieser|Dieses|Es|Wie|Was|Warum|Vor|Aus|Auf|Ob|Wenn|Als|Obwohl|Da|Damit|Hier|Dabei|Zunächst|Zudem|Neben|Unter|Über|Durch|Gerade|Gemäß|Laut)[ \t])/u;
+const HEAD_INLINE = /^\d{1,2}(?:\.\d{1,2})*\.?[ \t]+(?:\p{Lu}[\p{L}-]*)(?:[ \t]+(?:\p{Lu}[\p{L}-]*|und|als|im|in|der|die|des|von|zur|zum|für|mit|zwischen))*?(?=[ \t]+(?:In|Im|Die|Der|Das|Den|Dem|Des|Ein|Eine|Einer|Zu|Zur|Zum|Mit|Bei|Für|Nach|Seit|Um|Ziel|Diese|Dieser|Dieses|Es|Wie|Was|Warum|Vor|Aus|Auf|Ob|Wenn|Als|Obwohl|Da|Damit|Hier|Dabei|Zunächst|Zudem|Neben|Unter|Über|Durch|Gerade|Gemäß|Laut|\d{1,2}(?:\.\d{1,2})+\.?)[ \t])/u;
+
+/* ---------- v0.4.1: Aufzählungs- und Abschnittsnummern ----------
+   Aufzählung: „1.“/„1)“/„a)“/„a.“ am Zeilenanfang oder in aufsteigender Folge (mind. 2 Glieder) → „erstens, …“ / „a, be, …“,
+   Spiegelstrich/• am Zeilenanfang (• überall) → nur Pause. Jedes Glied wird eine eigene Einheit.
+   Abschnittsnummer vor einer Überschrift („2.1 Begriffe“) → „zwei Punkt eins“, Überschrift = eigene Einheit + lange Pause.
+   Im Zweifel bleibt es eine Zahl (bisheriges Verhalten). */
+const LETTER_NAMES = { a: 'a', b: 'be', c: 'ze', d: 'de', e: 'e', f: 'eff', g: 'ge', h: 'ha', i: 'i', j: 'jott', k: 'ka', l: 'ell', m: 'emm', n: 'enn', o: 'o', p: 'pe' };
+// Wort davor → echte Zahl („am 1. Mai“, „im 3. Kapitel“, „die 2. Auflage“, „S. 12“, „Platz 1.“)
+const ENUM_NOT_BEFORE = new Set(('am im vom zum beim zur ins ans aufs ab bis seit dem den des der die das ein eine einer einem einen eines ' +
+  'jeder jede jedes jedem jeden s seite seiten nr kap kapitel abs art ziff bd band jg aufl hg vol no platz rang nummer stufe schritt ' +
+  'phase teil gruppe welle runde abschnitt version jahr jahre tag tage woche wochen monat monate stunde stunden').split(' '));
+// Wort danach → echte Zahl („1. Mai“, „20. Jahrhundert“, „2. Auflage“)
+const ENUM_NOT_AFTER = /^(?:Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember|Jahrhunderts?|Jh|Jahrtausends?|Auflage|Aufl|Kapitels?|Klasse|Semesters?|Stock|Platz|Mal|Weltkrieg|Lebensjahr(?:es)?|Quartals?|Halbjahr(?:es)?|Liga|Bundesliga|Sitzung|Ausgabe|Fassung|Grades?|Ordnung)(?![\p{L}])/u;
+const HEAD_WORD_OK = new Set(('und oder der die das des dem den von vom im in zur zum für mit zwischen als auf aus bei nach über unter ' +
+  'ohne gegen durch ein eine einer eines am an zu ist sind').split(' '));
+function findMarkers(src) {
+  const cands = [];
+  const lineStart = (i) => { const nl = src.lastIndexOf('\n', i - 1); return /^[ \t]*$/.test(src.slice(nl + 1, i)); };
+  const ok = (i, after) => {
+    const pw = /([\p{L}]+)\.?[ \t\n]+$/u.exec(src.slice(Math.max(0, i - 24), i));
+    if (pw && ENUM_NOT_BEFORE.has(pw[1].toLowerCase())) return false;
+    if (/(?:^|[\s(])\p{L}\.[ \t\n]*$/u.test(src.slice(Math.max(0, i - 6), i))) return false;   // „u. a.“, „S. 1.“
+    return !ENUM_NOT_AFTER.test(after);
+  };
+  let m;
+  const reNum = /(?<![\p{L}\d.,§\/(-])(\d{1,2})([.)])(?=[ \t\n]+([\p{L}„"»]))/gu;
+  while ((m = reNum.exec(src))) {
+    const after = src.slice(m.index + m[0].length).replace(/^[ \t\n]+/, '');
+    cands.push({ start: m.index, end: m.index + m[0].length, val: +m[1], kind: 'n', term: m[2], ls: lineStart(m.index), ok: ok(m.index, after) });
+  }
+  const reLet = /(?<![\p{L}\d.(-])([a-p])([.)])(?=[ \t\n]+[\p{L}„"»])/gu;
+  while ((m = reLet.exec(src))) {
+    const after = src.slice(m.index + m[0].length).replace(/^[ \t\n]+/, '');
+    cands.push({ start: m.index, end: m.index + m[0].length, val: m[1].charCodeAt(0) - 96, kind: 'l', term: m[2], ls: lineStart(m.index), ok: ok(m.index, after) });
+  }
+  cands.sort((x, y) => x.start - y.start);
+  const marks = [], used = new Set();
+  for (let x = 0; x < cands.length; x++) {
+    const c0 = cands[x];
+    if (!c0.ok || used.has(x) || !(c0.val === 1 || c0.ls)) continue;
+    const chain = [c0];
+    for (let y = x + 1; y < cands.length; y++) {
+      const c = cands[y], last = chain[chain.length - 1];
+      if (c.start - last.end > 400) break;
+      if (c.ok && !used.has(y) && c.kind === c0.kind && c.term === c0.term && c.val === last.val + 1 && (c0.val === 1 || c.ls)) { chain.push(c); used.add(y); }
+    }
+    const afterColon = c0.ls && /:[ \t]*\n[ \t]*$/.test(src.slice(Math.max(0, c0.start - 40), c0.start));
+    if (chain.length < 2 && !afterColon) continue;
+    for (const c of chain) marks.push({ start: c.start, end: c.end, split: true,
+      say: (c.kind === 'n' ? ordinal(c.val, 'ens') : LETTER_NAMES[String.fromCharCode(96 + c.val)]) + ', ' });
+  }
+  // Punkte „•▪◦“ immer; Striche „- – *“ am Zeilenanfang nur mit Partner (2. Strich-Zeile) oder nach „:“
+  const buls = [];
+  const reBul = /(?:^|\n)[ \t]*([-–*])[ \t]+(?=\S)|[•▪◦][ \t]*/g;
+  while ((m = reBul.exec(src))) buls.push({ st: m.index + m[0].search(/[-–•▪◦*]/), ch: m[1] || '' });
+  for (const bu of buls) {
+    if (bu.ch && !(/:[ \t]*\n[ \t]*$/.test(src.slice(Math.max(0, bu.st - 40), bu.st)) ||
+        buls.some(o => o !== bu && o.ch === bu.ch && Math.abs(o.st - bu.st) < 400))) continue;
+    if (!marks.some(x => x.start === bu.st)) marks.push({ start: bu.st, end: bu.st + 1, split: true, say: ', ' });
+  }
+  return marks.sort((x, y) => x.start - y.start);
+}
+// Abschnittsnummer am Anfang einer Überschrift-Einheit: „2“, „2.1“, „2.1.3“ (+ nur Überschriftswörter)
+function sectionMark(src, a, b) {
+  const m = /^(\d{1,2}(?:\.\d{1,2}){0,3})\.?(?=[ \t]+\p{L})/u.exec(src.slice(a, b));
+  if (!m) return null;
+  const words = src.slice(a + m[0].length, b).replace(/\([^()]*\)/g, ' ').trim().split(/\s+/);   // Klammerzusatz ignorieren
+  if (!words.length || words.length > 10 || !/^\p{Lu}/u.test(words[0])) return null;
+  if (!words.every(w => /^[\p{Lu}\d]/u.test(w) || HEAD_WORD_OK.has(w.replace(/[,:]$/, '')) || /^[–-]$/.test(w))) return null;
+  return { start: a, end: a + m[0].length, split: false, say: m[1].split('.').map(n => cardinal(+n)).join(' Punkt ') + ', ' };
+}
 
 function segment(src) {
   const out = [];
   const isWs = (ch) => /\s/.test(ch);
-  const push = (a, b, para) => {
+  const push = (a, b, para, head) => {
     while (a < b && isWs(src[a])) a++;
     while (b > a && isWs(src[b - 1])) b--;
-    if (b > a) out.push({ start: a, end: b, paraEnd: !!para });
+    if (b > a) out.push({ start: a, end: b, paraEnd: !!para, head: !!head });
   };
   // Absätze = durch Leerzeilen getrennte Blöcke
   const blocks = [];
@@ -321,11 +392,15 @@ function segment(src) {
     const nl = src.indexOf('\n', pos);
     if (nl > -1 && nl < be) {
       const line = src.slice(pos, nl).trim();
-      if (line.length > 0 && line.length <= 80 && !/[.!?:;,\-–…]$/.test(line)) { push(pos, nl, false); pos = nl + 1; }
+      if (line.length > 0 && line.length <= 80 && !/[.!?:;,\-–…]$/.test(line)) { push(pos, nl, false, true); pos = nl + 1; }
     }
     if (pos === bs || !/\n/.test(src.slice(bs, pos))) {        // keine Überschrift-Zeile erkannt → Überschrift im Fließtext?
-      const hm = HEAD_INLINE.exec(src.slice(pos, Math.min(be, pos + 90)));
-      if (hm) { push(pos, pos + hm[0].length, false); pos += hm[0].length; }
+      for (let g = 0; g < 4; g++) {                          // auch „2 Grundlagen 2.1 Begriffe Die …“
+        while (pos < be && isWs(src[pos])) pos++;
+        const hm = HEAD_INLINE.exec(src.slice(pos, Math.min(be, pos + 90)));
+        if (!hm) break;
+        push(pos, pos + hm[0].length, false, true); pos += hm[0].length;
+      }
     }
     let start = pos;
     for (let i = pos; i < be; i++) {
@@ -351,8 +426,13 @@ function segment(src) {
       if (/[a-zäöüß]/.test(src[k])) continue;         // nächstes Wort klein -> kein Satzende
       push(start, j, false);
       start = k; i = k - 1;
+      if (/^\d{1,2}\.\d{1,2}/.test(src.slice(k, k + 6))) {      // Abschnitt mitten im Fließtext: „… wichtig. 2.2 Methoden Die …“
+        const hm = HEAD_INLINE.exec(src.slice(k, Math.min(be, k + 90)));
+        if (hm) { push(k, k + hm[0].length, false, true); start = k + hm[0].length; i = start - 1; }
+      }
     }
-    push(start, be, false);
+    const rest = src.slice(start, be).trim();                    // Block = nur eine kurze Zeile ohne Satzzeichen → Überschrift („1 Einleitung“)
+    push(start, be, false, out.length === before && rest.length <= 80 && !/\n/.test(rest) && !/[.!?:;,\-–…]$/.test(rest));
     if (out.length > before) out[out.length - 1].paraEnd = true;
   }
 
@@ -381,14 +461,32 @@ function segment(src) {
     let s2 = best; while (s2 < b && isWs(src[s2])) s2++;
     return [...splitParts(a, e1), ...splitParts(s2, b)];
   };
-  return out.map((s, i) => {
+  const marks = speechOpts.help !== false ? findMarkers(src) : [];
+  const cuts = marks.filter(x => x.split).map(x => x.start);
+  const units = [];
+  const pushU = (a, b, para, head) => {
+    while (a < b && isWs(src[a])) a++;
+    while (b > a && isWs(src[b - 1])) b--;
+    if (b > a) units.push({ start: a, end: b, paraEnd: !!para, head: !!head });
+  };
+  for (const u of out) {
+    let a = u.start;
+    for (const c of cuts) if (c > a && c < u.end) { pushU(a, c, false, u.head && a === u.start); a = c; }
+    pushU(a, u.end, u.paraEnd, u.head && a === u.start);
+  }
+  if (speechOpts.help !== false) for (const u of units) {
+    if (!u.head || marks.some(x => x.start === u.start)) continue;
+    const sm = sectionMark(src, u.start, u.end);
+    if (sm) { marks.push(sm); u.paraEnd = true; }             // Überschrift: deutliche Pause danach
+  }
+  return units.map((s, i) => {
     const cits = findCitations(src, s.start, s.end);
     const skips = speechOpts.skipCitations ? cits : [];
     const ranges = splitParts(s.start, s.end);
     return {
       i, start: s.start, end: s.end, paraEnd: s.paraEnd,
       text: src.slice(s.start, s.end), cits, skips,
-      parts: ranges.map(([a, b], k) => speechVersion(src, a, b, { help: speechOpts.help, skips, cits, isLast: k === ranges.length - 1 }))
+      parts: ranges.map(([a, b], k) => speechVersion(src, a, b, { help: speechOpts.help, skips, cits, marks, isLast: k === ranges.length - 1 }))
     };
   });
 }
@@ -767,6 +865,8 @@ function speechVersion(src, a, b, opt) {
     const sk = skips.find(r => i >= r.start && i < r.end);
     if (sk) { i = sk.end - 1; continue; }                   // Quellenangabe auslassen (Schalter AN)
     const c = src[i];
+    const mk = opt.help !== false && opt.marks ? opt.marks.find(x => x.start === i) : null;
+    if (mk) { emit(mk.say, mk.start, mk.end); i = mk.end - 1; continue; }   // Aufzählungs-/Abschnittsnummer (v0.4.1)
     if (opt.help !== false && (i === 0 || !/\p{L}/u.test(src[i - 1]) || !/[\p{L}\d\s]/u.test(c))) {
       let hit = false;
       for (const r of SPEECH_RULES) {
