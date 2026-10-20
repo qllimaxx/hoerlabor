@@ -2,101 +2,110 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="author" content="Benjamin Dormoros">
 <meta name="color-scheme" content="light">
-<title>Hörlabor – Stimmen-Testlabor (Phase 1)</title>
+<title>Hörlabor</title>
 <style>
-  :root { --cur:#fff1a8; --word:#ffb74d; --bar:#f2f2f2; --line:#ccc; }
+  :root { --cur:#ffe27a; --word:#ffb74d; --bar:#f6f5f2; --line:#d6d3cc; --ink:#1d1d1f; --muted:#6b6b6b; --accent:#2d5be3; }
   * { box-sizing: border-box; }
-  body { margin: 0; padding: 12px 12px 140px; font: 16px/1.5 -apple-system, system-ui, Segoe UI, Roboto, sans-serif; background:#fff; color:#111; max-width: 900px; margin-inline: auto; }
-  h1 { font-size: 1.2rem; margin: .2rem 0 .6rem; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0 auto; padding: 12px 16px 190px; font: 17px/1.5 -apple-system, system-ui, Segoe UI, Roboto, sans-serif; background:#fbfaf7; color: var(--ink); max-width: 760px; }
+  h1 { font-size: 1.25rem; margin: .2rem 0 .1rem; }
   h2 { font-size: 1rem; margin: 1.2rem 0 .4rem; border-bottom: 1px solid var(--line); }
-  textarea { width: 100%; min-height: 9rem; font: inherit; padding: 8px; }
-  select, button { font: inherit; padding: 8px 10px; margin: 2px 2px 2px 0; }
+  .hint { font-size: .9rem; color: var(--muted); }
+  .warn { color: #a00; }
+  #firstHint { margin: 0 0 .6rem; font-size: 1rem; }
+  textarea { width: 100%; height: 46vh; min-height: 12rem; font: 17px/1.5 inherit; font-family: inherit; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; resize: vertical; }
+  select, button { font: inherit; padding: 8px 12px; margin: 2px 4px 2px 0; border-radius: 10px; border: 1px solid var(--line); background: #fff; color: var(--ink); }
   select { max-width: 100%; }
   button { min-height: 44px; }
   .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
-  .hint { font-size: .85rem; color: #444; }
-  .warn { color: #a00; }
-  #view { white-space: pre-wrap; word-wrap: break-word; border: 1px solid var(--line); padding: 10px; min-height: 3rem; }
-  #view .s { cursor: pointer; border-radius: 3px; }
-  #view .s.cur { background: var(--cur); }
+  #view { white-space: pre-wrap; word-wrap: break-word; font-size: 19px; line-height: 1.65; padding: 14px; min-height: 3rem; background: #fff; border: 1px solid var(--line); border-radius: 12px; }
+  #view .s { cursor: pointer; border-radius: 4px; }
+  #view .s.cur { background: var(--cur); box-shadow: 0 0 0 2px var(--cur); }
   #view mark.w { background: var(--word); color: inherit; padding: 0; }
-  #view .skipcit { color: #9a9a9a; }
+  #view .skipcit { color: #a3a3a3; }
   #view .s.cur .skipcit { color: #8a8270; }
+  label.opt { display: inline-flex; align-items: center; gap: 10px; min-height: 48px; margin: 6px 14px 0 0; font-size: 1rem; }
+  label.opt input { width: 24px; height: 24px; }
+  #nowText { border-left: 4px solid #e0b000; padding: 4px 8px; background: #fffbe6; min-height: 1.5em; }
   #speechBox { font-size: .85rem; margin-top: 4px; }
   #speechText { font-style: italic; color: #333; padding: 4px 8px; }
-  .ver { float: right; font-size: .75rem; color: #666; margin-top: 4px; }
-  label.opt { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-right: 14px; }
-  label.opt input { width: 22px; height: 22px; }
-  #nowText { border-left: 4px solid #e0b000; padding: 4px 8px; background: #fffbe6; min-height: 1.5em; }
-  #bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--bar); border-top: 1px solid var(--line); padding: 6px 10px calc(6px + env(safe-area-inset-bottom)); }
-  #bar .inner { max-width: 900px; margin: 0 auto; }
-  #bar button { min-width: 64px; }
-  progress { width: 100%; height: 10px; }
+  #tech { margin-top: 28px; border-top: 1px solid var(--line); padding-top: 8px; font-size: .95rem; }
+  #tech > summary { font-weight: 600; color: var(--muted); cursor: pointer; min-height: 44px; display: flex; align-items: center; }
+  #bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--bar); border-top: 1px solid var(--line); padding: 8px 16px calc(8px + env(safe-area-inset-bottom)); }
+  #bar .inner { max-width: 760px; margin: 0 auto; }
+  #status { font-size: 1rem; font-weight: 600; min-height: 1.5em; margin-bottom: 4px; }
+  .ctrls { display: flex; gap: 10px; margin-top: 8px; }
+  .ctrls button { flex: 1; min-height: 60px; font-size: 1.6rem; border-radius: 14px; margin: 0; }
+  .ctrls button#btnPlay { flex: 2; background: var(--accent); color: #fff; border-color: var(--accent); }
+  .foot { display: flex; justify-content: space-between; margin-top: 4px; }
+  .ver { font-size: .75rem; color: var(--muted); }
+  progress { width: 100%; height: 8px; accent-color: var(--accent); }
   table { border-collapse: collapse; font-size: .85rem; width: 100%; display: block; overflow-x: auto; }
   th, td { border: 1px solid var(--line); padding: 3px 6px; text-align: left; white-space: nowrap; vertical-align: top; }
-  #log { font: 12px/1.35 ui-monospace, Menlo, monospace; background: #f7f7f7; border: 1px solid var(--line); padding: 6px; max-height: 14rem; overflow: auto; white-space: pre-wrap; }
+  #log { font: 12px/1.35 ui-monospace, Menlo, monospace; background: #f3f2ef; border: 1px solid var(--line); padding: 6px; max-height: 14rem; overflow: auto; white-space: pre-wrap; }
   #loadStatus { font-size: .9rem; }
+  [hidden] { display: none !important; }
 </style>
 </head>
 <body>
-<h1>Hörlabor · Phase 1 – Stimmen-Testlabor</h1>
-<p class="hint">Prototyp zum Vergleichen kostenloser deutscher Vorlese-Stimmen. Alles läuft im Browser; der Text verlässt das Gerät nur bei Browser-Stimmen mit dem Hinweis „Cloud“.
-iPhone: Stummschalter aus, Lautstärke hoch, ersten Modell-Download im WLAN.</p>
+<h1>Hörlabor</h1>
+<p id="firstHint" class="hint">Text einfügen → ▶ drücken</p>
 
-<h2>1 · Text</h2>
-<textarea id="src" spellcheck="false" placeholder="Wissenschaftlichen Text hier einfügen …"></textarea>
-<div class="row">
-  <button id="btnApply">Text übernehmen</button>
-  <button id="btnSample">Beispieltext</button>
-  <button id="btnSamplePron">Aussprache-Test</button>
-  <span id="integrity" class="hint"></span>
+<div id="editBox">
+  <textarea id="src" spellcheck="false" placeholder="Text hier einfügen"></textarea>
 </div>
-
-<div class="row">
-  <label class="opt"><input type="checkbox" id="optHelp" checked> Aussprache-Hilfe</label>
-  <label class="opt"><input type="checkbox" id="optSkip"> Quellenangaben überspringen</label>
+<div id="readBox" hidden>
+  <div class="row"><button id="btnEdit">✎ Anderen Text einfügen</button></div>
+  <div id="view"></div>
 </div>
+<label class="opt"><input type="checkbox" id="optSkip"> Quellenangaben überspringen</label>
 
-<h2>2 · Engine &amp; Stimme</h2>
-<div class="row">
-  <select id="engineSel" aria-label="Engine"></select>
-</div>
-<div class="row">
-  <select id="voiceSel" aria-label="Stimme"></select>
-  <button id="btnLoad">Stimme laden</button>
-  <button id="btnClearCache" title="Gespeicherte Piper-Modelle löschen">Modell-Cache löschen</button>
-</div>
-<div id="loadStatus" class="hint"></div>
+<details id="tech"><summary>Technik</summary>
+  <h2>Text &amp; Aussprache</h2>
+  <div class="row">
+    <button id="btnApply">Text übernehmen</button>
+    <button id="btnSample">Beispieltext</button>
+    <button id="btnSamplePron">Aussprache-Test</button>
+    <button id="btnSampleSA">Soziale Arbeit</button>
+  </div>
+  <div class="row"><span id="integrity" class="hint"></span></div>
+  <label class="opt"><input type="checkbox" id="optHelp" checked> Aussprache-Hilfe (Wörterbuch, Abkürzungen, Zahlen)</label>
+  <div id="nowText" class="hint">–</div>
+  <details id="speechBox"><summary>So wird der aktuelle Satz gesprochen</summary><div id="speechText">–</div></details>
 
-<h2>3 · Text (Anzeige = Original)</h2>
-<div id="nowText" class="hint">–</div>
-<details id="speechBox"><summary>So wird der aktuelle Satz gesprochen</summary><div id="speechText">–</div></details>
-<div id="view"></div>
+  <h2>Engine &amp; Stimme</h2>
+  <div class="row"><select id="engineSel" aria-label="Engine"></select></div>
+  <div class="row">
+    <select id="voiceSel" aria-label="Stimme"></select>
+    <button id="btnLoad">Stimme laden</button>
+    <button id="btnClearCache" title="Gespeicherte Piper-Modelle löschen">Modell-Cache löschen</button>
+  </div>
+  <div id="loadStatus" class="hint"></div>
 
-<h2>4 · Messwerte</h2>
-<div class="row"><button id="btnCopy">Messwerte kopieren</button><span id="copyMsg" class="hint"></span></div>
-<table id="metrics"><thead><tr>
-  <th>Engine</th><th>Stimme</th><th>Ladezeit</th><th>Cache</th><th>Zeit bis Ton</th><th>Echtzeitfaktor</th><th>Audio</th><th>Sätze ok</th><th>Fehler</th><th>Wartepausen</th><th>Wortgrenzen</th>
-</tr></thead><tbody></tbody></table>
-<p class="hint">Echtzeitfaktor = Rechenzeit ÷ Audiodauer (unter 1 = schneller als Echtzeit; über ~0,8 drohen Wartepausen). Wartepausen = Satz fertig, nächster noch nicht berechnet.</p>
-<h2>Gerät</h2>
-<div id="env" class="hint"></div>
-<h2>Protokoll</h2>
-<div id="log"></div>
+  <h2>Messwerte</h2>
+  <div class="row"><button id="btnCopy">Messwerte kopieren</button><span id="copyMsg" class="hint"></span></div>
+  <table id="metrics"><thead><tr>
+    <th>Engine</th><th>Stimme</th><th>Ladezeit</th><th>Cache</th><th>Zeit bis Ton</th><th>Echtzeitfaktor</th><th>Audio</th><th>Sätze ok</th><th>Fehler</th><th>Wartepausen</th><th>Wortgrenzen</th>
+  </tr></thead><tbody></tbody></table>
+  <p class="hint">Echtzeitfaktor = Rechenzeit ÷ Audiodauer (unter 1 = schneller als Echtzeit). Wartepausen = Satz fertig, nächster noch nicht berechnet.</p>
+  <h2>Gerät</h2>
+  <div id="env" class="hint"></div>
+  <h2>Protokoll</h2>
+  <div id="log"></div>
+</details>
 
 <div id="bar"><div class="inner">
-  <div class="row" style="margin:0">
-    <button id="btnPlay">▶ Play</button>
-    <button id="btnPause">⏸ Pause</button>
-    <button id="btnStop">■ Stop</button>
-    <button id="btnNext">⏭ Satz</button>
-    <span id="progText" class="hint">–</span>
-  </div>
+  <div id="status" aria-live="polite">Bereit</div>
   <progress id="prog" max="1" value="0"></progress>
-  <span class="ver" id="ver"></span>
+  <div class="ctrls">
+    <button id="btnPlay" aria-label="Abspielen">▶</button>
+    <button id="btnStop" aria-label="Stopp">■</button>
+    <button id="btnNext" aria-label="Nächster Satz">⏭</button>
+  </div>
+  <div class="foot"><span id="progText" class="hint"></span><span class="ver" id="ver"></span></div>
 </div></div>
 
 <script>
@@ -105,7 +114,7 @@ iPhone: Stummschalter aus, Lautstärke hoch, ersten Modell-Download im WLAN.</p>
    Konfiguration (alle externen Quellen, Versionen fest angepinnt)
    ===================================================================== */
 const CONFIG = {
-  version: 'v0.2 · Phase 2 (Aussprache)',
+  version: 'v0.3 · Wörterbuch + einfache Ansicht',
   ortBase:  'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/',
   phonBase: 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/',
   hfBase:   'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/de/de_DE/',
@@ -139,7 +148,16 @@ const SAMPLE_PRON =
 
 Bereits in den 1990er Jahren wurde untersucht, wie sich Ganztagsangebote auf den Lernerfolg auswirken (vgl. Müller & Schneider, 2019, S. 68 f.). Müller (2019) zeigt z. B., dass sich im Zeitraum 1990–2010 die Zahl der Angebote ca. verdoppelt hat; d. h., rund 37 % der Einrichtungen (z. B. Schulen und Kitas) boten eine Nachmittagsbetreuung an. In einer Stichprobe von 1.248 Lehrer:innen lag die mittlere Zufriedenheit bei 3,5 ± 0,8 Punkten (Müller 2019: 68; Schmidt et al. 2020).
 
-Die Ergebnisse gelten jedoch u. U. nur eingeschränkt, da die Daten überwiegend im 20. Jh. erhoben wurden (ebd.). Weitere Befunde finden sich in Abb. 3 und Tab. 2 bzw. in Kap. 4 der 3. Aufl. des Handbuchs (Hrsg. Prof. Dr. Weber), insb. auf S. 12–15. Nach § 3 des Schulgesetzes vom 12.03.2020 dürfen ggf. auch Student*innen als Hilfskräfte eingesetzt werden, i. d. R. jedoch nur mit Zustimmung der Schulleitung, der Eltern usw. Hinweise zur Haftung enthält Nr. 5 der Verordnung u. a. für Ausflüge, Praktika etc. Kosten → Förderantrag, s. u. sowie ebd., S. 12.`;
+Die Ergebnisse gelten jedoch u. U. nur eingeschränkt, da die Daten überwiegend im 20. Jh. erhoben wurden (ebd.). Weitere Befunde finden sich in Abb. 3 und Tab. 2 bzw. in Kap. 4 der 3. Aufl. des Handbuchs (Hrsg. Prof. Dr. Weber), insb. auf S. 12–15. Nach § 3 des Schulgesetzes vom 12.03.2020 dürfen ggf. auch Student*innen als Hilfskräfte eingesetzt werden, i. d. R. jedoch nur mit Zustimmung der Schulleitung, der Eltern usw. Hinweise zur Haftung enthält Nr. 5 der Verordnung u. a. für Ausflüge, Praktika etc. Kosten → Förderantrag, s. u. sowie ebd., S. 12.
+
+Im 3. Semester (Wintersemester 2025/26) befassen sich Sozialarbeiter*innen mit der Psychologie des Kompetenzerlebens und der Selbstbestimmungstheorie. Nach § 8a Abs. 1 S. 2 SGB VIII ist bei einer Kindeswohlgefährdung das Jugendamt zuständig; vgl. auch Art. 6 GG sowie §§ 27 ff. SGB VIII. Die sog. Lebensweltorientierung, Resilienz, Partizipation und Empowerment gehören zum Grundwissen der Sozialpädagogik.`;
+
+const SAMPLE_SA =
+`3 Lebensweltorientierung in der Kinder- und Jugendhilfe (fiktiver Text)
+
+Die Lebensweltorientierung gilt seit den 1990er Jahren als zentrales Konzept der Sozialen Arbeit (vgl. Berger & Lindner, 2018, S. 41). Sie fordert, Adressat*innen nicht als Fälle, sondern als Expert*innen ihres Alltags zu verstehen. Für die Sozialarbeiterin bedeutet das, Ressourcen sichtbar zu machen und Empowerment zu ermöglichen, statt Defizite festzuschreiben. In der Schulsozialarbeit und im Case Management zeigt sich, dass Partizipationsmöglichkeiten die Selbstwirksamkeit der Klientinnen und Klienten stärken (Hoffmann et al. 2021: 112).
+
+Besonders anspruchsvoll ist die Arbeit im Kinderschutz. Liegt der Verdacht einer Kindeswohlgefährdung vor, greift der Schutzauftrag nach § 8a SGB VIII; die Inobhutnahme nach § 42 SGB VIII ist dabei das letzte Mittel. Fachkräfte bewegen sich hier im Spannungsfeld des Doppelmandats von Hilfe und Kontrolle, das in der Professionstheorie u. a. als Tripelmandat diskutiert wird (ebd.). Supervision, kollegiale Fallberatung und ein reflektiertes Feedback helfen, einem Burnout vorzubeugen und die eigene Professionalität zu sichern.`;
 
 /* =====================================================================
    Hilfsfunktionen
@@ -187,7 +205,7 @@ function makeWav(f32, sampleRate) {
 const ABBR = new Set(('vgl bzw ca nr abb tab kap al hrsg ff jh jhd dr prof ggf sog inkl evtl insb bspw bd aufl jg ' +
   'mio mrd std min sek st chr dt engl lat vs zit zzgl max mind gem resp tsd ebd ders dies hg anm bzgl geb gest orig ' +
   'übers vol ed eds pp no fig dipl ing phil rer nat med univ verf vorl bsp allg einschl gegr urspr vers verl ausg sp hr fr ' +
-  'jan feb febr mär apr jun jul aug sep sept okt nov dez').split(' '));
+  'jan feb febr mär apr jun jul aug sep sept okt nov dez abs ziff lt gem hg bde anm zit vs zt hs halbs').split(' '));
 
 function segment(src) {
   const out = [];
@@ -232,6 +250,7 @@ function segment(src) {
             if (tok.length <= 2 && !/(?:S\.\s?\d*|[–-])\d{1,2}$/.test(src.slice(Math.max(start, i - 12), i))) continue;
           }
           else if (tok.length === 1 || ABBR.has(tok.toLowerCase())) continue;
+          else if (tok === 'Art' && /\d/.test(src[k])) continue;      // „Art. 3 GG“
         }
       }
       if (/[a-zäöüß]/.test(src[k])) continue;         // nächstes Wort klein -> kein Satzende
@@ -363,7 +382,14 @@ const ABBR_SPEECH = [
   ['insb.', 'insbesondere'], ['bspw.', 'beispielsweise'], ['evtl.', 'eventuell'], ['inkl.', 'inklusive'],
   ['Abb.', 'Abbildung'], ['Tab.', 'Tabelle'], ['Kap.', 'Kapitel'], ['Nr.', 'Nummer'], ['Hrsg.', 'Herausgeber'],
   ['Aufl.', 'Auflage'], ['Jh.', 'Jahrhundert'], ['Jhd.', 'Jahrhundert'], ['Dr.', 'Doktor'], ['Prof.', 'Professor'],
-  ['ebd.', 'ebenda'], ['Ebd.', 'Ebenda'], ['et al.', 'ett al'], ['Mio.', 'Millionen'], ['Mrd.', 'Milliarden']
+  ['ebd.', 'ebenda'], ['Ebd.', 'Ebenda'], ['et al.', 'ett al'], ['Mio.', 'Millionen'], ['Mrd.', 'Milliarden'],
+  // v0.3
+  ['Hg.', 'Herausgeber'], ['Bd.', 'Band'], ['Bde.', 'Bände'], ['Anm.', 'Anmerkung'], ['zit. n.', 'zitiert nach'],
+  ['Jg.', 'Jahrgang'], ['o. J.', 'ohne Jahr'], ['vs.', 'versus'], ['Abs.', 'Absatz'], ['Ziff.', 'Ziffer'],
+  ['lt.', 'laut'], ['Lt.', 'Laut'], ['gem.', 'gemäß'], ['Gem.', 'Gemäß'], ['i. V. m.', 'in Verbindung mit'], ['u. Ä.', 'und Ähnliches'],
+  ['z. Zt.', 'zur Zeit'], ['Hs.', 'Halbsatz'], ['Halbs.', 'Halbsatz'],
+  ['i. S. d.', (m, c) => 'im Sinne ' + (FEM_NOUN.test(c.after.trim()) ? 'der' : 'des')],
+  ['sog.', (m, c) => 'sogenannt' + sogEnding(c.src, c.pos)]
 ];
 // Hinweis: Einige Sprechformen sind bewusst lautnah geschrieben, weil espeak-ng sie sonst falsch ausspricht
 // („circa“ → „Kirka“, „et cetera“ → „et keterа“, „et“ → „eet“). Die Anzeige bleibt davon unberührt.
@@ -372,11 +398,167 @@ const escRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /* ---------- Regeltabelle (Reihenfolge = Priorität) ----------
    re:  Muster (sticky, Unicode), wird an der aktuellen Position geprüft
    say: Sprechform (String) oder Funktion (Treffer, Kontext) → String | null (null = Regel greift nicht) */
+
+/* =====================================================================
+   Aussprache-Wörterbuch (v0.3) – nur für Piper
+   Lautschrift im Stil von espeak-ng (so, wie die Thorsten-Stimme trainiert wurde):
+     ˈ Hauptbetonung, ˌ Nebenbetonung (vor dem betonten Vokal), ː lang,
+     ɜ = vokalisches -er („Semester“), ɾ = r nach Vokal, ç = ich-Laut, ʃ = sch, ŋ = ng, ə = schwaches e.
+   Spalten: Wort | Lautschrift | Endungen | Verwendung
+     Endungen:  "n:ən s:s"  = Semestern → …ɜn, Semesters → …ɜs   ·   ADJ = e/en/er/em/es
+     Verwendung: W = als ganzes Wort · H = als Anfang einer Zusammensetzung („Sozial|arbeit“)
+                 T = als Ende einer Zusammensetzung („Kindeswohl|gefährdung“), nur bei großgeschriebenen Wörtern
+                 ! = dieser Teil trägt die Hauptbetonung (z. B. „Profession|alität“)
+   Ergänzen = eine Zeile hinzufügen. Groß-/Kleinschreibung des ersten Buchstabens egal.
+   ===================================================================== */
+const PRON_DICT = [
+  // Gemeldete Wörter (Benjamin, v0.2)
+  ['Semester',                 'zeːmˈɛstɜ',                    'n:n s:s',          'WHT'],
+  ['Psychologie',              'psyçoloɡˈiː',                  'n:ən',             'WHT'],
+  ['psychologisch',            'psyçolˈoːɡɪʃ',                 'ADJ',              'W'],
+  ['Kompetenzerleben',         'kɔmpeːtˈɛntsɛɾlˌeːbən',        's:s',              'W'],
+  ['Selbstbestimmungstheorie', 'zˈɛlpstbəʃtɪmʊŋsteːoːrˌiː',    'n:ən',             'W'],
+  // Wortteile für Zusammensetzungen
+  ['Sozial',                   'zoːtsjˈɑːl',                   '',                 'H'],
+  ['Theorie',                  'teːoːrˈiː',                    'n:ən',             'T'],
+  ['Orientierung',             'oːrɪɛntˈiːrʊŋ',                'en:ən',            'T'],
+  ['Kompetenz',                'kɔmpeːtˈɛnts',                 'en:ən',            'T'],
+  ['Gefährdung',               'ɡəfˈɛːɾdʊŋ',                   'en:ən',            'T'],
+  ['Mandat',                   'mandˈɑːt',                     'e:ə s:s',          'T'],
+  ['Familie',                  'famˈiːlɪə',                    'n:n',              'T'],
+  ['Erziehung',                'ɛɾtsˈiːʊŋ',                    '',                 'T'],
+  ['alität',                   'aliːtˈɛːt',                    'en:ən',            'T!'],
+  ['vention',                  'vɛntsjˈoːn',                   'en:ən',            'T!'],
+  // Fachbegriffe (Bestandsaufnahme Soziale Arbeit, nur fehlerhafte)
+  ['Pädagogik',                'pɛːdaɡˈoːɡɪk',                 '',                 'WHT'],
+  ['Klientel',                 'kliːɛntˈeːl',                  '',                 'W'],
+  ['Klient',                   'klɪˈɛnt',                      'in:ɪn innen:ɪnən en:ən', 'W'],
+  ['klientenzentriert',        'klɪɛntəntsɛntɾˈiːɾt',          'ADJ',              'W'],
+  ['Lebenswelt',               'lˈeːbənsvˌɛlt',                'en:ən',            'WH'],
+  ['Kindeswohl',               'kˈɪndəsvˌoːl',                 's:s',              'WH'],
+  ['Biografie',                'bioːɡɾafˈiː',                  'n:ən',             'WH'],
+  ['Grundsicherung',           'ɡɾˈʊntzɪçəɾʊŋ',                '',                 'W'],
+  ['Adressat',                 'adɾɛsˈɑːt',                    'in:ɪn innen:ɪnən en:ən', 'W'],
+  ['Gemeinwesenarbeit',        'ɡəmˈaɪnveːzənaɾbˌaɪt',         '',                 'W'],
+  ['Anamnese',                 'anamnˈeːzə',                   'n:n',              'W'],
+  ['Habitus',                  'hˈɑːbiːtʊs',                   '',                 'W'],
+  ['Milieu',                   'miljˈøː',                      's:s',              'W'],
+  ['Chancengleichheit',        'ʃˈaŋsənɡlaɪçhˌaɪt',            '',                 'W'],
+  ['Devianz',                  'deːvjˈants',                   '',                 'W'],
+  ['Sucht',                    'zˈʊxt',                        '',                 'WH'],
+  ['Menschenrechtsprofession', 'mˈɛnʃənrɛçtspɾoːfɛsjˌoːn',     '',                 'W'],
+  ['Inobhutnahme',             'ɪnˈɔphuːtnɑːmə',               'n:n',              'W'],
+  ['Schulsozialarbeit',        'ʃˈuːlzoːtsjɑːlˌaɾbaɪt',        '',                 'W'],
+  ['Akzeptanz',                'aktsɛptˈants',                 '',                 'W'],
+  ['Signifikanz',              'zɪɡniːfiːkˈants',              '',                 'W'],
+  ['Hypothese',                'hypoːtˈeːzə',                  'n:n',              'W'],
+  // Englische Fachbegriffe
+  ['Management',               'mˈɛnɪdʒmənt',                  's:s',              'WT'],
+  ['Empowerment',              'ɪmpˈaʊɜmənt',                  '',                 'W'],
+  ['Coaching',                 'kˈoːtʃɪŋ',                     's:s',              'W'],
+  ['Gender',                   'dʒˈɛndɜ',                      '',                 'WH'],
+  ['Feedback',                 'fˈiːtbɛk',                     's:s',              'W'],
+  ['Interview',                'ˈɪntɜvjuː',                    's:s',              'W'],
+  ['Burnout',                  'bˈœːɾnaʊt',                    's:s',              'W'],
+  ['Care-Arbeit',              'kˈɛːɾaɾbˌaɪt',                 '',                 'W'],
+  ['Self-Care',                'sˈɛlfkɛːɾ',                    '',                 'W'],
+  ['Peer-Group',               'pˈiːɾɡɾuːp',                   's:s',              'W'],
+  ['Labeling-Ansatz',          'lˈeːbəlɪŋanzˌats',             '',                 'W'],
+  ['Case Management',          'kˈeɪs mˈɛnɪdʒmənt',            '',                 'W'],
+  ['Social Work',              'sˈoːʃəl wˈɜːk',                '',                 'W'],
+  ['Capability Approach',      'kˌeɪpəbˈɪlɪti əpɾˈoʊtʃ',       '',                 'W'],
+  ['Community Organizing',     'kəmjˈuːnɪti ˈɔːɡənaɪzɪŋ',      '',                 'W']
+];
+// Ausnahmen: hier keinen Wortteil abtrennen (z. B. „Sozial|isation“ ist keine Zusammensetzung)
+const PRON_HEAD_EXCEPT = /^sozialis/i;
+const ADJ_ENDINGS = 'e:ə en:ən er:ɜ em:əm es:əs';
+
+const PRON = (() => {
+  const whole = new Map(), heads = [], tails = [], multi = [];
+  for (const [word, ipa, endSpec, use] of PRON_DICT) {
+    const ends = [['', '']].concat((endSpec === 'ADJ' ? ADJ_ENDINGS : endSpec).split(/\s+/).filter(Boolean).map(x => x.split(':')));
+    const key = word.toLowerCase();
+    if (/\s/.test(word)) { multi.push({ word, ipa }); continue; }
+    if (use.includes('W')) for (const [e, ei] of ends) whole.set(key + e, ipa + ei);
+    if (use.includes('H')) heads.push({ key, ipa });
+    if (use.includes('T')) tails.push({ key, ipa, ends, primary: use.includes('!') });
+  }
+  heads.sort((x, y) => y.key.length - x.key.length);
+  return { whole, heads, tails, multi };
+})();
+
+// Zusammengesetzte Wörter an sicheren Fugen trennen („Partizipations|möglichkeiten“).
+// Getestet: in allen Testwörtern gleich gut oder besser als espeak allein (siehe PROJECT_STATE.md 9.4).
+const FUGE = /(ungs|tions|heits|keits|schafts|täts)(?=[a-zäöüß]{4,})/g;
+function fugenSplit(w) {
+  const parts = []; let last = 0, m;
+  FUGE.lastIndex = 0;
+  while ((m = FUGE.exec(w))) { const e = m.index + m[0].length; if (e - last >= 4) { parts.push(w.slice(last, e)); last = e; } }
+  parts.push(w.slice(last));
+  return parts;
+}
+
+// Liefert die Aussprache-Anweisung für Piper oder null (= espeak liest das Wort selbst).
+// Format: "Wort=teil|teil" – teil = "/Lautschrift" oder ein Wort, das espeak einzeln liest; "!" = Hauptbetonung.
+function pronounceWord(word) {
+  const lw = word.toLowerCase();
+  if (PRON.whole.has(lw)) return word + '=/' + PRON.whole.get(lw);
+  if (word.length < 7 || word.includes('-')) return null;
+  const parts = [];
+  let core = word;
+  const head = PRON_HEAD_EXCEPT.test(word) ? null : PRON.heads.find(h => lw.startsWith(h.key) && word.length - h.key.length >= 3);
+  if (head) { parts.push('/' + head.ipa); core = word.slice(head.key.length); }
+  let tail = null;
+  const lc = core.toLowerCase();
+  // Endteile nur bei Nomen (Großbuchstabe), sonst Gefahr bei Verben: „unter|sucht“, „be|sucht“
+  if (/^\p{Lu}/u.test(word)) for (const t of PRON.tails) for (const [e, ei] of t.ends) {
+    const k = t.key + e;
+    if (lc.endsWith(k) && core.length - k.length >= 3 && (!tail || k.length > tail.len)) {
+      if (t.primary && !/[bcdfghjklmnpqrstvwxzß]$/i.test(core.slice(0, core.length - k.length)) && t.key === 'alität') continue;
+      tail = { len: k.length, ipa: t.ipa + ei, primary: t.primary };
+    }
+  }
+  if (tail) core = core.slice(0, core.length - tail.len);
+  if (core) {
+    const cw = PRON.whole.get(core.toLowerCase());
+    if (cw) parts.push('/' + cw);
+    else for (const piece of fugenSplit(core)) { const pw = PRON.whole.get(piece.toLowerCase()); parts.push(pw ? '/' + pw : piece); }
+  }
+  if (tail) parts.push((tail.primary ? '!' : '') + '/' + tail.ipa);
+  if (parts.length < 2) return null;
+  return word + '=' + parts.join('|');
+}
+
+/* ---------- „sog.“ und „i. S. d.“: Endung aus dem Kontext (Vorschlag, siehe PROJECT_STATE.md) ---------- */
+function sogEnding(src, pos) {
+  const words = src.slice(Math.max(0, pos - 40), pos).split(/\s+/).filter(Boolean);
+  const w1 = (words[words.length - 1] || '').toLowerCase(), w2 = (words[words.length - 2] || '').toLowerCase();
+  if (['im', 'am', 'vom', 'zum', 'beim', 'zur', 'dem', 'den', 'des', 'einem', 'einen', 'einer', 'eines'].includes(w1)) return 'en';
+  if ((w1 === 'der' || w1 === 'die') && ORD_PREPS.has(w2)) return 'en';
+  if (w1 === 'ein') return 'er';
+  return 'e';   // Grundform „sogenannte“ (häufigster Fall; Plural/Genitiv ohne Präposition können abweichen)
+}
+const FEM_NOUN = /^(?:\p{Lu}\p{L}*(?:ung|heit|keit|schaft|ion|ie|tät|ik|ur|enz|anz|ei)|Verordnung|Richtlinie|Satzung|Norm|Vorschrift)\b/u;
+
+function roman(s) {
+  const V = { I: 1, V: 5, X: 10 };
+  let n = 0;
+  for (let k = 0; k < s.length; k++) { const v = V[s[k]], w = V[s[k + 1]] || 0; n += v < w ? -v : v; }
+  return n > 0 && n < 40 ? n : 0;
+}
+
 const SPEECH_RULES = [
   // Datum TT.MM.JJJJ → „zwölften dritten zweitausendzwanzig“
   { name: 'Datum', re: /(?<![\p{L}\d.])(\d{1,2})\.(\d{1,2})\.(\d{4})(?!\d)/uy,
     say: (m, c) => { const d = +m[1], mo = +m[2]; if (d < 1 || d > 31 || mo < 1 || mo > 12) return null;
       const e = c.ordEnding() || 'er'; return ordinal(d, e) + ' ' + ordinal(mo, e) + ' ' + yearWords(+m[3]); } },
+  // Gesetzesangaben: „§§“, „Art. 3“, „S.“ = Satz innerhalb einer Paragrafen-/Artikel-/Absatz-Angabe
+  { name: '§§', re: /§§\s?/uy, say: 'Paragrafen ' },
+  { name: 'Art. (Artikel)', re: /(?<![\p{L}])Art\.\s?(?=\d)/uy, say: 'Artikel ' },
+  { name: 'S. (Satz)', re: /(?<=(?:§§?\s?|Art\.\s?|Abs\.\s?)\d+[a-z]?(?:\s?(?:Abs\.|Nr\.|Ziff\.)\s?\d+[a-z]?)*\s?)S\.\s?(?=\d)/uy, say: 'Satz ' },
+  // Römische Zahlen nur nach sicheren Wörtern: „SGB VIII“ → „S G B acht“, „Teil II“, „Band III“
+  { name: 'Römische Zahl', re: /(?<=(?:SGB|Teil|Band|Bd\.|Kapitel|Kap\.|Phase|Typ|Buch)\s)(?=[IVX])(X{0,3})(IX|IV|V?I{0,3})(?![\p{L}\d])/uy,
+    say: (m) => { const v = roman(m[0]); return v ? cardinal(v) : null; } },
   // Seitenangaben
   { name: 'S. (Seite)', re: /(?<![\p{L}])S\.\s?(?=\d)/uy, say: 'Seite ' },
   { name: 'ff. (folgende)', re: /(?<=\d\s?)ff\.(?=$|[\s),;:])/uy, say: 'folgende' },
@@ -399,6 +581,12 @@ const SPEECH_RULES = [
   // Zeichen
   { name: '~ vor Zahl', re: /~\s?(?=\d)/uy, say: 'zirka ' },
   { name: 'Pfeil', re: /[→⇒]/uy, say: ', ' },
+  // Wörterbuch: mehrteilige Fachbegriffe („Case Management“) und einzelne Wörter (inkl. Zusammensetzungen)
+  ...PRON.multi.map(({ word, ipa }) => ({ name: 'Wörterbuch: ' + word,
+    re: new RegExp('(?<![\\p{L}])' + word.split(' ').map(escRe).join('\\s+') + '(?![\\p{L}])', 'uy'),
+    say: () => ({ piper: word + '=/' + ipa }) })),
+  { name: 'Wörterbuch/Zusammensetzung', re: /(?<![\p{L}])\p{L}+(?:-\p{L}+)*(?![\p{L}])/uy,
+    say: (m) => { const p = pronounceWord(m[0]); return p ? { piper: p } : null; } },
   // Klammern und Anführungszeichen: nicht sprechen, kurze Pause
   { name: 'Klammer', re: /[()[\]]/uy, say: ', ' },
   { name: 'Anführungszeichen', re: /[„“”"»«]/uy, say: ', ' }
@@ -450,12 +638,18 @@ function speechVersion(src, a, b, opt) {
         const nextSkip = skips.find(x => x.start > i);
         if (nextSkip && i + m[0].length > nextSkip.start) continue;
         ctx.pos = i;
-        ctx.after = src.slice(i + m[0].length, Math.min(b, i + m[0].length + 12));
+        ctx.after = src.slice(i + m[0].length, Math.min(b, i + m[0].length + 30));
+        ctx.src = src;
         ctx.inCitation = cits.some(x => i > x.start && i < x.end);
         ctx.ordEnding = () => ordinalEnding(src, i, ctx);
         const say = typeof r.say === 'function' ? r.say(m, ctx) : r.say;
         if (say == null) continue;
-        emit(say, i, i + m[0].length);
+        if (typeof say === 'object') {                        // Wörterbuch: Original bleibt, Piper bekommt Lautschrift
+          for (let k = 0; k < m[0].length; k++) {
+            const ch = /\s/.test(m[0][k]) ? ' ' : m[0][k];
+            out.push({ c: ch, s: i + k, e: i + k + 1, ph: k === 0 ? '⟦' + say.piper + '⟧' : '' });
+          }
+        } else emit(say, i, i + m[0].length);
         i += m[0].length - 1;
         hit = true;
         break;
@@ -491,13 +685,22 @@ function speechVersion(src, a, b, opt) {
   }
   const map = r.map(t => t.s), mapEnd = r.map(t => t.e);
   map.push(b); mapEnd.push(b);
-  return { start: a, end: b, speech: r.map(t => t.c).join(''), map, mapEnd };
+  const piper = r.map(t => t.ph !== undefined ? t.ph : t.c).join('');
+  return { start: a, end: b, speech: r.map(t => t.c).join(''), piper, map, mapEnd };
 }
 
 /* =====================================================================
    Anzeige
    ===================================================================== */
 const ui = { src: '', sentences: [], spans: [], curIdx: -1, wordSpan: -1 };
+
+function setStatus(t) { $('status').textContent = t; }
+// Clara-Ansicht: entweder Eingabefeld (Text einfügen) oder Leseansicht (Text mit Markierung)
+function showRead(on) {
+  $('editBox').hidden = on;
+  $('readBox').hidden = !on;
+  $('firstHint').hidden = on;
+}
 
 function applyText() {
   ui.src = $('src').value;
@@ -524,6 +727,7 @@ function applyText() {
   ui.curIdx = -1; ui.wordSpan = -1;
   updateProgress(0);
   $('nowText').textContent = '–';
+  showRead(ui.sentences.length > 0);
 }
 
 // Satzinhalt neu aufbauen: Original-Text, optional ausgegraute Quellenangaben und markiertes Wort.
@@ -579,7 +783,9 @@ function showSpeech(i) {
   if (!el) return;
   const s = ui.sentences[i];
   if (!s) { el.textContent = '–'; return; }
-  const t = s.parts.map(p => p.speech).filter(x => /[\p{L}\d]/u.test(x)).join(' ‖ ');
+  const piper = ctl.engine().id === 'piper';
+  const t = s.parts.filter(p => /[\p{L}\d]/u.test(p.speech))
+    .map(p => piper ? (p.piper || p.speech).replace(/⟦([^=⟧]*)=([^⟧]*)⟧/g, '$1 [$2]') : p.speech).join(' ‖ ');
   el.textContent = t || '(nichts – Satz besteht nur aus übersprungener Quellenangabe)';
 }
 
@@ -587,7 +793,7 @@ function updateProgress(i) {
   const n = ui.sentences.length;
   $('prog').max = Math.max(1, n);
   $('prog').value = Math.max(0, i);
-  $('progText').textContent = n ? `Satz ${Math.max(0, i) + 1} / ${n} · ${ctl ? ctl.stateLabel() : ''}` : 'kein Text';
+  $('progText').textContent = n ? `Satz ${Math.max(0, i) + 1} von ${n}` : '';
 }
 
 /* =====================================================================
@@ -671,6 +877,7 @@ class WebSpeechEngine {
   }
   loadVoices() {
     if (!this.available()) return Promise.resolve([]);
+    if (this.voicesReadyMs == null && !this.all.length) this.t0 = now();   // Ladezeit ab Anforderung messen
     return new Promise((resolve) => {
       let done = false, tries = 0;
       const finish = () => {
@@ -857,13 +1064,8 @@ function piperWorkerMain() {
     const cj = await cachedFetch(m.configUrl, 'Stimmen-Konfiguration');
     cfg = JSON.parse(new TextDecoder().decode(cj.buf));
     const model = await cachedFetch(m.modelUrl, 'Stimmenmodell');
-    phon = await self.createPiperPhonemize({
-      print: (d) => { printed = d; },
-      printErr: (e) => post({ type: 'log', level: 'warn', msg: 'espeak: ' + e }),
-      wasmBinary: phWasm.buf,
-      getPreloadedPackage: () => phData.buf,
-      locateFile: (u) => m.phonBase + u
-    });
+    phWasmBuf = phWasm.buf; phDataBuf = phData.buf;
+    await newPhonemizer();
     const tSess = performance.now();
     session = await ort.InferenceSession.create(new Uint8Array(model.buf), { executionProviders: ['wasm'], graphOptimizationLevel: 'all' });
     post({ type: 'ready', loadMs: performance.now() - t0, sessionMs: performance.now() - tSess, cached: model.cached,
@@ -871,20 +1073,121 @@ function piperWorkerMain() {
       modelBytes: model.buf.byteLength });
   }
 
-  function phonemize(text) {
-    printed = null;
-    phon.callMain(['-l', cfg.espeak.voice, '--input', JSON.stringify([{ text }]), '--espeak_data', '/espeak-ng-data']);
-    if (!printed) throw new Error('Phonemizer lieferte kein Ergebnis');
-    return JSON.parse(printed).phoneme_ids;
+  // --- Phonemizer (espeak-ng als WASM) -------------------------------------------------
+  // Wichtig: Die WASM-Instanz stürzt nach ~110–140 Aufrufen ab (Speicherfehler in espeak).
+  // Darum wird sie spätestens alle 40 Aufrufe neu erzeugt (dauert nur Millisekunden) und bei einem Fehler
+  // einmal neu erzeugt und erneut versucht.
+  let phWasmBuf = null, phDataBuf = null, phonCalls = 0;
+  const PHON_MAX_CALLS = 40;
+  async function newPhonemizer() {
+    phon = await self.createPiperPhonemize({
+      print: (d) => { printed = d; },
+      printErr: (e) => post({ type: 'log', level: 'warn', msg: 'espeak: ' + e }),
+      wasmBinary: phWasmBuf.slice(0),
+      getPreloadedPackage: () => phDataBuf.slice(0),
+      locateFile: (u) => C.phonBase + u
+    });
+    phonCalls = 0;
   }
+  async function espeakRaw(text) {
+    if (!phon || phonCalls >= PHON_MAX_CALLS) await newPhonemizer();
+    for (let attempt = 0; ; attempt++) {
+      try {
+        printed = null; phonCalls++;
+        phon.callMain(['-l', cfg.espeak.voice, '--input', JSON.stringify([{ text }]), '--espeak_data', '/espeak-ng-data']);
+        if (!printed) throw new Error('Phonemizer lieferte kein Ergebnis');
+        return JSON.parse(printed).phonemes;
+      } catch (e) {
+        if (attempt >= 1) throw e;
+        post({ type: 'log', level: 'warn', msg: 'Phonemizer neu gestartet (' + ((e && e.message) || e) + ')' });
+        await newPhonemizer();
+      }
+    }
+  }
+  // espeak liefert für kurzes „ur“ (wurde, durch, kurz, Turm …) „??“ – das wäre für die Stimme ein Fragezeichen
+  // mitten im Wort. Ersetzt durch „ʊɾ“ (wie espeak es bei „Wort“ → „ɔɾ“ schreibt).
+  function fixPh(ph) {
+    const out = [];
+    for (let i = 0; i < ph.length; i++) {
+      if (ph[i] === '?' && ph[i + 1] === '?' && i > 0 && ph[i - 1] !== ' ' && i + 2 < ph.length && !/[\s.,;:!?]/.test(ph[i + 2])) { out.push('ʊ', 'ɾ'); i++; }
+      else out.push(ph[i]);
+    }
+    return out;
+  }
+  async function espeakPh(text) { return fixPh(await espeakRaw(text)); }
 
+  // Wörterbuch-Einträge kommen als ⟦Wort=teil|teil⟧. Im ganzen Satz steht dort zunächst ein Platzhalterwort,
+  // damit espeak Satzmelodie und Nachbarwörter normal behandelt; danach wird der Platzhalter ersetzt.
+  const PLACEHOLDER = 'Zwapf', PH_SEQ = ['t', 's', 'v', 'a', 'p', 'f'];
+  const SEP = /[\s.,;:!?]/;
+  async function itemPhonemes(spec) {
+    const parts = spec.split('|');
+    let primary = parts.findIndex(p => p.startsWith('!'));
+    if (primary < 0) primary = 0;
+    const res = [];
+    for (let k = 0; k < parts.length; k++) {
+      const p = parts[k].replace(/^!/, '');
+      let seq = p.startsWith('/') ? [...p.slice(1).normalize('NFD')] : (await espeakPh(p)).filter(x => !SEP.test(x));
+      if (k !== primary) seq = seq.map(x => x === 'ˈ' ? 'ˌ' : x);
+      else if (!seq.includes('ˈ')) { const si = seq.indexOf('ˌ'); if (si >= 0) seq[si] = 'ˈ'; }
+      res.push(...seq);
+    }
+    return res;
+  }
+  async function richPhonemes(text) {
+    const items = [];
+    const plain = text.replace(/⟦([^=⟧]*)=([^⟧]*)⟧/g, (m, w, spec) => { items.push(spec); return PLACEHOLDER; });
+    if (!items.length) return espeakPh(text);
+    const ph = await espeakPh(plain);
+    const spans = [];
+    for (let i = 0; i < ph.length; i++) {
+      if (ph[i] !== 't' || (i > 0 && !SEP.test(ph[i - 1]))) continue;
+      let j = i, k = 0;
+      while (j < ph.length && k < PH_SEQ.length) {
+        if (ph[j] === 'ˈ' || ph[j] === 'ˌ') { j++; continue; }
+        if (ph[j] !== PH_SEQ[k]) break;
+        j++; k++;
+      }
+      if (k === PH_SEQ.length && (j === ph.length || SEP.test(ph[j]))) { spans.push([i, j]); i = j - 1; }
+    }
+    if (spans.length !== items.length) {
+      post({ type: 'log', level: 'warn', msg: 'Wörterbuch: Platzhalter nicht gefunden – Satz ohne Wörterbuch gelesen' });
+      return espeakPh(text.replace(/⟦([^=⟧]*)=[^⟧]*⟧/g, '$1'));
+    }
+    const res = [];
+    let last = 0;
+    for (let n = 0; n < spans.length; n++) {
+      res.push(...ph.slice(last, spans[n][0]));
+      res.push(...await itemPhonemes(items[n]));
+      last = spans[n][1];
+    }
+    res.push(...ph.slice(last));
+    return res;
+  }
+  // Phoneme → IDs wie piper-phonemize: ^ _ p _ p _ … $  (nach . ! ? innerhalb: $ ^ _ = neuer Satz)
+  function toIds(ph) {
+    const M = cfg.phoneme_id_map || {};
+    const BOS = M['^'] || [1], PAD = M['_'] || [0], EOS = M['$'] || [2];
+    const ids = [...BOS, ...PAD];
+    const missing = new Set();
+    for (let i = 0; i < ph.length; i++) {
+      const id = M[ph[i]];
+      if (!id) { missing.add(ph[i]); continue; }
+      ids.push(...id, ...PAD);
+      if ((ph[i] === '.' || ph[i] === '!' || ph[i] === '?') && i < ph.length - 1) ids.push(...EOS, ...BOS, ...PAD);
+    }
+    ids.push(...EOS);
+    if (missing.size) post({ type: 'log', level: 'warn', msg: 'Unbekannte Laute übersprungen: ' + [...missing].join(' ') });
+    return ids;
+  }
+  
   async function synth(m) {
     const t0 = performance.now();
     const sr = cfg.audio.sample_rate;
     const pcs = [];
     let speech = 0;
     for (let k = 0; k < m.parts.length; k++) {
-      const ids = phonemize(m.parts[k]);
+      const ids = toIds(await richPhonemes(m.parts[k]));
       const feeds = {
         input: new ort.Tensor('int64', BigInt64Array.from(ids.map(BigInt)), [1, ids.length]),
         input_lengths: new ort.Tensor('int64', BigInt64Array.from([BigInt(ids.length)]), [1]),
@@ -928,6 +1231,10 @@ function piperWorkerMain() {
       try { await init(m); } catch (err) { post({ type: 'init-error', msg: (err && err.message) || String(err) }); }
     } else if (m.type === 'synth') { queue.push(m); pump(); }
     else if (m.type === 'drop') { queue.length = 0; }
+    else if (m.type === 'phtest') {                         // nur für automatische Tests: Phoneme/IDs eines Textes
+      try { const ph = await richPhonemes(m.text); post({ type: 'phtest', id: m.id, ph: ph.join(''), ids: toIds(ph) }); }
+      catch (err) { post({ type: 'phtest', id: m.id, error: String(err) }); }
+    }
   };
 }
 
@@ -985,11 +1292,11 @@ class PiperEngine {
         } else if (m.type === 'init-error') {
           this.loading = null;
           reject(new Error(m.msg));
-        } else if (m.type === 'audio' || m.type === 'error') {
+        } else if (m.type === 'audio' || m.type === 'error' || m.type === 'phtest') {
           const r = this.reqs.get(m.id);
           this.reqs.delete(m.id);
           if (!r) return;
-          if (m.type === 'audio') r.resolve(m); else r.reject(new Error(m.msg));
+          if (m.type === 'audio' || m.type === 'phtest') r.resolve(m); else r.reject(new Error(m.msg));
         }
       };
       worker.onerror = (e) => {
@@ -1011,7 +1318,7 @@ class PiperEngine {
     const entry = { done: false, url: null, res: null };
     entry.promise = new Promise((resolve, reject) => {
       this.reqs.set(id, { resolve, reject });
-      this.worker.postMessage({ type: 'synth', id, parts: s.parts.map(p => p.speech).filter(t => /[\p{L}\d]/u.test(t)), padSec: s.paraEnd ? CONFIG.pausePara : CONFIG.pauseSentence, speakerId: this.speakerId });
+      this.worker.postMessage({ type: 'synth', id, parts: s.parts.filter(p => /[\p{L}\d]/u.test(p.speech)).map(p => p.piper || p.speech), padSec: s.paraEnd ? CONFIG.pausePara : CONFIG.pauseSentence, speakerId: this.speakerId });
     }).then((m) => {
       entry.done = true;
       entry.res = m;
@@ -1024,6 +1331,10 @@ class PiperEngine {
     return entry;
   }
   prefetch(list) { if (this.worker) for (const s of list) this.request(s); }
+  phTest(text) {           // nur für Tests/Diagnose: Phoneme und IDs, wie die Stimme sie bekommt
+    const id = ++this.seq;
+    return new Promise((resolve, reject) => { this.reqs.set(id, { resolve, reject }); this.worker.postMessage({ type: 'phtest', id, text }); });
+  }
   release(i) {
     const e = this.byIdx.get(i);
     if (e) { if (e.url) URL.revokeObjectURL(e.url); this.byIdx.delete(i); }
@@ -1113,7 +1424,17 @@ const ctl = {
   },
   metrics() { return M(this.engine().label.split(' (')[0], this.voiceLabel()); },
   stateLabel() { return { idle: 'bereit', playing: 'spielt', paused: 'pausiert', loading: 'lädt …' }[this.state] || this.state; },
-  setState(s) { this.state = s; updateProgress(Math.max(0, ui.curIdx >= 0 ? ui.curIdx : this.cur)); },
+  setState(s, msg) {
+    this.state = s;
+    updateProgress(Math.max(0, ui.curIdx >= 0 ? ui.curIdx : this.cur));
+    const b = $('btnPlay');
+    b.textContent = s === 'playing' ? '⏸' : '▶';
+    b.setAttribute('aria-label', s === 'playing' ? 'Pause' : 'Abspielen');
+    if (msg !== undefined) setStatus(msg);
+    else if (s === 'paused') setStatus('Pausiert');
+    else if (s === 'idle') setStatus('Bereit');
+  },
+  toggle() { if (this.state === 'playing') this.pause(); else this.play(); },
 
   async play() {
     const eng = this.engine();
@@ -1121,22 +1442,24 @@ const ctl = {
     if (eng.id === 'piper') unlockAudio();               // synchron in der Klick-Geste
     if (this.state === 'paused') {
       if (eng.pauseMode === 'restart') return this.start(this.cur);
-      eng.resume(); this.setState('playing'); return;
+      eng.resume(); this.setState('playing', 'Liest vor'); return;
     }
+    if (!$('src').value.trim()) { setStatus('Bitte zuerst Text einfügen'); return; }
     if (ui.src !== $('src').value || !ui.sentences.length) applyText();
+    showRead(true);
     if (!ui.sentences.length) { log('Kein Text vorhanden.', 'warn'); return; }
     if (this.cur >= ui.sentences.length) this.cur = 0;
     if (eng.needsLoad && !eng.isLoaded($('voiceSel').value)) {
-      this.setState('loading');
+      this.setState('loading', 'Stimme wird geladen …');
       const ok = await loadSelected();
       if (this.state !== 'loading') return;           // währenddessen Stop gedrückt
-      if (!ok) { this.setState('idle'); return; }
+      if (!ok) { this.setState('idle', 'Stimme konnte nicht geladen werden – Internet prüfen und ▶ erneut drücken'); return; }
     }
     this.start(this.cur);
   },
   start(i) {
     const g = ++this.gen;
-    this.setState('playing');
+    this.setState('playing', 'Wird vorbereitet …');
     this.firstInRun = true;
     this.tPlay = now();
     if (this.engine().id === 'webspeech') { try { speechSynthesis.cancel(); } catch (e) {} }
@@ -1154,7 +1477,7 @@ const ctl = {
       const first = this.firstInRun;
       try {
         await eng.speak(s, {
-          onStart: () => { if (this.firstInRun) { this.firstInRun = false; met.ttfa.push(now() - this.tPlay); renderMetrics(); } },
+          onStart: () => { if (this.firstInRun) { this.firstInRun = false; met.ttfa.push(now() - this.tPlay); renderMetrics(); } if (g === this.gen) setStatus('Liest vor'); },
           onWord: (a, b) => { if (g === this.gen) { met.words++; markWord(i, a, b); } },
           onWait: (ms) => { if (!first && ms > 30) { met.waits++; met.waitMs += ms; log(`Wartepause ${fmtMs(ms)} vor Satz ${i + 1}`, 'warn'); } },
           onSynth: (ms, sec) => { met.synthMs += ms; met.speechSec += sec; },
@@ -1176,7 +1499,7 @@ const ctl = {
     if (g !== this.gen) return;
     this.cur = 0;
     markSentence(-1);
-    this.setState('idle');
+    this.setState('idle', 'Fertig – ▶ liest noch einmal von vorn');
     log('Ende des Textes erreicht.');
   },
   pause() {
@@ -1247,6 +1570,8 @@ async function loadSelected() {
   try {
     const info = await eng.load(vid, (p) => {
       parts[p.label] = p;
+      const mdl = parts['Stimmenmodell'];
+      if (ctl.state === 'loading' || !preloadQuiet) setStatus(mdl && !mdl.cached && mdl.total ? `Stimme wird geladen … ${Math.min(99, Math.round(100 * mdl.loaded / mdl.total))} %` : 'Stimme wird geladen …');
       st.textContent = Object.values(parts).map(x => `${x.label}: ${x.cached ? 'aus Cache' : (x.total && x.loaded <= x.total ? Math.round(100 * x.loaded / x.total) + ' %' : fmtMB(x.loaded))}`).join(' · ');
     });
     const met = ctl.metrics();
@@ -1301,16 +1626,33 @@ function setupEngines() {
   optC.disabled = true;
   optC.textContent = 'C · Pocket TTS Deutsch – in Phase 1 nicht eingebaut (siehe PROJECT_STATE.md)';
   sel.appendChild(optC);
-  if (!engines.webspeech.available()) sel.value = 'piper';
+  sel.value = 'piper';                                 // App-Stimme: Piper Thorsten medium (E15)
+}
+
+// Ist die Stimme schon gespeichert, wird sie beim Öffnen still vorbereitet (schnellerer Start).
+let preloadQuiet = false;
+async function preloadIfCached() {
+  try {
+    if (ctl.engine().id !== 'piper' || !window.caches || !window.isSecureContext) return;
+    const v = PIPER_VOICES.find(x => x.id === $('voiceSel').value) || PIPER_VOICES[0];
+    const c = await caches.open(CONFIG.cacheName);
+    if (!(await c.match(CONFIG.hfBase + v.path + '/' + v.id + '.onnx'))) return;
+    preloadQuiet = true;
+    if (ctl.state === 'idle') setStatus('Stimme wird vorbereitet …');
+    await loadSelected();
+    preloadQuiet = false;
+    if (ctl.state === 'idle') setStatus('Bereit');
+  } catch (e) { preloadQuiet = false; }
 }
 
 $('btnSample').onclick = () => { ctl.stop(); $('src').value = SAMPLE_TEXT; applyText(); };
 $('btnSamplePron').onclick = () => { ctl.stop(); $('src').value = SAMPLE_PRON; applyText(); };
+$('btnSampleSA').onclick = () => { ctl.stop(); $('src').value = SAMPLE_SA; applyText(); };
+$('btnEdit').onclick = () => { ctl.stop(); showRead(false); setStatus('Bereit'); $('src').focus(); };
 $('optHelp').onchange = () => { ctl.stop(); speechOpts.help = $('optHelp').checked; applyText(); log('Aussprache-Hilfe ' + (speechOpts.help ? 'an' : 'aus')); };
 $('optSkip').onchange = () => { ctl.stop(); speechOpts.skipCitations = $('optSkip').checked; applyText(); log('Quellenangaben überspringen ' + (speechOpts.skipCitations ? 'an' : 'aus')); };
 $('btnApply').onclick = () => { ctl.stop(); applyText(); };
-$('btnPlay').onclick = () => ctl.play();
-$('btnPause').onclick = () => ctl.pause();
+$('btnPlay').onclick = () => ctl.toggle();
 $('btnStop').onclick = () => ctl.stop();
 $('btnNext').onclick = () => ctl.jump(ctl.cur + 1);
 $('view').onclick = (e) => {
@@ -1369,9 +1711,8 @@ $('ver').textContent = CONFIG.version;
 speechOpts.help = $('optHelp').checked;
 speechOpts.skipCitations = $('optSkip').checked;
 setupEngines();
-$('src').value = SAMPLE_TEXT;
-applyText();
-fillVoices();
+showRead(false);
+fillVoices().then(preloadIfCached);
 showEnv();
 log('Bereit. ' + (location.protocol === 'file:' ? 'Hinweis: Als lokale Datei geöffnet – Modell-Cache funktioniert nur über https.' : ''));
 </script>
