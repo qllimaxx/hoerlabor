@@ -23,6 +23,13 @@
   #view .s { cursor: pointer; border-radius: 3px; }
   #view .s.cur { background: var(--cur); }
   #view mark.w { background: var(--word); color: inherit; padding: 0; }
+  #view .skipcit { color: #9a9a9a; }
+  #view .s.cur .skipcit { color: #8a8270; }
+  #speechBox { font-size: .85rem; margin-top: 4px; }
+  #speechText { font-style: italic; color: #333; padding: 4px 8px; }
+  .ver { float: right; font-size: .75rem; color: #666; margin-top: 4px; }
+  label.opt { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-right: 14px; }
+  label.opt input { width: 22px; height: 22px; }
   #nowText { border-left: 4px solid #e0b000; padding: 4px 8px; background: #fffbe6; min-height: 1.5em; }
   #bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--bar); border-top: 1px solid var(--line); padding: 6px 10px calc(6px + env(safe-area-inset-bottom)); }
   #bar .inner { max-width: 900px; margin: 0 auto; }
@@ -44,7 +51,13 @@ iPhone: Stummschalter aus, Lautstärke hoch, ersten Modell-Download im WLAN.</p>
 <div class="row">
   <button id="btnApply">Text übernehmen</button>
   <button id="btnSample">Beispieltext</button>
+  <button id="btnSamplePron">Aussprache-Test</button>
   <span id="integrity" class="hint"></span>
+</div>
+
+<div class="row">
+  <label class="opt"><input type="checkbox" id="optHelp" checked> Aussprache-Hilfe</label>
+  <label class="opt"><input type="checkbox" id="optSkip"> Quellenangaben überspringen</label>
 </div>
 
 <h2>2 · Engine &amp; Stimme</h2>
@@ -60,6 +73,7 @@ iPhone: Stummschalter aus, Lautstärke hoch, ersten Modell-Download im WLAN.</p>
 
 <h2>3 · Text (Anzeige = Original)</h2>
 <div id="nowText" class="hint">–</div>
+<details id="speechBox"><summary>So wird der aktuelle Satz gesprochen</summary><div id="speechText">–</div></details>
 <div id="view"></div>
 
 <h2>4 · Messwerte</h2>
@@ -82,6 +96,7 @@ iPhone: Stummschalter aus, Lautstärke hoch, ersten Modell-Download im WLAN.</p>
     <span id="progText" class="hint">–</span>
   </div>
   <progress id="prog" max="1" value="0"></progress>
+  <span class="ver" id="ver"></span>
 </div></div>
 
 <script>
@@ -90,6 +105,7 @@ iPhone: Stummschalter aus, Lautstärke hoch, ersten Modell-Download im WLAN.</p>
    Konfiguration (alle externen Quellen, Versionen fest angepinnt)
    ===================================================================== */
 const CONFIG = {
+  version: 'v0.2 · Phase 2 (Aussprache)',
   ortBase:  'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/',
   phonBase: 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/',
   hfBase:   'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/de/de_DE/',
@@ -117,6 +133,13 @@ const SAMPLE_TEXT =
 Die Frage, unter welchen Bedingungen Studierende ihre Lernmotivation über ein ganzes Semester aufrechterhalten, gehört zu den zentralen Themen der pädagogischen Psychologie. Die Selbstbestimmungstheorie geht davon aus, dass Menschen besonders ausdauernd lernen, wenn drei psychologische Grundbedürfnisse erfüllt sind: Autonomie, Kompetenzerleben und soziale Eingebundenheit (vgl. Müller & Schneider, 2019, S. 68 f.). In einer Befragung von 1.248 Studierenden gaben rund 37 % an, ihre Motivation sinke spätestens ab der Mitte des Semesters deutlich.
 
 Bemerkenswert ist dabei, dass externe Anreize, z. B. Bonuspunkte oder Anwesenheitskontrollen, die Lernzeit zwar kurzfristig erhöhen, die Qualität der Auseinandersetzung mit dem Stoff jedoch nicht zwangsläufig verbessern. Lehrende stehen daher vor der Aufgabe, Lernumgebungen so zu gestalten, dass Wahlmöglichkeiten bestehen, Rückmeldungen informativ statt kontrollierend formuliert werden und der Austausch unter Studierenden gezielt gefördert wird. Ob sich diese Befunde, die überwiegend im 20. und frühen 21. Jahrhundert an US-amerikanischen Hochschulen gewonnen wurden, ohne Weiteres auf das deutsche Studiensystem übertragen lassen, ist bislang nur in Ansätzen untersucht.`;
+
+const SAMPLE_PRON =
+`2.3 Forschungsstand (Aussprache-Test, fiktiver Text)
+
+Bereits in den 1990er Jahren wurde untersucht, wie sich Ganztagsangebote auf den Lernerfolg auswirken (vgl. Müller & Schneider, 2019, S. 68 f.). Müller (2019) zeigt z. B., dass sich im Zeitraum 1990–2010 die Zahl der Angebote ca. verdoppelt hat; d. h., rund 37 % der Einrichtungen (z. B. Schulen und Kitas) boten eine Nachmittagsbetreuung an. In einer Stichprobe von 1.248 Lehrer:innen lag die mittlere Zufriedenheit bei 3,5 ± 0,8 Punkten (Müller 2019: 68; Schmidt et al. 2020).
+
+Die Ergebnisse gelten jedoch u. U. nur eingeschränkt, da die Daten überwiegend im 20. Jh. erhoben wurden (ebd.). Weitere Befunde finden sich in Abb. 3 und Tab. 2 bzw. in Kap. 4 der 3. Aufl. des Handbuchs (Hrsg. Prof. Dr. Weber), insb. auf S. 12–15. Nach § 3 des Schulgesetzes vom 12.03.2020 dürfen ggf. auch Student*innen als Hilfskräfte eingesetzt werden, i. d. R. jedoch nur mit Zustimmung der Schulleitung, der Eltern usw. Hinweise zur Haftung enthält Nr. 5 der Verordnung u. a. für Ausflüge, Praktika etc. Kosten → Förderantrag, s. u. sowie ebd., S. 12.`;
 
 /* =====================================================================
    Hilfsfunktionen
@@ -158,12 +181,10 @@ function makeWav(f32, sampleRate) {
 
 /* =====================================================================
    Segmentierung: Originaltext -> Sätze mit exakten Zeichen-Offsets.
-   Der Originaltext wird NIE verändert. Sprechfassung = Teilstring, in dem nur
-   Zeilenumbrüche/Whitespace zu Leerzeichen werden und PDF-Trennungen
-   ("Er-\nhebung") sowie weiche Trennstriche entfernt werden. Eine Index-Tabelle
-   (map) bildet jede Position der Sprechfassung auf das Original ab.
+   Der Originaltext wird NIE verändert. Die Sprechfassung (siehe speechVersion)
+   ist rein intern; map/mapEnd bilden jede Position auf das Original ab.
    ===================================================================== */
-const ABBR = new Set(('vgl bzw ca nr abb tab kap al hrsg ff jh jhd dr prof usw etc ggf sog inkl evtl insb bspw bd aufl jg ' +
+const ABBR = new Set(('vgl bzw ca nr abb tab kap al hrsg ff jh jhd dr prof ggf sog inkl evtl insb bspw bd aufl jg ' +
   'mio mrd std min sek st chr dt engl lat vs zit zzgl max mind gem resp tsd ebd ders dies hg anm bzgl geb gest orig ' +
   'übers vol ed eds pp no fig dipl ing phil rer nat med univ verf vorl bsp allg einschl gegr urspr vers verl ausg sp hr fr ' +
   'jan feb febr mär apr jun jul aug sep sept okt nov dez').split(' '));
@@ -207,7 +228,9 @@ function segment(src) {
         const mt = /([A-Za-zÄÖÜäöüß]+|\d+)$/.exec(src.slice(Math.max(start, i - 24), i));
         if (mt) {
           const tok = mt[1];
-          if (/^\d+$/.test(tok)) { if (tok.length <= 2) continue; }   // Ordinalzahl: "20. Jahrhundert"
+          if (/^\d+$/.test(tok)) {                     // Ordinalzahl: "20. Jahrhundert" – aber Seitenzahl/Bereichsende ("S. 12–15.") darf Satz beenden
+            if (tok.length <= 2 && !/(?:S\.\s?\d*|[–-])\d{1,2}$/.test(src.slice(Math.max(start, i - 12), i))) continue;
+          }
           else if (tok.length === 1 || ABBR.has(tok.toLowerCase())) continue;
         }
       }
@@ -224,16 +247,19 @@ function segment(src) {
     if (b - a <= CONFIG.maxPartChars) return [[a, b]];
     const mid = (a + b) / 2;
     let best = -1, bestScore = Infinity;
+    const depth = [];                                   // Klammertiefe je Position: nie in Klammern teilen
+    for (let i = a, d = 0; i < b; i++) { if (src[i] === '(') d++; depth[i - a] = d; if (src[i] === ')' && d > 0) d--; }
+    const inside = (i) => depth[i - a] > 0;
     for (let i = a + 50; i < b - 40; i++) {
       const c = src[i];
       const w = c === ';' ? 0 : c === ':' ? 1 : (c === ',' || c === '–' || c === '—') ? 2 : -1;
-      if (w < 0 || !isWs(src[i + 1] || '')) continue;
+      if (w < 0 || !isWs(src[i + 1] || '') || inside(i)) continue;
       const score = Math.abs(i - mid) + w * 20;
       if (score < bestScore) { bestScore = score; best = i + 1; }
     }
     if (best < 0) {
       for (let d = 0; d < (b - a) / 2 && best < 0; d++) {
-        for (const i of [Math.floor(mid) + d, Math.floor(mid) - d]) if (isWs(src[i])) { best = i; break; }
+        for (const i of [Math.floor(mid) + d, Math.floor(mid) - d]) if (isWs(src[i]) && !inside(i)) { best = i; break; }
       }
     }
     if (best < 0) return [[a, b]];
@@ -241,31 +267,231 @@ function segment(src) {
     let s2 = best; while (s2 < b && isWs(src[s2])) s2++;
     return [...splitParts(a, e1), ...splitParts(s2, b)];
   };
-  return out.map((s, i) => ({
-    i, start: s.start, end: s.end, paraEnd: s.paraEnd,
-    text: src.slice(s.start, s.end),
-    parts: splitParts(s.start, s.end).map(([a, b]) => speechVersion(src, a, b))
-  }));
+  return out.map((s, i) => {
+    const cits = findCitations(src, s.start, s.end);
+    const skips = speechOpts.skipCitations ? cits : [];
+    const ranges = splitParts(s.start, s.end);
+    return {
+      i, start: s.start, end: s.end, paraEnd: s.paraEnd,
+      text: src.slice(s.start, s.end), cits, skips,
+      parts: ranges.map(([a, b], k) => speechVersion(src, a, b, { help: speechOpts.help, skips, cits, isLast: k === ranges.length - 1 }))
+    };
+  });
 }
 
-function speechVersion(src, a, b) {
-  let speech = '';
-  const map = [];
+/* =====================================================================
+   Sprechfassung (Phase 2): Aussprache-Hilfe für Uni-Texte
+   - Die ANZEIGE bleibt immer das Original. Die Sprechfassung ist nur intern.
+   - Nichts wird inhaltlich verändert, weggelassen oder hinzugefügt – außer:
+     Quellenangaben werden ausgelassen, wenn der Schalter
+     „Quellenangaben überspringen“ AN ist.
+   - Jedes Zeichen der Sprechfassung kennt seinen Ursprung im Original:
+       map[k]    = Start im Original
+       mapEnd[k] = Ende im Original (exklusiv)
+     Ersetzte Stellen (z. B. „z. B.“ → „zum Beispiel“) zeigen mit allen
+     Zeichen auf den ganzen Originalbereich.
+   ===================================================================== */
+const speechOpts = { help: true, skipCitations: false };
+
+/* ---------- Zahlen → Wörter (selbst geschrieben, keine Bibliothek) ---------- */
+const NUM_ONES = ['null', 'eins', 'zwei', 'drei', 'vier', 'fünf', 'sechs', 'sieben', 'acht', 'neun', 'zehn', 'elf', 'zwölf',
+  'dreizehn', 'vierzehn', 'fünfzehn', 'sechzehn', 'siebzehn', 'achtzehn', 'neunzehn'];
+const NUM_TENS = ['', '', 'zwanzig', 'dreißig', 'vierzig', 'fünfzig', 'sechzig', 'siebzig', 'achtzig', 'neunzig'];
+function numBelow100(n, one) {
+  if (n < 20) return n === 1 ? one : NUM_ONES[n];
+  const t = Math.floor(n / 10), u = n % 10;
+  return (u ? (u === 1 ? 'ein' : NUM_ONES[u]) + 'und' : '') + NUM_TENS[t];
+}
+function numBelow1000(n, one) {
+  const h = Math.floor(n / 100), r = n % 100;
+  return (h ? (h === 1 ? 'ein' : NUM_ONES[h]) + 'hundert' : '') + (r ? numBelow100(r, one) : '');
+}
+function cardinal(n) {
+  if (!Number.isFinite(n) || n < 0 || n >= 1e12) return String(n);
+  if (n === 0) return 'null';
+  const bil = Math.floor(n / 1e9), mil = Math.floor(n / 1e6) % 1000, th = Math.floor(n / 1000) % 1000, r = n % 1000;
+  const words = [];
+  if (bil) words.push(bil === 1 ? 'eine Milliarde' : numBelow1000(bil, 'ein') + ' Milliarden');
+  if (mil) words.push(mil === 1 ? 'eine Million' : numBelow1000(mil, 'ein') + ' Millionen');
+  let low = '';
+  if (th) low += numBelow1000(th, 'ein') + 'tausend';
+  if (r) low += numBelow1000(r, 'eins');
+  if (low) words.push(low);
+  return words.join(' ');
+}
+function yearWords(n) {                       // 1100–1999 → „neunzehnhundertneunzig“
+  if (n >= 1100 && n < 2000) { const r = n % 100; return NUM_ONES[Math.floor(n / 100)] + 'hundert' + (r ? numBelow100(r, 'eins') : ''); }
+  return cardinal(n);
+}
+function numWords(str) { const n = +str; return str.length === 4 ? yearWords(n) : cardinal(n); }
+function ordinal(n, ending) {                 // ending: 'e' | 'en' | 'er'
+  const low = n % 100, high = n - low;
+  let stem;
+  if (low === 0) stem = cardinal(n) + 'st';
+  else {
+    const base = low === 1 ? 'erst' : low === 3 ? 'dritt' : low === 7 ? 'siebt' : low === 8 ? 'acht'
+      : low < 20 ? NUM_ONES[low] + 't' : numBelow100(low, 'eins') + 'st';
+    stem = (high ? cardinal(high) : '') + base;
+  }
+  return stem + ending;
+}
+
+/* ---------- Beugung von Ordinalzahlen: nur in sicheren Kontexten ---------- */
+const ORD_PREPS = new Set(('in an auf aus bei mit nach seit von vor zu über unter neben zwischen hinter durch für gegen ohne um ' +
+  'während wegen trotz bis ab innerhalb außerhalb anhand mittels laut gemäß').split(' '));
+function ordinalEnding(src, pos, ctx) {
+  const before = src.slice(Math.max(0, pos - 40), pos);
+  const words = before.split(/\s+/).filter(Boolean);
+  const w1 = (words[words.length - 1] || '').toLowerCase();
+  const w2 = (words[words.length - 2] || '').toLowerCase();
+  if (['im', 'am', 'vom', 'zum', 'beim', 'zur', 'dem', 'den', 'des'].includes(w1)) return 'en';
+  if (['das', 'ins'].includes(w1)) return 'e';
+  if ((w1 === 'der' || w1 === 'die') && ORD_PREPS.has(w2)) return 'en';
+  // Aufzählung: „im 20. und frühen 21. Jahrhundert“ → gleiche Endung wie die vorige Ordinalzahl
+  if (ctx.lastOrd && /^\s*(?:und|oder|bis|sowie|bzw\.)\s+(?:[a-zäöüß]+\s+)?$/.test(src.slice(ctx.lastOrd.end, pos))) return ctx.lastOrd.ending;
+  return null;                                // unsicher → Original an espeak übergeben
+}
+
+/* ---------- Abkürzungen (Muster → Sprechform) ---------- */
+const ABBR_SPEECH = [
+  ['z. B.', 'zum Beispiel'], ['Z. B.', 'Zum Beispiel'], ['d. h.', 'das heißt'], ['D. h.', 'Das heißt'],
+  ['u. a.', (m, c) => (c.inCitation || /^\s*,?\s*\(?(?:1[5-9]\d\d|20\d\d)/.test(c.after)) ? 'und andere' : 'unter anderem'],
+  ['bzw.', 'beziehungsweise'], ['vgl.', 'vergleiche'], ['Vgl.', 'Vergleiche'], ['ca.', 'zirka'],
+  ['usw.', 'und so weiter'], ['etc.', 'etzetera'], ['ggf.', 'gegebenenfalls'], ['i. d. R.', 'in der Regel'],
+  ['u. U.', 'unter Umständen'], ['s. o.', 'siehe oben'], ['s. u.', 'siehe unten'], ['z. T.', 'zum Teil'],
+  ['v. a.', 'vor allem'], ['o. Ä.', 'oder Ähnliches'], ['o. ä.', 'oder ähnlich'],
+  ['insb.', 'insbesondere'], ['bspw.', 'beispielsweise'], ['evtl.', 'eventuell'], ['inkl.', 'inklusive'],
+  ['Abb.', 'Abbildung'], ['Tab.', 'Tabelle'], ['Kap.', 'Kapitel'], ['Nr.', 'Nummer'], ['Hrsg.', 'Herausgeber'],
+  ['Aufl.', 'Auflage'], ['Jh.', 'Jahrhundert'], ['Jhd.', 'Jahrhundert'], ['Dr.', 'Doktor'], ['Prof.', 'Professor'],
+  ['ebd.', 'ebenda'], ['Ebd.', 'Ebenda'], ['et al.', 'ett al'], ['Mio.', 'Millionen'], ['Mrd.', 'Milliarden']
+];
+// Hinweis: Einige Sprechformen sind bewusst lautnah geschrieben, weil espeak-ng sie sonst falsch ausspricht
+// („circa“ → „Kirka“, „et cetera“ → „et keterа“, „et“ → „eet“). Die Anzeige bleibt davon unberührt.
+const escRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/* ---------- Regeltabelle (Reihenfolge = Priorität) ----------
+   re:  Muster (sticky, Unicode), wird an der aktuellen Position geprüft
+   say: Sprechform (String) oder Funktion (Treffer, Kontext) → String | null (null = Regel greift nicht) */
+const SPEECH_RULES = [
+  // Datum TT.MM.JJJJ → „zwölften dritten zweitausendzwanzig“
+  { name: 'Datum', re: /(?<![\p{L}\d.])(\d{1,2})\.(\d{1,2})\.(\d{4})(?!\d)/uy,
+    say: (m, c) => { const d = +m[1], mo = +m[2]; if (d < 1 || d > 31 || mo < 1 || mo > 12) return null;
+      const e = c.ordEnding() || 'er'; return ordinal(d, e) + ' ' + ordinal(mo, e) + ' ' + yearWords(+m[3]); } },
+  // Seitenangaben
+  { name: 'S. (Seite)', re: /(?<![\p{L}])S\.\s?(?=\d)/uy, say: 'Seite ' },
+  { name: 'ff. (folgende)', re: /(?<=\d\s?)ff\.(?=$|[\s),;:])/uy, say: 'folgende' },
+  { name: 'f. (folgende)', re: /(?<=\d\s?)f\.(?=$|[\s),;:])/uy, say: 'folgende' },
+  // Abkürzungen aus der Tabelle oben
+  ...ABBR_SPEECH.map(([abbr, out]) => ({
+    name: abbr,
+    re: new RegExp('(?<![\\p{L}\\d])' + abbr.split(' ').map(escRe).join('\\s?') + '(?![\\p{L}])', 'uy'),
+    say: out })),
+  // Bereiche mit Bis-Strich oder Bindestrich zwischen Zahlen: „1990–2010“, „12–15“
+  { name: 'Bereich', re: /(?<![\p{L}\d.,])(\d{1,4})\s?[–-]\s?(\d{1,4})(?![\d]|[.,]\d)/uy,
+    say: (m) => numWords(m[1]) + ' bis ' + numWords(m[2]) },
+  // Jahrzehnte „1990er“
+  { name: 'Jahrzehnt', re: /(?<![\p{L}\d.,])(1[1-9]\d\d|20\d\d)er(?![\p{L}])/uy, say: (m) => yearWords(+m[1]) + 'er' },
+  // Jahreszahlen 1100–1999 („eintausend neunhundert…“ → „neunzehnhundert…“)
+  { name: 'Jahr 1100–1999', re: /(?<![\p{L}\d.,])(1[1-9]\d\d)(?!\d|[.,]\d)/uy, say: (m) => yearWords(+m[1]) },
+  // Ordinalzahlen „20.“ vor einem Wort – nur bei sicherer Beugung
+  { name: 'Ordinalzahl', re: /(?<![\p{L}\d.,])(\d{1,3})\.(?=\s+\p{L})/uy,
+    say: (m, c) => { const e = c.ordEnding(); if (!e) return null; c.lastOrd = { end: c.pos + m[0].length, ending: e }; return ordinal(+m[1], e); } },
+  // Zeichen
+  { name: '~ vor Zahl', re: /~\s?(?=\d)/uy, say: 'zirka ' },
+  { name: 'Pfeil', re: /[→⇒]/uy, say: ', ' },
+  // Klammern und Anführungszeichen: nicht sprechen, kurze Pause
+  { name: 'Klammer', re: /[()[\]]/uy, say: ', ' },
+  { name: 'Anführungszeichen', re: /[„“”"»«]/uy, say: ', ' }
+];
+
+/* ---------- Quellenangaben erkennen (immer), überspringen (nur mit Schalter) ---------- */
+const CIT_STOP = new Set(('Stand Jahr Jahre Jahres Ende Anfang Mitte Beginn Herbst Frühjahr Frühling Sommer Winter Januar Februar ' +
+  'März April Mai Juni Juli August September Oktober November Dezember Zeitraum Erhebung Befragung Daten Stichtag Gesetz ' +
+  'Fassung Version Ausgabe Studie Welle Schuljahr Semester Wintersemester Sommersemester Zensus Basisjahr').split(' '));
+const CIT_NAME_YEAR = /^\p{Lu}[\p{L}'’-]+(?:\s*(?:&|und|\/|u\.\s?a\.|et\s+al\.)\s*\p{Lu}[\p{L}'’-]+)*(?:\s+(?:et\s+al\.|u\.\s?a\.))?,?\s+(?:1[5-9]\d\d|20\d\d)[a-z]?(?!\d)/u;
+function isCitation(inner) {
+  const t = inner.trim();
+  if (/^(?:vgl\.|Vgl\.|ebd\.|Ebd\.|ebenda|Ebenda)(?![\p{L}])/u.test(t)) return true;
+  if (/^S\.\s?\d/.test(t)) return true;                              // nur Seitenangabe: „(S. 12)“
+  const t2 = t.replace(/^(?:siehe|s\.)\s+/, '');
+  if (CIT_NAME_YEAR.test(t2)) return !CIT_STOP.has(/^\p{Lu}[\p{L}'’-]+/u.exec(t2)[0]);
+  return false;                                                      // im Zweifel: keine Quellenangabe
+}
+function findCitations(src, a, b) {
+  const res = [];
   for (let i = a; i < b; i++) {
+    if (src[i] !== '(') continue;
+    const j = src.indexOf(')', i + 1);
+    if (j < 0 || j >= b) break;
+    const inner = src.slice(i + 1, j);
+    if (!inner.includes('(') && isCitation(inner)) res.push({ start: i, end: j + 1 });
+    i = j;
+  }
+  return res;
+}
+
+/* ---------- Sprechfassung eines Teilstücks [a, b) ---------- */
+function speechVersion(src, a, b, opt) {
+  opt = opt || {};
+  const out = [];                                           // {c, s, e}
+  const emit = (text, s, e) => { for (const ch of text) out.push({ c: ch, s, e, gen: true }); };
+  const skips = opt.skips || [], cits = opt.cits || [];
+  const ctx = { lastOrd: null };
+  for (let i = a; i < b; i++) {
+    const sk = skips.find(r => i >= r.start && i < r.end);
+    if (sk) { i = sk.end - 1; continue; }                   // Quellenangabe auslassen (Schalter AN)
     const c = src[i];
-    if (c === '\u00ad') continue;                                   // weicher Trennstrich
-    if (c === '-' && /[A-Za-zÄÖÜäöüß]/.test(src[i - 1] || '')) {   // Silbentrennung am Zeilenende
+    if (opt.help !== false && (i === 0 || !/\p{L}/u.test(src[i - 1]) || !/[\p{L}\d\s]/u.test(c))) {
+      let hit = false;
+      for (const r of SPEECH_RULES) {
+        r.re.lastIndex = i;
+        const m = r.re.exec(src);
+        if (!m || i + m[0].length > b) continue;
+        const nextSkip = skips.find(x => x.start > i);
+        if (nextSkip && i + m[0].length > nextSkip.start) continue;
+        ctx.pos = i;
+        ctx.after = src.slice(i + m[0].length, Math.min(b, i + m[0].length + 12));
+        ctx.inCitation = cits.some(x => i > x.start && i < x.end);
+        ctx.ordEnding = () => ordinalEnding(src, i, ctx);
+        const say = typeof r.say === 'function' ? r.say(m, ctx) : r.say;
+        if (say == null) continue;
+        emit(say, i, i + m[0].length);
+        i += m[0].length - 1;
+        hit = true;
+        break;
+      }
+      if (hit) continue;
+    }
+    if (c === '­') continue;                                       // weicher Trennstrich
+    if (c === '-' && /\p{L}/u.test(src[i - 1] || '')) {                // Silbentrennung am Zeilenende
       const m = /^-[ \t]*\n\s*(?=[a-zäöüß])/.exec(src.slice(i, b));
       if (m) { i += m[0].length - 1; continue; }
     }
-    if (/\s/.test(c)) {
-      if (speech.endsWith(' ')) continue;
-      speech += ' '; map.push(i); continue;
-    }
-    speech += c; map.push(i);
+    if (/\s/.test(c)) { out.push({ c: ' ', s: i, e: i + 1 }); continue; }
+    out.push({ c, s: i, e: i + 1 });
   }
-  map.push(b);
-  return { start: a, end: b, speech, map };
+  // Aufräumen: Leerzeichen/Pausen-Kommas zusammenfassen, keine Doppel-Satzzeichen
+  const r = [];
+  const PUNCT = /[.,;:!?…]/;
+  for (const t of out) {
+    if (t.c === ' ') { if (!r.length || r[r.length - 1].c === ' ') continue; r.push(t); continue; }
+    if (PUNCT.test(t.c)) {
+      while (r.length && r[r.length - 1].c === ' ') r.pop();
+      if (t.c === ',') { if (!r.length || PUNCT.test(r[r.length - 1].c)) continue; }
+      else if (r.length && r[r.length - 1].c === ',') r.pop();
+      r.push(t); continue;
+    }
+    if (r.length && r[r.length - 1].c === ',' && r[r.length - 1].gen) r.push({ c: ' ', s: t.s, e: t.s });  // Leerzeichen nach Pausen-Komma (nicht bei „3,5“)
+    r.push(t);
+  }
+  while (r.length && (r[r.length - 1].c === ' ' || r[r.length - 1].c === ',')) r.pop();
+  // Satzende erhalten (z. B. wenn „usw.“ den Satz beendet)
+  if (opt.isLast && /[.!?…]["'“”»«)\]]*$/.test(src.slice(a, b)) && r.length && !/[.!?…]/.test(r[r.length - 1].c)) {
+    r.push({ c: '.', s: b - 1, e: b });
+  }
+  const map = r.map(t => t.s), mapEnd = r.map(t => t.e);
+  map.push(b); mapEnd.push(b);
+  return { start: a, end: b, speech: r.map(t => t.c).join(''), map, mapEnd };
 }
 
 /* =====================================================================
@@ -285,9 +511,9 @@ function applyText() {
     const span = document.createElement('span');
     span.className = 's';
     span.dataset.i = s.i;
-    span.textContent = s.text;
     view.appendChild(span);
     ui.spans.push(span);
+    renderSentence(s.i);
     pos = s.end;
   }
   if (pos < ui.src.length) view.appendChild(document.createTextNode(ui.src.slice(pos)));
@@ -300,8 +526,28 @@ function applyText() {
   $('nowText').textContent = '–';
 }
 
+// Satzinhalt neu aufbauen: Original-Text, optional ausgegraute Quellenangaben und markiertes Wort.
+// Der sichtbare Text (textContent) bleibt dabei immer exakt das Original.
+function renderSentence(i, markA, markB) {
+  const s = ui.sentences[i], span = ui.spans[i];
+  if (!s || !span) return;
+  const cuts = new Set([s.start, s.end]);
+  for (const r of s.skips) { cuts.add(Math.max(s.start, r.start)); cuts.add(Math.min(s.end, r.end)); }
+  if (markA != null) { cuts.add(Math.max(s.start, markA)); cuts.add(Math.min(s.end, markB)); }
+  const pts = [...cuts].sort((x, y) => x - y);
+  span.textContent = '';
+  for (let k = 0; k < pts.length - 1; k++) {
+    const p = pts[k], q = pts[k + 1];
+    if (q <= p) continue;
+    let node = document.createTextNode(ui.src.slice(p, q));
+    if (markA != null && p >= markA && q <= markB) { const mk = document.createElement('mark'); mk.className = 'w'; mk.appendChild(node); node = mk; }
+    if (s.skips.some(r => p >= r.start && q <= r.end)) { const sk = document.createElement('span'); sk.className = 'skipcit'; sk.title = 'wird nicht vorgelesen'; sk.appendChild(node); node = sk; }
+    span.appendChild(node);
+  }
+}
+
 function clearWord() {
-  if (ui.wordSpan >= 0 && ui.spans[ui.wordSpan]) ui.spans[ui.wordSpan].textContent = ui.sentences[ui.wordSpan].text;
+  if (ui.wordSpan >= 0) renderSentence(ui.wordSpan);
   ui.wordSpan = -1;
 }
 
@@ -313,24 +559,28 @@ function markSentence(i) {
   const span = ui.spans[i];
   span.classList.add('cur');
   $('nowText').textContent = ui.sentences[i].text;
+  showSpeech(i);
   const r = span.getBoundingClientRect();
   if (r.top < 60 || r.bottom > window.innerHeight - 120) span.scrollIntoView({ block: 'center', behavior: 'smooth' });
   updateProgress(i);
 }
 
 function markWord(i, absStart, absEnd) {
-  const s = ui.sentences[i], span = ui.spans[i];
-  if (!s || !span) return;
-  const a = Math.max(0, absStart - s.start), b = Math.min(s.text.length, absEnd - s.start);
+  const s = ui.sentences[i];
+  if (!s) return;
+  const a = Math.max(s.start, absStart), b = Math.min(s.end, absEnd);
   if (b <= a) return;
-  span.textContent = '';
-  span.appendChild(document.createTextNode(s.text.slice(0, a)));
-  const mk = document.createElement('mark');
-  mk.className = 'w';
-  mk.textContent = s.text.slice(a, b);
-  span.appendChild(mk);
-  span.appendChild(document.createTextNode(s.text.slice(b)));
+  renderSentence(i, a, b);
   ui.wordSpan = i;
+}
+
+function showSpeech(i) {
+  const el = $('speechText');
+  if (!el) return;
+  const s = ui.sentences[i];
+  if (!s) { el.textContent = '–'; return; }
+  const t = s.parts.map(p => p.speech).filter(x => /[\p{L}\d]/u.test(x)).join(' ‖ ');
+  el.textContent = t || '(nichts – Satz besteht nur aus übersprungener Quellenangabe)';
 }
 
 function updateProgress(i) {
@@ -371,7 +621,8 @@ function renderMetrics() {
   });
 }
 function metricsText() {
-  const lines = ['Hörlabor Messwerte · ' + new Date().toLocaleString('de-DE'), 'Gerät: ' + $('env').textContent, ''];
+  const lines = ['Hörlabor Messwerte · ' + CONFIG.version + ' · ' + new Date().toLocaleString('de-DE'),
+    'Aussprache-Hilfe: ' + (speechOpts.help ? 'an' : 'aus') + ' · Quellenangaben überspringen: ' + (speechOpts.skipCitations ? 'an' : 'aus'), 'Gerät: ' + $('env').textContent, ''];
   for (const m of metrics.values()) {
     const rtf = m.speechSec > 0 ? (m.synthMs / 1000 / m.speechSec).toFixed(2) : '–';
     lines.push(`${m.engine} | ${m.voice} | Laden ${fmtMs(m.loadMs)} | Cache ${m.cached == null ? '–' : m.cached ? 'ja' : 'nein'} | ` +
@@ -461,7 +712,7 @@ class WebSpeechEngine {
       const token = {};
       this.cur = { token, resolve, reject };
       this.paused = false;
-      let k = 0;
+      let k = 0, startedOnce = false;
       const fail = (err) => {
         if (!this.cur || this.cur.token !== token) return;
         this.clearTimers(); this.cur = null;
@@ -477,6 +728,7 @@ class WebSpeechEngine {
         if (!this.cur || this.cur.token !== token) return;
         if (k >= sentence.parts.length) { this.clearTimers(); this.cur = null; resolve(); return; }
         const p = sentence.parts[k];
+        if (!/[\p{L}\d]/u.test(p.speech)) { k++; speakPart(); return; }   // nichts zu sprechen (z. B. übersprungene Quellenangabe)
         const u = new SpeechSynthesisUtterance(p.speech);
         u.lang = (this.voice && this.voice.lang) || 'de-DE';
         if (this.voice) u.voice = this.voice;
@@ -486,7 +738,7 @@ class WebSpeechEngine {
         u.onstart = () => {
           if (!this.cur || this.cur.token !== token) return;
           tStart = now();
-          if (k === 0) cb.onStart();
+          if (!startedOnce) { startedOnce = true; cb.onStart(); }
           this.arm(p.speech, timeout);
         };
         u.onboundary = (e) => {
@@ -497,7 +749,7 @@ class WebSpeechEngine {
           if (!len) { const mm = /^[^\s]+/.exec(p.speech.slice(ci)); len = mm ? mm[0].length : 0; }
           const mm2 = /[,.;:!?…)"“”»«]+$/.exec(p.speech.slice(ci, ci + len));
           if (mm2 && mm2[0].length < len) len -= mm2[0].length;
-          const oa = p.map[Math.min(ci, p.map.length - 1)], ob = p.map[Math.min(ci + len - 1, p.map.length - 1)] + 1;
+          const oa = p.map[Math.min(ci, p.map.length - 1)], ob = p.mapEnd[Math.min(ci + len - 1, p.mapEnd.length - 1)];
           cb.onWord(oa, ob);
           this.arm(p.speech.slice(ci), timeout);
         };
@@ -759,7 +1011,7 @@ class PiperEngine {
     const entry = { done: false, url: null, res: null };
     entry.promise = new Promise((resolve, reject) => {
       this.reqs.set(id, { resolve, reject });
-      this.worker.postMessage({ type: 'synth', id, parts: s.parts.map(p => p.speech), padSec: s.paraEnd ? CONFIG.pausePara : CONFIG.pauseSentence, speakerId: this.speakerId });
+      this.worker.postMessage({ type: 'synth', id, parts: s.parts.map(p => p.speech).filter(t => /[\p{L}\d]/u.test(t)), padSec: s.paraEnd ? CONFIG.pausePara : CONFIG.pauseSentence, speakerId: this.speakerId });
     }).then((m) => {
       entry.done = true;
       entry.res = m;
@@ -995,7 +1247,7 @@ async function loadSelected() {
   try {
     const info = await eng.load(vid, (p) => {
       parts[p.label] = p;
-      st.textContent = Object.values(parts).map(x => `${x.label}: ${x.cached ? 'aus Cache' : (x.total ? Math.round(100 * x.loaded / x.total) + ' %' : fmtMB(x.loaded))}`).join(' · ');
+      st.textContent = Object.values(parts).map(x => `${x.label}: ${x.cached ? 'aus Cache' : (x.total && x.loaded <= x.total ? Math.round(100 * x.loaded / x.total) + ' %' : fmtMB(x.loaded))}`).join(' · ');
     });
     const met = ctl.metrics();
     met.loadMs = info.loadMs; met.cached = info.cached;
@@ -1053,6 +1305,9 @@ function setupEngines() {
 }
 
 $('btnSample').onclick = () => { ctl.stop(); $('src').value = SAMPLE_TEXT; applyText(); };
+$('btnSamplePron').onclick = () => { ctl.stop(); $('src').value = SAMPLE_PRON; applyText(); };
+$('optHelp').onchange = () => { ctl.stop(); speechOpts.help = $('optHelp').checked; applyText(); log('Aussprache-Hilfe ' + (speechOpts.help ? 'an' : 'aus')); };
+$('optSkip').onchange = () => { ctl.stop(); speechOpts.skipCitations = $('optSkip').checked; applyText(); log('Quellenangaben überspringen ' + (speechOpts.skipCitations ? 'an' : 'aus')); };
 $('btnApply').onclick = () => { ctl.stop(); applyText(); };
 $('btnPlay').onclick = () => ctl.play();
 $('btnPause').onclick = () => ctl.pause();
@@ -1110,6 +1365,9 @@ window.addEventListener('error', (e) => log('JS-Fehler: ' + e.message, 'error'))
 window.addEventListener('unhandledrejection', (e) => { if (!(e.reason && e.reason.cancelled)) log('Unbehandelt: ' + ((e.reason && e.reason.message) || e.reason), 'error'); });
 
 // Start
+$('ver').textContent = CONFIG.version;
+speechOpts.help = $('optHelp').checked;
+speechOpts.skipCitations = $('optSkip').checked;
 setupEngines();
 $('src').value = SAMPLE_TEXT;
 applyText();
