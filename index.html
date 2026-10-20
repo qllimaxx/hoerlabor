@@ -10,13 +10,14 @@
   :root { --cur:#ffe27a; --word:#ffb74d; --bar:#f6f5f2; --line:#d6d3cc; --ink:#1d1d1f; --muted:#6b6b6b; --accent:#2d5be3; }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
-  body { margin: 0 auto; padding: 12px 16px 190px; font: 17px/1.5 -apple-system, system-ui, Segoe UI, Roboto, sans-serif; background:#fbfaf7; color: var(--ink); max-width: 760px; }
+  body { margin: 0 auto; padding: 12px 16px 260px; font: 17px/1.5 -apple-system, system-ui, Segoe UI, Roboto, sans-serif; background:#fbfaf7; color: var(--ink); max-width: 760px; }
   h1 { font-size: 1.25rem; margin: .2rem 0 .1rem; }
   h2 { font-size: 1rem; margin: 1.2rem 0 .4rem; border-bottom: 1px solid var(--line); }
   .hint { font-size: .9rem; color: var(--muted); }
   .warn { color: #a00; }
   #firstHint { margin: 0 0 .6rem; font-size: 1rem; }
-  textarea { width: 100%; height: 46vh; min-height: 12rem; font: 17px/1.5 inherit; font-family: inherit; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; resize: vertical; }
+  .pastebtn { background: #fff; border: 2px solid var(--accent); color: var(--accent); font-weight: 600; }
+  textarea { width: 100%; height: 40vh; min-height: 12rem; font-family: inherit; font-size: 17px; line-height: 1.5; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; resize: vertical; }
   select, button { font: inherit; padding: 8px 12px; margin: 2px 4px 2px 0; border-radius: 10px; border: 1px solid var(--line); background: #fff; color: var(--ink); }
   select { max-width: 100%; }
   button { min-height: 44px; }
@@ -36,7 +37,38 @@
   #tech > summary { font-weight: 600; color: var(--muted); cursor: pointer; min-height: 44px; display: flex; align-items: center; }
   #bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--bar); border-top: 1px solid var(--line); padding: 8px 16px calc(8px + env(safe-area-inset-bottom)); }
   #bar .inner { max-width: 760px; margin: 0 auto; }
-  #status { font-size: 1rem; font-weight: 600; min-height: 1.5em; margin-bottom: 4px; }
+  .statusrow { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+  #status { font-size: 1rem; font-weight: 600; min-height: 1.5em; }
+  .ctrls button .ico { display: block; font-size: 1.5rem; line-height: 1.1; }
+  .ctrls button .cap { display: block; font-size: .7rem; line-height: 1.1; }
+  .ctrls button#btnFlag { padding: 4px 2px; }
+  .foot { align-items: center; flex-wrap: wrap; }
+  .foot label.opt { margin: 0; min-height: 44px; font-size: .9rem; gap: 8px; }
+  .foot label.opt input { width: 22px; height: 22px; }
+  .foot button.link { border: none; background: none; color: var(--accent); font-size: .9rem; padding: 8px 0 8px 8px; margin: 0; min-height: 44px; }
+  .verrow { text-align: right; line-height: 1; }
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 50; display: flex; align-items: flex-end; justify-content: center; }
+  .sheet { background: #fff; width: 100%; max-width: 760px; max-height: 88vh; overflow: auto; border-radius: 18px 18px 0 0; padding: 14px 16px calc(16px + env(safe-area-inset-bottom)); }
+  .sheet-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 1.05rem; }
+  .sheet .x { min-width: 44px; font-size: 1.1rem; }
+  .seg { display: flex; gap: 6px; margin-bottom: 10px; }
+  .seg button { flex: 1; margin: 0; }
+  .seg button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .chips button { font-size: 18px; min-height: 48px; padding: 6px 12px; margin: 0; }
+  .chips button.on, .types button.on { background: #ffe27a; border-color: #d4a800; }
+  .types { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .types .hint { width: 100%; }
+  .types button { margin: 0; }
+  button.primary { width: 100%; min-height: 54px; background: var(--accent); color: #fff; border-color: var(--accent); font-size: 1.1rem; font-weight: 600; margin: 4px 0; }
+  button.primary:disabled { background: #a9b8e8; border-color: #a9b8e8; }
+  .fitem { border-bottom: 1px solid var(--line); padding: 8px 0; display: flex; gap: 8px; align-items: flex-start; }
+  .fitem .ftext { flex: 1; min-width: 0; }
+  .fitem .fw { font-weight: 600; font-size: 1.05rem; }
+  .fitem .fs { font-size: .85rem; color: var(--muted); overflow-wrap: anywhere; }
+  .fitem button { min-width: 44px; margin: 0; }
+  #toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 240px; background: #1d1d1f; color: #fff; padding: 10px 18px; border-radius: 22px; z-index: 60; font-size: 1rem; max-width: 90vw; text-align: center; }
+  #shareText { width: 100%; height: 10rem; font: 13px/1.4 ui-monospace, Menlo, monospace; margin-top: 8px; }
   .ctrls { display: flex; gap: 10px; margin-top: 8px; }
   .ctrls button { flex: 1; min-height: 60px; font-size: 1.6rem; border-radius: 14px; margin: 0; }
   .ctrls button#btnPlay { flex: 2; background: var(--accent); color: #fff; border-color: var(--accent); }
@@ -52,22 +84,26 @@
 </head>
 <body>
 <h1>Hörlabor</h1>
-<p id="firstHint" class="hint">Text einfügen → ▶ drücken</p>
+<p id="firstHint" class="hint">Zum Ausprobieren steht schon ein Beispieltext im Feld: einfach ▶ drücken.<br>Eigenen Text: „Eigenen Text einfügen“ tippen.</p>
 
 <div id="editBox">
-  <textarea id="src" spellcheck="false" placeholder="Text hier einfügen"></textarea>
+  <div class="row">
+    <button id="btnPaste" class="pastebtn">📋 Eigenen Text einfügen</button>
+    <button id="btnClearText">Feld leeren</button>
+  </div>
+  <textarea id="src" spellcheck="false" placeholder="Text hier einfügen (ins Feld tippen → „Einsetzen“)"></textarea>
 </div>
 <div id="readBox" hidden>
   <div class="row"><button id="btnEdit">✎ Anderen Text einfügen</button></div>
   <div id="view"></div>
 </div>
-<label class="opt"><input type="checkbox" id="optSkip"> Quellenangaben überspringen</label>
 
 <details id="tech"><summary>Technik</summary>
   <h2>Text &amp; Aussprache</h2>
   <div class="row">
     <button id="btnApply">Text übernehmen</button>
-    <button id="btnSample">Beispieltext</button>
+    <button id="btnSampleStart">Start-Beispiel</button>
+    <button id="btnSample">Beispieltext (Phase 1)</button>
     <button id="btnSamplePron">Aussprache-Test</button>
     <button id="btnSampleSA">Soziale Arbeit</button>
   </div>
@@ -98,15 +134,52 @@
 </details>
 
 <div id="bar"><div class="inner">
-  <div id="status" aria-live="polite">Bereit</div>
+  <div class="statusrow"><span id="status" aria-live="polite">Bereit</span><span id="progText" class="hint"></span></div>
   <progress id="prog" max="1" value="0"></progress>
   <div class="ctrls">
     <button id="btnPlay" aria-label="Abspielen">▶</button>
     <button id="btnStop" aria-label="Stopp">■</button>
     <button id="btnNext" aria-label="Nächster Satz">⏭</button>
+    <button id="btnFlag" aria-label="Wort melden"><span class="ico">⚑</span><span class="cap">Wort melden</span></button>
   </div>
-  <div class="foot"><span id="progText" class="hint"></span><span class="ver" id="ver"></span></div>
+  <div class="foot">
+    <label class="opt"><input type="checkbox" id="optSkip"> Quellenangaben überspringen</label>
+    <button id="btnList" class="link">Gemeldete Wörter (0)</button>
+  </div>
+  <div class="verrow"><span class="ver" id="ver"></span></div>
 </div></div>
+
+<!-- Wort melden -->
+<div id="flagModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="flagTitle">
+  <div class="sheet">
+    <div class="sheet-h"><b id="flagTitle">Welches Wort klang komisch?</b><button id="flagClose" class="x" aria-label="Schließen">✕</button></div>
+    <div class="seg"><button id="flagCur" class="on">Aktueller Satz</button><button id="flagPrev">Vorheriger Satz</button></div>
+    <div id="flagWords" class="chips"></div>
+    <div id="flagTypes" class="types">
+      <span class="hint">Was war komisch? (optional)</span>
+      <button data-t="Betonung">Betonung</button><button data-t="falscher Laut">falscher Laut</button><button data-t="abgehackt">abgehackt</button><button data-t="anderes">anderes</button>
+    </div>
+    <button id="flagSend" class="primary" disabled>Wort antippen</button>
+  </div>
+</div>
+
+<!-- Liste der gemeldeten Wörter -->
+<div id="listModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="listTitle">
+  <div class="sheet">
+    <div class="sheet-h"><b id="listTitle">Gemeldete Wörter</b><button id="listClose" class="x" aria-label="Schließen">✕</button></div>
+    <div id="listItems"></div>
+    <button id="btnShare" class="primary">Liste teilen</button>
+    <div class="row">
+      <button id="btnClearAll">Alle löschen</button>
+      <span id="clearConfirm" hidden>Wirklich alle löschen? <button id="btnClearYes">Ja</button><button id="btnClearNo">Nein</button></span>
+    </div>
+    <div id="shareFallback" hidden>
+      <p class="hint">Teilen und Kopieren sind hier nicht möglich. Bitte den Text unten markieren, kopieren und z. B. per WhatsApp oder Mail schicken.</p>
+      <textarea id="shareText" readonly></textarea>
+    </div>
+  </div>
+</div>
+<div id="toast" hidden role="status"></div>
 
 <script>
 'use strict';
@@ -114,7 +187,7 @@
    Konfiguration (alle externen Quellen, Versionen fest angepinnt)
    ===================================================================== */
 const CONFIG = {
-  version: 'v0.3 · Wörterbuch + einfache Ansicht',
+  version: 'v0.4 · Wort melden',
   ortBase:  'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/',
   phonBase: 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/',
   hfBase:   'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/de/de_DE/',
@@ -151,6 +224,20 @@ Bereits in den 1990er Jahren wurde untersucht, wie sich Ganztagsangebote auf den
 Die Ergebnisse gelten jedoch u. U. nur eingeschränkt, da die Daten überwiegend im 20. Jh. erhoben wurden (ebd.). Weitere Befunde finden sich in Abb. 3 und Tab. 2 bzw. in Kap. 4 der 3. Aufl. des Handbuchs (Hrsg. Prof. Dr. Weber), insb. auf S. 12–15. Nach § 3 des Schulgesetzes vom 12.03.2020 dürfen ggf. auch Student*innen als Hilfskräfte eingesetzt werden, i. d. R. jedoch nur mit Zustimmung der Schulleitung, der Eltern usw. Hinweise zur Haftung enthält Nr. 5 der Verordnung u. a. für Ausflüge, Praktika etc. Kosten → Förderantrag, s. u. sowie ebd., S. 12.
 
 Im 3. Semester (Wintersemester 2025/26) befassen sich Sozialarbeiter*innen mit der Psychologie des Kompetenzerlebens und der Selbstbestimmungstheorie. Nach § 8a Abs. 1 S. 2 SGB VIII ist bei einer Kindeswohlgefährdung das Jugendamt zuständig; vgl. auch Art. 6 GG sowie §§ 27 ff. SGB VIII. Die sog. Lebensweltorientierung, Resilienz, Partizipation und Empowerment gehören zum Grundwissen der Sozialpädagogik.`;
+
+const SAMPLE_START =
+`2 Theoretischer Rahmen (fiktiver Beispieltext)
+
+2.1 Lebensweltorientierung und Empowerment
+
+Die Lebensweltorientierung zählt seit den 1990er Jahren zu den einflussreichsten Konzepten der Sozialen Arbeit (vgl. Hartmann; Özdemir; Keller 2019, S. 23–25). Sie fordert, Adressat:innen nicht als Fälle, sondern als Expert*innen ihres eigenen Alltags zu verstehen. Fachkräfte orientieren sich dabei z. B. an den Ressourcen, Bewältigungsstrategien und Beziehungen der Klient:innen (Brandt & Lehmann, 2021, S. 112). Eng damit verbunden ist der sog. Empowerment-Ansatz, der die Selbstbestimmung und Partizipation von Menschen in belastenden Lebenslagen stärken soll (ebd., S. 115).
+
+Wie lässt sich dieser Anspruch im Berufsalltag umsetzen? In der Praxis haben sich vor allem drei Elemente bewährt:
+1. eine verlässliche, wertschätzende Beratungsbeziehung,
+2. ein strukturiertes Case Management mit klaren Zuständigkeiten und
+3. die Förderung der Resilienz bzw. der psychischen Widerstandsfähigkeit von Kindern und Jugendlichen.
+
+Besonders anspruchsvoll ist die Arbeit bei einer möglichen Kindeswohlgefährdung. Nach § 8a SGB VIII sind Fachkräfte verpflichtet, das Gefährdungsrisiko im Zusammenwirken mehrerer Fachkräfte einzuschätzen und ggf. weitere Hilfen anzubieten (Wagner et al., 2020, S. 41 f.). Eine bundesweite Befragung von 1.024 Sozialarbeiter:innen zeigte, dass rund 63 % der Befragten ihre Arbeitsbelastung als hoch oder sehr hoch einschätzen (Institut für Sozialforschung 2022). Gleichzeitig gaben nur 18 % an, regelmäßig an Supervision teilzunehmen (ebd.: 9). Diese Befunde verdeutlichen, wie wichtig Selbstfürsorge und kollegiale Unterstützung für die Professionalität im Arbeitsalltag sind (vgl. Hartmann 2016/2020).`;
 
 const SAMPLE_SA =
 `3 Lebensweltorientierung in der Kinder- und Jugendhilfe (fiktiver Text)
@@ -207,6 +294,10 @@ const ABBR = new Set(('vgl bzw ca nr abb tab kap al hrsg ff jh jhd dr prof ggf s
   'übers vol ed eds pp no fig dipl ing phil rer nat med univ verf vorl bsp allg einschl gegr urspr vers verl ausg sp hr fr ' +
   'jan feb febr mär apr jun jul aug sep sept okt nov dez abs ziff lt gem hg bde anm zit vs zt hs halbs').split(' '));
 
+// Nummerierte Überschrift ohne Zeilenumbruch („1 Einleitung In der täglichen …“): Nummer + Überschriftswörter,
+// danach ein großgeschriebenes typisches Satzanfangswort.
+const HEAD_INLINE = /^\d{1,2}(?:\.\d{1,2})*\.?[ \t]+(?:\p{Lu}[\p{L}-]*)(?:[ \t]+(?:\p{Lu}[\p{L}-]*|und|als|im|in|der|die|des|von|zur|zum|für|mit|zwischen))*?(?=[ \t]+(?:In|Im|Die|Der|Das|Den|Dem|Des|Ein|Eine|Einer|Zu|Zur|Zum|Mit|Bei|Für|Nach|Seit|Um|Ziel|Diese|Dieser|Dieses|Es|Wie|Was|Warum|Vor|Aus|Auf|Ob|Wenn|Als|Obwohl|Da|Damit|Hier|Dabei|Zunächst|Zudem|Neben|Unter|Über|Durch|Gerade|Gemäß|Laut)[ \t])/u;
+
 function segment(src) {
   const out = [];
   const isWs = (ch) => /\s/.test(ch);
@@ -231,6 +322,10 @@ function segment(src) {
     if (nl > -1 && nl < be) {
       const line = src.slice(pos, nl).trim();
       if (line.length > 0 && line.length <= 80 && !/[.!?:;,\-–…]$/.test(line)) { push(pos, nl, false); pos = nl + 1; }
+    }
+    if (pos === bs || !/\n/.test(src.slice(bs, pos))) {        // keine Überschrift-Zeile erkannt → Überschrift im Fließtext?
+      const hm = HEAD_INLINE.exec(src.slice(pos, Math.min(be, pos + 90)));
+      if (hm) { push(pos, pos + hm[0].length, false); pos += hm[0].length; }
     }
     let start = pos;
     for (let i = pos; i < be; i++) {
@@ -452,6 +547,26 @@ const PRON_DICT = [
   ['Akzeptanz',                'aktsɛptˈants',                 '',                 'W'],
   ['Signifikanz',              'zɪɡniːfiːkˈants',              '',                 'W'],
   ['Hypothese',                'hypoːtˈeːzə',                  'n:n',              'W'],
+  // v0.4: aus Benjamins Testtext (Bachelorarbeit Soziale Arbeit), nur fehlerhafte
+  ['Beratung',                 'bərˈɑːtʊŋ',                    'en:ən s:s',        'WT'],
+  ['beraterisch',              'bərˈɑːtərɪʃ',                  'ADJ',              'W'],
+  ['Ratsuchend',               'rˈɑːtzuːxənd',                 'ADJ',              'W'],
+  ['Arbeits',                  'ˈaɾbaɪts',                     '',                 'H'],
+  ['Bewusstsein',              'bəvˈʊstzaɪn',                  's:s',              'W'],
+  ['Distanz',                  'dɪstˈants',                    'en:ən',            'W'],
+  ['enorm',                    'eːnˈɔɾm',                      'ADJ',              'W'],
+  ['Fremdwahrnehmung',         'frˈɛmtvɑːɾneːmʊŋ',             'en:ən',            'W'],
+  ['Individuen',               'ɪndiːvˈiːduːən',               '',                 'W'],
+  ['inwieweit',                'ɪnviːvˈaɪt',                   '',                 'W'],
+  ['Kapitel',                  'kapˈɪtəl',                     'n:n s:s',          'W'],
+  ['Kontext',                  'kˈɔntɛkst',                    's:s e:ə en:ən',    'WT'],
+  ['psychisch',                'psˈyːçɪʃ',                     'ADJ',              'W'],
+  ['psychosozial',             'psyçoːzoːtsjˈɑːl',             'ADJ',              'W'],
+  ['Erwartung',                'ɛɾvˈaɾtʊŋ',                    'en:ən',            'T'],
+  ['vorhanden',                'foːɾhˈandən',                  '',                 'W'],
+  ['Übernahme',                'ˈyːbɜnɑːmə',                   'n:n',              'W'],
+  ['Bachelor',                 'bˈɛtʃəlɜ',                     's:s',              'WH'],
+  ['Level',                    'lˈɛvəl',                       's:s',              'W'],
   // Englische Fachbegriffe
   ['Management',               'mˈɛnɪdʒmənt',                  's:s',              'WT'],
   ['Empowerment',              'ɪmpˈaʊɜmənt',                  '',                 'W'],
@@ -503,7 +618,19 @@ function fugenSplit(w) {
 function pronounceWord(word) {
   const lw = word.toLowerCase();
   if (PRON.whole.has(lw)) return word + '=/' + PRON.whole.get(lw);
-  if (word.length < 7 || word.includes('-')) return null;
+  if (word.includes('-')) {                                   // „Empowerment-Ansatz“, „Care-Arbeit“ (falls nicht als Ganzes eingetragen)
+    const subs = word.split('-').filter(Boolean);
+    let any = false;
+    const parts = subs.map(w => {
+      const lw2 = w.toLowerCase();
+      if (PRON.whole.has(lw2)) { any = true; return '/' + PRON.whole.get(lw2); }
+      const sp = pronounceWord(w);
+      if (sp) { any = true; return sp.slice(sp.indexOf('=') + 1).replace(/!/g, ''); }
+      return w;
+    });
+    return any ? word + '=' + parts.join('|') : null;
+  }
+  if (word.length < 7) return null;
   const parts = [];
   let core = word;
   const head = PRON_HEAD_EXCEPT.test(word) ? null : PRON.heads.find(h => lw.startsWith(h.key) && word.length - h.key.length >= 3);
@@ -581,6 +708,9 @@ const SPEECH_RULES = [
   // Zeichen
   { name: '~ vor Zahl', re: /~\s?(?=\d)/uy, say: 'zirka ' },
   { name: 'Pfeil', re: /[→⇒]/uy, say: ', ' },
+  // Gender-Zeichen („Klient:innen“, „Student*innen“, auch Tippfehler „…:inne“): Piper bekommt eine Wortgrenze
+  // (= kurze Gender-Pause wie bisher), damit Wörterbuch-Wörter davor („Klient“) sauber erkannt werden.
+  { name: 'Gender-Zeichen', re: /(?<=\p{L})[:*_](?=in(?:nen|ne)?(?![\p{L}]))/uy, say: () => ({ raw: ' ' }) },
   // Wörterbuch: mehrteilige Fachbegriffe („Case Management“) und einzelne Wörter (inkl. Zusammensetzungen)
   ...PRON.multi.map(({ word, ipa }) => ({ name: 'Wörterbuch: ' + word,
     re: new RegExp('(?<![\\p{L}])' + word.split(' ').map(escRe).join('\\s+') + '(?![\\p{L}])', 'uy'),
@@ -595,13 +725,21 @@ const SPEECH_RULES = [
 /* ---------- Quellenangaben erkennen (immer), überspringen (nur mit Schalter) ---------- */
 const CIT_STOP = new Set(('Stand Jahr Jahre Jahres Ende Anfang Mitte Beginn Herbst Frühjahr Frühling Sommer Winter Januar Februar ' +
   'März April Mai Juni Juli August September Oktober November Dezember Zeitraum Erhebung Befragung Daten Stichtag Gesetz ' +
-  'Fassung Version Ausgabe Studie Welle Schuljahr Semester Wintersemester Sommersemester Zensus Basisjahr').split(' '));
-const CIT_NAME_YEAR = /^\p{Lu}[\p{L}'’-]+(?:\s*(?:&|und|\/|u\.\s?a\.|et\s+al\.)\s*\p{Lu}[\p{L}'’-]+)*(?:\s+(?:et\s+al\.|u\.\s?a\.))?,?\s+(?:1[5-9]\d\d|20\d\d)[a-z]?(?!\d)/u;
+  'Fassung Version Ausgabe Studie Welle Schuljahr Semester Wintersemester Sommersemester Zensus Basisjahr ' +
+  'Kinder Jugendliche Frauen Männer Personen Menschen Studierende Erwachsene Familien Haushalte Zahlen Quelle Stichprobe ' +
+  'Ergebnis Ergebnisse Befragte Teilnehmende Schulen Kitas').split(' '));
+// Name oder Institution (bis 4 großgeschriebene Wörter: „Deutscher Bundestag“, „BMFSFJ“),
+// mehrere Namen getrennt durch & / und / / / ; / , („Hartmann; Özdemir; Keller 2019“), optional „et al.“/„u. a.“,
+// optional Komma, dann Jahr (auch „2019a“, „1992/2014“).
+const CIT_NAME = "\\p{Lu}[\\p{L}'’-]*(?:\\s+(?:für|der|des|von|zur|zum|\\p{Lu}[\\p{L}'’-]*)){0,4}";
+const CIT_YEAR = "(?:1[5-9]\\d\\d|20\\d\\d)[a-z]?(?:\\s?\\/\\s?(?:1[5-9]\\d\\d|20\\d\\d)[a-z]?)?(?!\\d)";
+const CIT_NAME_YEAR = new RegExp('^' + CIT_NAME + '(?:\\s*(?:&|und|\\/|;|,|u\\.\\s?a\\.|et\\s+al\\.)\\s*' + CIT_NAME + ')*' +
+  '(?:\\s+(?:et\\s+al\\.|u\\.\\s?a\\.))?,?\\s+' + CIT_YEAR, 'u');
 function isCitation(inner) {
   const t = inner.trim();
   if (/^(?:vgl\.|Vgl\.|ebd\.|Ebd\.|ebenda|Ebenda)(?![\p{L}])/u.test(t)) return true;
   if (/^S\.\s?\d/.test(t)) return true;                              // nur Seitenangabe: „(S. 12)“
-  const t2 = t.replace(/^(?:siehe|s\.)\s+/, '');
+  const t2 = t.replace(/^(?:siehe|s\.|zit\.\s?n\.|zitiert nach|nach)\s+/, '');
   if (CIT_NAME_YEAR.test(t2)) return !CIT_STOP.has(/^\p{Lu}[\p{L}'’-]+/u.exec(t2)[0]);
   return false;                                                      // im Zweifel: keine Quellenangabe
 }
@@ -647,7 +785,7 @@ function speechVersion(src, a, b, opt) {
         if (typeof say === 'object') {                        // Wörterbuch: Original bleibt, Piper bekommt Lautschrift
           for (let k = 0; k < m[0].length; k++) {
             const ch = /\s/.test(m[0][k]) ? ' ' : m[0][k];
-            out.push({ c: ch, s: i + k, e: i + k + 1, ph: k === 0 ? '⟦' + say.piper + '⟧' : '' });
+            out.push({ c: ch, s: i + k, e: i + k + 1, ph: k === 0 ? (say.raw !== undefined ? say.raw : '⟦' + say.piper + '⟧') : '' });
           }
         } else emit(say, i, i + m[0].length);
         i += m[0].length - 1;
@@ -1648,7 +1786,25 @@ async function preloadIfCached() {
 $('btnSample').onclick = () => { ctl.stop(); $('src').value = SAMPLE_TEXT; applyText(); };
 $('btnSamplePron').onclick = () => { ctl.stop(); $('src').value = SAMPLE_PRON; applyText(); };
 $('btnSampleSA').onclick = () => { ctl.stop(); $('src').value = SAMPLE_SA; applyText(); };
-$('btnEdit').onclick = () => { ctl.stop(); showRead(false); setStatus('Bereit'); $('src').focus(); };
+$('btnSampleStart').onclick = () => { ctl.stop(); $('src').value = SAMPLE_START; applyText(); };
+$('btnEdit').onclick = () => { ctl.stop(); showRead(false); setStatus('Bereit'); };
+// „Eigenen Text einfügen“: liest die Zwischenablage (iPhone zeigt dazu kurz „Einsetzen“ an – einmal tippen).
+// Klappt das nicht (verweigert/leer), wird das Feld geleert und ausgewählt: dann ins Feld tippen → „Einsetzen“.
+function emptyAndFocus(msg) {
+  $('src').value = ''; ui.src = ''; ui.sentences = [];
+  $('src').focus();
+  setStatus(msg || 'Ins Feld tippen und „Einsetzen“ wählen, dann ▶');
+}
+$('btnPaste').onclick = () => {
+  ctl.stop();
+  const cb = navigator.clipboard;
+  if (!cb || !cb.readText) { emptyAndFocus(); return; }
+  cb.readText().then((t) => {
+    if (t && t.trim()) { $('src').value = t; setStatus('Text eingefügt – ▶ drücken'); log('Eigener Text aus der Zwischenablage eingefügt (' + t.length + ' Zeichen)'); }
+    else emptyAndFocus('Zwischenablage ist leer – Text erst kopieren, dann hier ins Feld tippen → „Einsetzen“');
+  }, () => emptyAndFocus());
+};
+$('btnClearText').onclick = () => { ctl.stop(); emptyAndFocus('Feld ist leer – ins Feld tippen → „Einsetzen“, dann ▶'); };
 $('optHelp').onchange = () => { ctl.stop(); speechOpts.help = $('optHelp').checked; applyText(); log('Aussprache-Hilfe ' + (speechOpts.help ? 'an' : 'aus')); };
 $('optSkip').onchange = () => { ctl.stop(); speechOpts.skipCitations = $('optSkip').checked; applyText(); log('Quellenangaben überspringen ' + (speechOpts.skipCitations ? 'an' : 'aus')); };
 $('btnApply').onclick = () => { ctl.stop(); applyText(); };
@@ -1706,11 +1862,218 @@ if ('mediaSession' in navigator) {
 window.addEventListener('error', (e) => log('JS-Fehler: ' + e.message, 'error'));
 window.addEventListener('unhandledrejection', (e) => { if (!(e.reason && e.reason.cancelled)) log('Unbehandelt: ' + ((e.reason && e.reason.message) || e.reason), 'error'); });
 
+
+/* =====================================================================
+   v0.4 – „Wort melden“
+   Bedienung: ⚑ in der unteren Leiste → Fenster mit den Wörtern des aktuellen
+   (oder vorherigen) Satzes → Wort antippen → optional Fehlerart → „Melden“.
+   Die Wiedergabe läuft dabei weiter (kein Pausieren/Fortsetzen nötig – auf iOS
+   am zuverlässigsten, weil kein erneuter Audio-Start ausgelöst wird).
+   Gespeichert wird nur lokal (localStorage); geteilt wird nur, wenn Clara „Liste teilen“ tippt.
+   ===================================================================== */
+const FLAG_KEY = 'hoerlabor-meldungen-v1';
+let flags = (() => { try { const v = JSON.parse(localStorage.getItem(FLAG_KEY) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } })();
+const flagUi = { idx: -1, cur: -1, word: null, type: '' };
+
+function saveFlags() {
+  try { localStorage.setItem(FLAG_KEY, JSON.stringify(flags)); }
+  catch (e) { log('Gemeldete Wörter konnten nicht gespeichert werden: ' + e.message, 'warn'); }
+  updateFlagCount();
+}
+function updateFlagCount() { $('btnList').textContent = `Gemeldete Wörter (${flags.length})`; }
+
+let toastTimer = null;
+function toast(t, ms) {
+  const el = $('toast');
+  el.textContent = t; el.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.hidden = true; }, ms || 2200);
+}
+const fmtDate = (iso) => { try { return new Date(iso).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }); } catch (e) { return iso; } };
+
+// Wörter eines Satzes als Tippflächen (mit Original-Positionen); Satzzeichen am Rand werden abgetrennt,
+// kurze Abkürzungen („S.“, „Prof.“, „Abs.“) behalten ihren Punkt.
+function sentenceTokens(i) {
+  const s = ui.sentences[i];
+  if (!s) return [];
+  const toks = [];
+  const re = /\S+/g;
+  let m;
+  while ((m = re.exec(s.text))) {
+    let a = m.index, b = a + m[0].length, t = m[0];
+    const lead = /^[(\[„“"»«‚‘']+/.exec(t);
+    if (lead) { a += lead[0].length; t = t.slice(lead[0].length); }
+    const trail = /[)\]“”"»«‘’',;:!?…]+$/.exec(t);
+    if (trail) { b -= trail[0].length; t = t.slice(0, t.length - trail[0].length); }
+    if (t.endsWith('.') && t.length > 1 && !/^\p{L}{1,4}\.$/u.test(t)) { b--; t = t.slice(0, -1); }
+    if (!/[\p{L}\d§]/u.test(t)) continue;
+    toks.push({ text: t, start: s.start + a, end: s.start + b });
+  }
+  return toks;
+}
+// Was die Stimme für dieses Wort tatsächlich bekommt (Klartext der Sprechfassung)
+function wordSpeech(i, a, b) {
+  const s = ui.sentences[i];
+  let out = '';
+  for (const p of s.parts) {
+    for (let k = 0; k < p.speech.length; k++) if (p.map[k] < b && p.mapEnd[k] > a) out += p.speech[k];
+    out += ' ';
+  }
+  out = out.replace(/\s+/g, ' ').trim();
+  return out || (s.skips.some(r => a >= r.start && b <= r.end) ? '(nicht gesprochen – Quellenangabe übersprungen)' : '');
+}
+
+function openFlag() {
+  if (!ui.sentences.length) { toast('Erst einen Text einfügen und ▶ drücken'); return; }
+  flagUi.cur = ui.curIdx >= 0 ? ui.curIdx : Math.min(ctl.cur, ui.sentences.length - 1);
+  showFlagSentence(flagUi.cur);
+  $('flagModal').hidden = false;
+}
+function showFlagSentence(i) {
+  flagUi.idx = i; flagUi.word = null;
+  $('flagCur').classList.toggle('on', i === flagUi.cur);
+  $('flagPrev').classList.toggle('on', i !== flagUi.cur);
+  $('flagPrev').disabled = flagUi.cur <= 0;
+  const box = $('flagWords');
+  box.textContent = '';
+  for (const t of sentenceTokens(i)) {
+    const btn = document.createElement('button');
+    btn.textContent = t.text;
+    btn.onclick = () => {
+      flagUi.word = t;
+      for (const c of box.children) c.classList.toggle('on', c === btn);
+      $('flagSend').disabled = false;
+      $('flagSend').textContent = `„${t.text}“ melden`;
+    };
+    box.appendChild(btn);
+  }
+  $('flagSend').disabled = true;
+  $('flagSend').textContent = 'Wort antippen';
+}
+function closeFlag() {
+  $('flagModal').hidden = true;
+  flagUi.type = '';
+  for (const b of $('flagTypes').querySelectorAll('button')) b.classList.remove('on');
+}
+function sendFlag() {
+  const t = flagUi.word, type = flagUi.type;
+  if (!t) return;
+  const i = flagUi.idx, s = ui.sentences[i];
+  const key = t.text.toLowerCase().normalize('NFC');
+  const nowIso = new Date().toISOString();
+  const speech = wordSpeech(i, t.start, t.end);
+  const spec = speechOpts.help ? pronounceWord(t.text) : null;
+  let e = flags.find(f => f.key === key);
+  if (!e) {
+    e = { key, word: t.text, count: 1, types: [], sentences: [s.text], speech, ipa: '', ipaSource: '',
+      version: CONFIG.version, voice: ctl.engine().id === 'piper' ? $('voiceSel').value : 'Web Speech: ' + ctl.voiceLabel(),
+      first: nowIso, last: nowIso };
+    flags.push(e);
+  } else {
+    e.count++; e.last = nowIso; e.version = CONFIG.version;
+    if (!e.sentences.includes(s.text) && e.sentences.length < 3) e.sentences.push(s.text);
+  }
+  if (type && !e.types.includes(type)) e.types.push(type);
+  saveFlags();
+  closeFlag();
+  toast('Gemeldet ✓');
+  log(`Wort gemeldet: ${t.text}${type ? ' (' + type + ')' : ''}`);
+  // Lautschrift, wie Piper sie bekommt (Wort einzeln phonemisiert bzw. Wörterbuch-Eintrag) – im Hintergrund
+  const pe = engines.piper;
+  if (!e.ipa && pe.loaded && pe.worker && speech && !speech.startsWith('(')) {
+    const txt = spec ? `⟦${spec}⟧` : speech;
+    pe.phTest(txt).then(r => {
+      if (r && r.ph) { e.ipa = r.ph.normalize('NFC'); e.ipaSource = spec ? 'Wörterbuch' : 'espeak'; saveFlags(); }
+    }).catch(() => {});
+  }
+}
+
+function renderFlagList() {
+  const box = $('listItems');
+  box.textContent = '';
+  if (!flags.length) { const p = document.createElement('p'); p.className = 'hint'; p.textContent = 'Noch keine Wörter gemeldet. Beim Zuhören auf ⚑ tippen.'; box.appendChild(p); }
+  flags.forEach((f, n) => {
+    const row = document.createElement('div'); row.className = 'fitem';
+    const tx = document.createElement('div'); tx.className = 'ftext';
+    const w = document.createElement('div'); w.className = 'fw';
+    w.textContent = f.word + (f.count > 1 ? `  (${f.count}×)` : '') + (f.types.length ? ' · ' + f.types.join(', ') : '');
+    const st = document.createElement('div'); st.className = 'fs';
+    st.textContent = '„' + f.sentences[0] + '“';
+    tx.appendChild(w); tx.appendChild(st);
+    const del = document.createElement('button'); del.textContent = '✕'; del.setAttribute('aria-label', f.word + ' löschen');
+    del.onclick = () => { flags.splice(n, 1); saveFlags(); renderFlagList(); };
+    row.appendChild(tx); row.appendChild(del);
+    box.appendChild(row);
+  });
+  $('btnShare').disabled = !flags.length;
+  $('btnClearAll').disabled = !flags.length;
+  $('clearConfirm').hidden = true; $('btnClearAll').hidden = false;
+  $('shareFallback').hidden = true;
+}
+function openList() { renderFlagList(); $('listModal').hidden = false; }
+
+// Teilen-Text: oben gut lesbar, unten maschinenlesbar (JSON) für die Auswertung im Bau-Chat
+function flagsText() {
+  const L = ['Hörlabor – gemeldete Wörter', `App-Version: ${CONFIG.version} · Stand: ${fmtDate(new Date().toISOString())} · Wörter: ${flags.length}`, ''];
+  flags.forEach((f, n) => {
+    L.push(`${n + 1}) ${f.word}${f.count > 1 ? `  (${f.count}× gemeldet)` : ''}`);
+    L.push(`   Art: ${f.types.length ? f.types.join(', ') : '–'}`);
+    f.sentences.forEach((x, k) => L.push(`   ${k ? 'Weiterer Satz' : 'Satz'}: „${x}“`));
+    L.push(`   Gesprochen als: ${f.speech || '–'}`);
+    L.push(`   Lautschrift (Piper): ${f.ipa || '– (nicht ermittelt)'}${f.ipaSource ? ' [' + f.ipaSource + ']' : ''}`);
+    L.push(`   Gemeldet: ${fmtDate(f.first)}${f.count > 1 ? ' … ' + fmtDate(f.last) : ''} · ${f.version} · ${f.voice}`);
+    L.push('');
+  });
+  L.push('--- maschinenlesbar (für den Bau-Chat) ---');
+  L.push(JSON.stringify(flags.map(f => ({ wort: f.word, anzahl: f.count, art: f.types, saetze: f.sentences, gesprochen: f.speech,
+    lautschrift: f.ipa, quelle: f.ipaSource, version: f.version, stimme: f.voice, erst: f.first, zuletzt: f.last }))));
+  return L.join('\n');
+}
+function copyFallback(text) {
+  const showText = () => { $('shareFallback').hidden = false; const ta = $('shareText'); ta.value = text; ta.focus(); ta.select(); };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => toast('Liste kopiert – z. B. in WhatsApp oder Mail einfügen', 3500), showText);
+    } else showText();
+  } catch (e) { showText(); }
+}
+function shareFlags() {
+  const text = flagsText();
+  if (navigator.share) {
+    // synchron im Tipp aufrufen (iOS verlangt eine Nutzergeste)
+    navigator.share({ title: 'Hörlabor – gemeldete Wörter', text }).then(() => toast('Geteilt ✓'), (err) => {
+      if (err && err.name === 'AbortError') return;          // Teilen-Menü abgebrochen
+      copyFallback(text);
+    });
+  } else copyFallback(text);
+}
+
+$('btnFlag').onclick = openFlag;
+$('flagClose').onclick = closeFlag;
+$('flagCur').onclick = () => showFlagSentence(flagUi.cur);
+$('flagPrev').onclick = () => { if (flagUi.cur > 0) showFlagSentence(flagUi.cur - 1); };
+$('flagSend').onclick = sendFlag;
+for (const b of $('flagTypes').querySelectorAll('button')) b.onclick = () => {
+  flagUi.type = flagUi.type === b.dataset.t ? '' : b.dataset.t;
+  for (const c of $('flagTypes').querySelectorAll('button')) c.classList.toggle('on', c.dataset.t === flagUi.type);
+};
+$('flagModal').onclick = (e) => { if (e.target === $('flagModal')) closeFlag(); };
+$('btnList').onclick = openList;
+$('listClose').onclick = () => { $('listModal').hidden = true; };
+$('listModal').onclick = (e) => { if (e.target === $('listModal')) $('listModal').hidden = true; };
+$('btnShare').onclick = shareFlags;
+$('btnClearAll').onclick = () => { $('btnClearAll').hidden = true; $('clearConfirm').hidden = false; };
+$('btnClearNo').onclick = () => { $('btnClearAll').hidden = false; $('clearConfirm').hidden = true; };
+$('btnClearYes').onclick = () => { flags = []; saveFlags(); renderFlagList(); toast('Liste gelöscht'); };
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeFlag(); $('listModal').hidden = true; } });
+updateFlagCount();
+
 // Start
 $('ver').textContent = CONFIG.version;
 speechOpts.help = $('optHelp').checked;
 speechOpts.skipCitations = $('optSkip').checked;
 setupEngines();
+$('src').value = SAMPLE_START;                       // Beispieltext, damit Clara sofort ▶ drücken kann
 showRead(false);
 fillVoices().then(preloadIfCached);
 showEnv();
