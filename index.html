@@ -1,0 +1,1121 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Benjamin Dormoros">
+<meta name="color-scheme" content="light">
+<title>Hörlabor – Stimmen-Testlabor (Phase 1)</title>
+<style>
+  :root { --cur:#fff1a8; --word:#ffb74d; --bar:#f2f2f2; --line:#ccc; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 12px 12px 140px; font: 16px/1.5 -apple-system, system-ui, Segoe UI, Roboto, sans-serif; background:#fff; color:#111; max-width: 900px; margin-inline: auto; }
+  h1 { font-size: 1.2rem; margin: .2rem 0 .6rem; }
+  h2 { font-size: 1rem; margin: 1.2rem 0 .4rem; border-bottom: 1px solid var(--line); }
+  textarea { width: 100%; min-height: 9rem; font: inherit; padding: 8px; }
+  select, button { font: inherit; padding: 8px 10px; margin: 2px 2px 2px 0; }
+  select { max-width: 100%; }
+  button { min-height: 44px; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
+  .hint { font-size: .85rem; color: #444; }
+  .warn { color: #a00; }
+  #view { white-space: pre-wrap; word-wrap: break-word; border: 1px solid var(--line); padding: 10px; min-height: 3rem; }
+  #view .s { cursor: pointer; border-radius: 3px; }
+  #view .s.cur { background: var(--cur); }
+  #view mark.w { background: var(--word); color: inherit; padding: 0; }
+  #nowText { border-left: 4px solid #e0b000; padding: 4px 8px; background: #fffbe6; min-height: 1.5em; }
+  #bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--bar); border-top: 1px solid var(--line); padding: 6px 10px calc(6px + env(safe-area-inset-bottom)); }
+  #bar .inner { max-width: 900px; margin: 0 auto; }
+  #bar button { min-width: 64px; }
+  progress { width: 100%; height: 10px; }
+  table { border-collapse: collapse; font-size: .85rem; width: 100%; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 3px 6px; text-align: left; white-space: nowrap; vertical-align: top; }
+  #log { font: 12px/1.35 ui-monospace, Menlo, monospace; background: #f7f7f7; border: 1px solid var(--line); padding: 6px; max-height: 14rem; overflow: auto; white-space: pre-wrap; }
+  #loadStatus { font-size: .9rem; }
+</style>
+</head>
+<body>
+<h1>Hörlabor · Phase 1 – Stimmen-Testlabor</h1>
+<p class="hint">Prototyp zum Vergleichen kostenloser deutscher Vorlese-Stimmen. Alles läuft im Browser; der Text verlässt das Gerät nur bei Browser-Stimmen mit dem Hinweis „Cloud“.
+iPhone: Stummschalter aus, Lautstärke hoch, ersten Modell-Download im WLAN.</p>
+
+<h2>1 · Text</h2>
+<textarea id="src" spellcheck="false" placeholder="Wissenschaftlichen Text hier einfügen …"></textarea>
+<div class="row">
+  <button id="btnApply">Text übernehmen</button>
+  <button id="btnSample">Beispieltext</button>
+  <span id="integrity" class="hint"></span>
+</div>
+
+<h2>2 · Engine &amp; Stimme</h2>
+<div class="row">
+  <select id="engineSel" aria-label="Engine"></select>
+</div>
+<div class="row">
+  <select id="voiceSel" aria-label="Stimme"></select>
+  <button id="btnLoad">Stimme laden</button>
+  <button id="btnClearCache" title="Gespeicherte Piper-Modelle löschen">Modell-Cache löschen</button>
+</div>
+<div id="loadStatus" class="hint"></div>
+
+<h2>3 · Text (Anzeige = Original)</h2>
+<div id="nowText" class="hint">–</div>
+<div id="view"></div>
+
+<h2>4 · Messwerte</h2>
+<div class="row"><button id="btnCopy">Messwerte kopieren</button><span id="copyMsg" class="hint"></span></div>
+<table id="metrics"><thead><tr>
+  <th>Engine</th><th>Stimme</th><th>Ladezeit</th><th>Cache</th><th>Zeit bis Ton</th><th>Echtzeitfaktor</th><th>Audio</th><th>Sätze ok</th><th>Fehler</th><th>Wartepausen</th><th>Wortgrenzen</th>
+</tr></thead><tbody></tbody></table>
+<p class="hint">Echtzeitfaktor = Rechenzeit ÷ Audiodauer (unter 1 = schneller als Echtzeit; über ~0,8 drohen Wartepausen). Wartepausen = Satz fertig, nächster noch nicht berechnet.</p>
+<h2>Gerät</h2>
+<div id="env" class="hint"></div>
+<h2>Protokoll</h2>
+<div id="log"></div>
+
+<div id="bar"><div class="inner">
+  <div class="row" style="margin:0">
+    <button id="btnPlay">▶ Play</button>
+    <button id="btnPause">⏸ Pause</button>
+    <button id="btnStop">■ Stop</button>
+    <button id="btnNext">⏭ Satz</button>
+    <span id="progText" class="hint">–</span>
+  </div>
+  <progress id="prog" max="1" value="0"></progress>
+</div></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   Konfiguration (alle externen Quellen, Versionen fest angepinnt)
+   ===================================================================== */
+const CONFIG = {
+  ortBase:  'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/',
+  phonBase: 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/',
+  hfBase:   'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/de/de_DE/',
+  cacheName: 'hoerlabor-piper-v1',
+  maxPartChars: 220,       // längere Sätze werden intern für die Sprachausgabe geteilt
+  pauseSentence: 0.30,     // Sekunden Stille nach Satz (Piper)
+  pausePara: 0.75,         // Sekunden Stille nach Absatz (Piper)
+  prefetch: 2              // so viele Sätze rechnet Piper voraus
+};
+
+const PIPER_VOICES = [
+  { id: 'de_DE-thorsten-medium', path: 'thorsten/medium', label: 'Thorsten · medium · männlich · 63 MB (Standard)' },
+  { id: 'de_DE-thorsten-high', path: 'thorsten/high', label: 'Thorsten · high · männlich · 114 MB (beste Piper-Qualität, langsamer)' },
+  { id: 'de_DE-kerstin-low', path: 'kerstin/low', label: 'Kerstin · low · weiblich · 63 MB' },
+  { id: 'de_DE-ramona-low', path: 'ramona/low', label: 'Ramona · low · weiblich · 63 MB' },
+  { id: 'de_DE-eva_k-x_low', path: 'eva_k/x_low', label: 'Eva K · x_low · weiblich · 21 MB (klein/schnell)' },
+  { id: 'de_DE-karlsson-low', path: 'karlsson/low', label: 'Karlsson · low · männlich · 63 MB' },
+  { id: 'de_DE-thorsten_emotional-medium', path: 'thorsten_emotional/medium', speakerId: 4, label: 'Thorsten emotional (neutral) · medium · 77 MB' },
+  { id: 'de_DE-pavoque-low', path: 'pavoque/low', label: 'Pavoque · low · männlich · 63 MB (nur nicht-kommerziell)' }
+];
+
+const SAMPLE_TEXT =
+`1 Einleitung (fiktiver Beispieltext)
+
+Die Frage, unter welchen Bedingungen Studierende ihre Lernmotivation über ein ganzes Semester aufrechterhalten, gehört zu den zentralen Themen der pädagogischen Psychologie. Die Selbstbestimmungstheorie geht davon aus, dass Menschen besonders ausdauernd lernen, wenn drei psychologische Grundbedürfnisse erfüllt sind: Autonomie, Kompetenzerleben und soziale Eingebundenheit (vgl. Müller & Schneider, 2019, S. 68 f.). In einer Befragung von 1.248 Studierenden gaben rund 37 % an, ihre Motivation sinke spätestens ab der Mitte des Semesters deutlich.
+
+Bemerkenswert ist dabei, dass externe Anreize, z. B. Bonuspunkte oder Anwesenheitskontrollen, die Lernzeit zwar kurzfristig erhöhen, die Qualität der Auseinandersetzung mit dem Stoff jedoch nicht zwangsläufig verbessern. Lehrende stehen daher vor der Aufgabe, Lernumgebungen so zu gestalten, dass Wahlmöglichkeiten bestehen, Rückmeldungen informativ statt kontrollierend formuliert werden und der Austausch unter Studierenden gezielt gefördert wird. Ob sich diese Befunde, die überwiegend im 20. und frühen 21. Jahrhundert an US-amerikanischen Hochschulen gewonnen wurden, ohne Weiteres auf das deutsche Studiensystem übertragen lassen, ist bislang nur in Ansätzen untersucht.`;
+
+/* =====================================================================
+   Hilfsfunktionen
+   ===================================================================== */
+const $ = (id) => document.getElementById(id);
+const now = () => performance.now();
+const UA = navigator.userAgent;
+const IS_IOS = /iPad|iPhone|iPod/.test(UA) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const IS_ANDROID = /Android/i.test(UA);
+const IS_CHROME_DESKTOP = /Chrome\//.test(UA) && !/Edg\//.test(UA) && !IS_ANDROID && !IS_IOS;
+const fmtMs = (ms) => (ms == null || isNaN(ms)) ? '–' : (ms < 1000 ? Math.round(ms) + ' ms' : (ms / 1000).toFixed(1) + ' s');
+const fmtMB = (b) => (b / 1048576).toFixed(1) + ' MB';
+
+function log(msg, level) {
+  const el = $('log');
+  const t = new Date().toLocaleTimeString('de-DE');
+  const line = document.createElement('div');
+  line.textContent = `[${t}] ${level === 'error' ? 'FEHLER: ' : level === 'warn' ? 'Warnung: ' : ''}${msg}`;
+  if (level === 'error') line.className = 'warn';
+  el.appendChild(line);
+  while (el.childNodes.length > 300) el.removeChild(el.firstChild);
+  el.scrollTop = el.scrollHeight;
+  (level === 'error' ? console.error : console.log)('[Hörlabor]', msg);
+}
+
+function makeWav(f32, sampleRate) {
+  const n = f32.length, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sampleRate, true); v.setUint32(28, sampleRate * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+  for (let i = 0, p = 44; i < n; i++, p += 2) {
+    const s = Math.max(-1, Math.min(1, f32[i]));
+    v.setInt16(p, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+  }
+  return buf;
+}
+
+/* =====================================================================
+   Segmentierung: Originaltext -> Sätze mit exakten Zeichen-Offsets.
+   Der Originaltext wird NIE verändert. Sprechfassung = Teilstring, in dem nur
+   Zeilenumbrüche/Whitespace zu Leerzeichen werden und PDF-Trennungen
+   ("Er-\nhebung") sowie weiche Trennstriche entfernt werden. Eine Index-Tabelle
+   (map) bildet jede Position der Sprechfassung auf das Original ab.
+   ===================================================================== */
+const ABBR = new Set(('vgl bzw ca nr abb tab kap al hrsg ff jh jhd dr prof usw etc ggf sog inkl evtl insb bspw bd aufl jg ' +
+  'mio mrd std min sek st chr dt engl lat vs zit zzgl max mind gem resp tsd ebd ders dies hg anm bzgl geb gest orig ' +
+  'übers vol ed eds pp no fig dipl ing phil rer nat med univ verf vorl bsp allg einschl gegr urspr vers verl ausg sp hr fr ' +
+  'jan feb febr mär apr jun jul aug sep sept okt nov dez').split(' '));
+
+function segment(src) {
+  const out = [];
+  const isWs = (ch) => /\s/.test(ch);
+  const push = (a, b, para) => {
+    while (a < b && isWs(src[a])) a++;
+    while (b > a && isWs(src[b - 1])) b--;
+    if (b > a) out.push({ start: a, end: b, paraEnd: !!para });
+  };
+  // Absätze = durch Leerzeilen getrennte Blöcke
+  const blocks = [];
+  const sep = /\n[ \t ]*\n\s*/g;
+  let last = 0, m;
+  while ((m = sep.exec(src))) { blocks.push([last, m.index]); last = m.index + m[0].length; }
+  blocks.push([last, src.length]);
+
+  for (const [bs, be] of blocks) {
+    const before = out.length;
+    let pos = bs;
+    while (pos < be && isWs(src[pos])) pos++;
+    // Überschrift: erste Zeile eines Blocks, kurz, ohne Satzzeichen am Ende
+    const nl = src.indexOf('\n', pos);
+    if (nl > -1 && nl < be) {
+      const line = src.slice(pos, nl).trim();
+      if (line.length > 0 && line.length <= 80 && !/[.!?:;,\-–…]$/.test(line)) { push(pos, nl, false); pos = nl + 1; }
+    }
+    let start = pos;
+    for (let i = pos; i < be; i++) {
+      const c = src[i];
+      if (!'.!?…'.includes(c)) continue;
+      let j = i + 1;
+      while (j < be && /[.!?…"'»«“”„‘’)\]]/.test(src[j])) j++;
+      if (j < be && !isWs(src[j])) continue;          // z. B. "1.248" oder "z.B."
+      let k = j;
+      while (k < be && isWs(src[k])) k++;
+      if (k >= be) continue;                          // Blockende -> wird unten abgeschlossen
+      if (c === '.' && src[i + 1] !== '.') {
+        const mt = /([A-Za-zÄÖÜäöüß]+|\d+)$/.exec(src.slice(Math.max(start, i - 24), i));
+        if (mt) {
+          const tok = mt[1];
+          if (/^\d+$/.test(tok)) { if (tok.length <= 2) continue; }   // Ordinalzahl: "20. Jahrhundert"
+          else if (tok.length === 1 || ABBR.has(tok.toLowerCase())) continue;
+        }
+      }
+      if (/[a-zäöüß]/.test(src[k])) continue;         // nächstes Wort klein -> kein Satzende
+      push(start, j, false);
+      start = k; i = k - 1;
+    }
+    push(start, be, false);
+    if (out.length > before) out[out.length - 1].paraEnd = true;
+  }
+
+  // Lange Sätze für die Sprachausgabe intern teilen (Anzeige bleibt ein Satz)
+  const splitParts = (a, b) => {
+    if (b - a <= CONFIG.maxPartChars) return [[a, b]];
+    const mid = (a + b) / 2;
+    let best = -1, bestScore = Infinity;
+    for (let i = a + 50; i < b - 40; i++) {
+      const c = src[i];
+      const w = c === ';' ? 0 : c === ':' ? 1 : (c === ',' || c === '–' || c === '—') ? 2 : -1;
+      if (w < 0 || !isWs(src[i + 1] || '')) continue;
+      const score = Math.abs(i - mid) + w * 20;
+      if (score < bestScore) { bestScore = score; best = i + 1; }
+    }
+    if (best < 0) {
+      for (let d = 0; d < (b - a) / 2 && best < 0; d++) {
+        for (const i of [Math.floor(mid) + d, Math.floor(mid) - d]) if (isWs(src[i])) { best = i; break; }
+      }
+    }
+    if (best < 0) return [[a, b]];
+    let e1 = best; while (e1 > a && isWs(src[e1 - 1])) e1--;
+    let s2 = best; while (s2 < b && isWs(src[s2])) s2++;
+    return [...splitParts(a, e1), ...splitParts(s2, b)];
+  };
+  return out.map((s, i) => ({
+    i, start: s.start, end: s.end, paraEnd: s.paraEnd,
+    text: src.slice(s.start, s.end),
+    parts: splitParts(s.start, s.end).map(([a, b]) => speechVersion(src, a, b))
+  }));
+}
+
+function speechVersion(src, a, b) {
+  let speech = '';
+  const map = [];
+  for (let i = a; i < b; i++) {
+    const c = src[i];
+    if (c === '\u00ad') continue;                                   // weicher Trennstrich
+    if (c === '-' && /[A-Za-zÄÖÜäöüß]/.test(src[i - 1] || '')) {   // Silbentrennung am Zeilenende
+      const m = /^-[ \t]*\n\s*(?=[a-zäöüß])/.exec(src.slice(i, b));
+      if (m) { i += m[0].length - 1; continue; }
+    }
+    if (/\s/.test(c)) {
+      if (speech.endsWith(' ')) continue;
+      speech += ' '; map.push(i); continue;
+    }
+    speech += c; map.push(i);
+  }
+  map.push(b);
+  return { start: a, end: b, speech, map };
+}
+
+/* =====================================================================
+   Anzeige
+   ===================================================================== */
+const ui = { src: '', sentences: [], spans: [], curIdx: -1, wordSpan: -1 };
+
+function applyText() {
+  ui.src = $('src').value;
+  ui.sentences = segment(ui.src);
+  const view = $('view');
+  view.textContent = '';
+  ui.spans = [];
+  let pos = 0;
+  for (const s of ui.sentences) {
+    if (s.start > pos) view.appendChild(document.createTextNode(ui.src.slice(pos, s.start)));
+    const span = document.createElement('span');
+    span.className = 's';
+    span.dataset.i = s.i;
+    span.textContent = s.text;
+    view.appendChild(span);
+    ui.spans.push(span);
+    pos = s.end;
+  }
+  if (pos < ui.src.length) view.appendChild(document.createTextNode(ui.src.slice(pos)));
+  const ok = view.textContent === ui.src;
+  $('integrity').textContent = ok ? `✓ Anzeige identisch mit Original · ${ui.sentences.length} Sätze` : '✗ Anzeige weicht vom Original ab!';
+  $('integrity').className = ok ? 'hint' : 'hint warn';
+  if (!ok) log('Textprüfung fehlgeschlagen: Anzeige ≠ Original', 'error');
+  ui.curIdx = -1; ui.wordSpan = -1;
+  updateProgress(0);
+  $('nowText').textContent = '–';
+}
+
+function clearWord() {
+  if (ui.wordSpan >= 0 && ui.spans[ui.wordSpan]) ui.spans[ui.wordSpan].textContent = ui.sentences[ui.wordSpan].text;
+  ui.wordSpan = -1;
+}
+
+function markSentence(i) {
+  clearWord();
+  if (ui.curIdx >= 0 && ui.spans[ui.curIdx]) ui.spans[ui.curIdx].classList.remove('cur');
+  ui.curIdx = i;
+  if (i < 0 || !ui.spans[i]) { $('nowText').textContent = '–'; updateProgress(i < 0 ? 0 : i); return; }
+  const span = ui.spans[i];
+  span.classList.add('cur');
+  $('nowText').textContent = ui.sentences[i].text;
+  const r = span.getBoundingClientRect();
+  if (r.top < 60 || r.bottom > window.innerHeight - 120) span.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  updateProgress(i);
+}
+
+function markWord(i, absStart, absEnd) {
+  const s = ui.sentences[i], span = ui.spans[i];
+  if (!s || !span) return;
+  const a = Math.max(0, absStart - s.start), b = Math.min(s.text.length, absEnd - s.start);
+  if (b <= a) return;
+  span.textContent = '';
+  span.appendChild(document.createTextNode(s.text.slice(0, a)));
+  const mk = document.createElement('mark');
+  mk.className = 'w';
+  mk.textContent = s.text.slice(a, b);
+  span.appendChild(mk);
+  span.appendChild(document.createTextNode(s.text.slice(b)));
+  ui.wordSpan = i;
+}
+
+function updateProgress(i) {
+  const n = ui.sentences.length;
+  $('prog').max = Math.max(1, n);
+  $('prog').value = Math.max(0, i);
+  $('progText').textContent = n ? `Satz ${Math.max(0, i) + 1} / ${n} · ${ctl ? ctl.stateLabel() : ''}` : 'kein Text';
+}
+
+/* =====================================================================
+   Messwerte
+   ===================================================================== */
+const metrics = new Map();
+function M(engine, voice) {
+  const key = engine + '|' + voice;
+  if (!metrics.has(key)) metrics.set(key, { engine, voice, loadMs: null, cached: null, ttfa: [], synthMs: 0, speechSec: 0,
+    audioSec: 0, ok: 0, fail: 0, waits: 0, waitMs: 0, words: 0, errors: [] });
+  return metrics.get(key);
+}
+let renderPending = false;
+function renderMetrics() {
+  if (renderPending) return;
+  renderPending = true;
+  requestAnimationFrame(() => {
+    renderPending = false;
+    const tb = $('metrics').querySelector('tbody');
+    tb.textContent = '';
+    for (const m of metrics.values()) {
+      const tr = document.createElement('tr');
+      const rtf = m.speechSec > 0 ? (m.synthMs / 1000 / m.speechSec).toFixed(2) : '–';
+      const ttfa = m.ttfa.length ? fmtMs(m.ttfa[m.ttfa.length - 1]) + (m.ttfa.length > 1 ? ` (${m.ttfa.length}×)` : '') : '–';
+      const cells = [m.engine, m.voice, fmtMs(m.loadMs), m.cached == null ? '–' : (m.cached ? 'ja' : 'nein'), ttfa, rtf,
+        m.audioSec ? m.audioSec.toFixed(0) + ' s' : '–', m.ok, m.fail, m.waits ? `${m.waits} (${fmtMs(m.waitMs)})` : '0',
+        m.engine.startsWith('A') ? (m.words ? m.words + ' Events' : 'keine') : 'n. v.'];
+      for (const c of cells) { const td = document.createElement('td'); td.textContent = c; tr.appendChild(td); }
+      tb.appendChild(tr);
+    }
+  });
+}
+function metricsText() {
+  const lines = ['Hörlabor Messwerte · ' + new Date().toLocaleString('de-DE'), 'Gerät: ' + $('env').textContent, ''];
+  for (const m of metrics.values()) {
+    const rtf = m.speechSec > 0 ? (m.synthMs / 1000 / m.speechSec).toFixed(2) : '–';
+    lines.push(`${m.engine} | ${m.voice} | Laden ${fmtMs(m.loadMs)} | Cache ${m.cached == null ? '–' : m.cached ? 'ja' : 'nein'} | ` +
+      `Zeit bis Ton ${m.ttfa.map(fmtMs).join(', ') || '–'} | RTF ${rtf} | Audio ${m.audioSec.toFixed(0)} s | ok ${m.ok} | Fehler ${m.fail} | ` +
+      `Wartepausen ${m.waits} (${fmtMs(m.waitMs)}) | Wortgrenzen ${m.words}`);
+    for (const e of m.errors.slice(-10)) lines.push('   Fehler: ' + e);
+  }
+  lines.push('', 'Protokoll:', $('log').innerText.split('\n').slice(-60).join('\n'));
+  return lines.join('\n');
+}
+
+/* =====================================================================
+   Engine A: Web Speech API
+   Einheitliche Schnittstelle:
+     load(voiceId, onProgress) -> {loadMs, cached}
+     speak(sentence, cb) -> Promise (resolve am Satzende, reject bei Fehler/{cancelled})
+       cb.onStart(), cb.onWord(absStart, absEnd), cb.onWait(ms), cb.onSynth(synthMs, speechSec), cb.onAudio(sec)
+     pause(), resume(), stop(), prefetch(sentences)
+     pauseMode: 'native' | 'restart'
+   ===================================================================== */
+class WebSpeechEngine {
+  constructor() {
+    this.id = 'webspeech';
+    this.label = 'A · Web Speech API (Browser-Stimmen)';
+    this.synth = window.speechSynthesis || null;
+    this.voice = null;
+    this.all = [];
+    this.cur = null;
+    this.paused = false;
+    this.pauseMode = IS_ANDROID ? 'restart' : 'native';   // Android: pause()/resume() unzuverlässig
+    this.needsLoad = false;
+    this.t0 = now();
+    this.voicesReadyMs = null;
+  }
+  available() { return !!(this.synth && window.SpeechSynthesisUtterance); }
+  score(v) {
+    let s = 0;
+    if (/natural|neural|online/i.test(v.name)) s += 100;
+    if (/premium/i.test(v.name)) s += 80;
+    if (/enhanced|erweitert|verbessert/i.test(v.name)) s += 60;
+    if (/google/i.test(v.name)) s += 30;
+    if (/^(anna|helena|markus|petra|yannick|katja|conrad|hedda|stefan)/i.test(v.name)) s += 15;
+    if (/^de[-_]DE$/i.test(v.lang)) s += 5;
+    if (v.localService) s += 3;
+    return s;
+  }
+  loadVoices() {
+    if (!this.available()) return Promise.resolve([]);
+    return new Promise((resolve) => {
+      let done = false, tries = 0;
+      const finish = () => {
+        const vs = this.synth.getVoices() || [];
+        if (done || (!vs.length && tries < 20)) return false;
+        done = true;
+        this.all = vs;
+        if (this.voicesReadyMs == null) this.voicesReadyMs = now() - this.t0;
+        resolve(vs);
+        return true;
+      };
+      // Safari: kein addEventListener auf speechSynthesis -> Property verwenden
+      try { this.synth.onvoiceschanged = () => finish(); } catch (e) {}
+      const poll = () => { tries++; if (!finish()) setTimeout(poll, 200); };
+      poll();
+    });
+  }
+  voices() {
+    const de = this.all.filter(v => /^de/i.test(v.lang)).sort((a, b) => this.score(b) - this.score(a));
+    const list = de.length ? de : this.all;
+    return list.map(v => ({ id: v.voiceURI + '|' + v.name, voice: v,
+      label: `${v.name} (${v.lang})${v.localService ? '' : ' · Cloud'}${v.default ? ' · Standard' : ''}` }));
+  }
+  async load(voiceId) {
+    if (!this.all.length) await this.loadVoices();
+    const v = this.voices().find(x => x.id === voiceId) || this.voices()[0];
+    this.voice = v ? v.voice : null;
+    return { loadMs: this.voicesReadyMs, cached: null, name: this.voice ? this.voice.name : '(Systemstandard)' };
+  }
+  clearTimers() { clearTimeout(this.watchdog); clearInterval(this.keepAlive); this.watchdog = null; this.keepAlive = null; }
+  arm(textLeft, onTimeout) {
+    clearTimeout(this.watchdog);
+    if (this.paused) return;
+    this.watchdog = setTimeout(onTimeout, 8000 + textLeft.length * 140);
+  }
+  speak(sentence, cb) {
+    const synth = this.synth;
+    return new Promise((resolve, reject) => {
+      const token = {};
+      this.cur = { token, resolve, reject };
+      this.paused = false;
+      let k = 0;
+      const fail = (err) => {
+        if (!this.cur || this.cur.token !== token) return;
+        this.clearTimers(); this.cur = null;
+        reject(err);
+      };
+      const timeout = () => {
+        if (!this.cur || this.cur.token !== token) return;
+        if (this.paused) return;
+        try { synth.cancel(); } catch (e) {}
+        fail(new Error('Zeitüberschreitung: Stimme hat Satz nicht beendet (kein end-Event)'));
+      };
+      const speakPart = () => {
+        if (!this.cur || this.cur.token !== token) return;
+        if (k >= sentence.parts.length) { this.clearTimers(); this.cur = null; resolve(); return; }
+        const p = sentence.parts[k];
+        const u = new SpeechSynthesisUtterance(p.speech);
+        u.lang = (this.voice && this.voice.lang) || 'de-DE';
+        if (this.voice) u.voice = this.voice;
+        u.rate = 1; u.pitch = 1; u.volume = 1;
+        this.cur.u = u;                         // Referenz halten (Safari verliert sonst Events)
+        let tStart = 0;
+        u.onstart = () => {
+          if (!this.cur || this.cur.token !== token) return;
+          tStart = now();
+          if (k === 0) cb.onStart();
+          this.arm(p.speech, timeout);
+        };
+        u.onboundary = (e) => {
+          if (!this.cur || this.cur.token !== token) return;
+          if (e.name && e.name !== 'word') return;
+          const ci = e.charIndex || 0;
+          let len = e.charLength;
+          if (!len) { const mm = /^[^\s]+/.exec(p.speech.slice(ci)); len = mm ? mm[0].length : 0; }
+          const mm2 = /[,.;:!?…)"“”»«]+$/.exec(p.speech.slice(ci, ci + len));
+          if (mm2 && mm2[0].length < len) len -= mm2[0].length;
+          const oa = p.map[Math.min(ci, p.map.length - 1)], ob = p.map[Math.min(ci + len - 1, p.map.length - 1)] + 1;
+          cb.onWord(oa, ob);
+          this.arm(p.speech.slice(ci), timeout);
+        };
+        u.onend = () => {
+          if (!this.cur || this.cur.token !== token) return;
+          if (tStart) cb.onAudio((now() - tStart) / 1000);
+          k++; speakPart();
+        };
+        u.onerror = (e) => {
+          const err = (e && e.error) || 'unbekannt';
+          if (err === 'interrupted' || err === 'canceled') return fail({ cancelled: true });
+          fail(new Error('speechSynthesis-Fehler: ' + err));
+        };
+        synth.speak(u);
+        this.arm(p.speech, timeout);
+        // Chrome Desktop + Cloud-Stimmen brechen nach ~15 s ab -> Keep-Alive
+        if (IS_CHROME_DESKTOP && this.voice && !this.voice.localService && !this.keepAlive) {
+          this.keepAlive = setInterval(() => { if (synth.speaking && !synth.paused) { synth.pause(); synth.resume(); } }, 10000);
+        }
+      };
+      speakPart();
+    });
+  }
+  pause() { this.paused = true; clearTimeout(this.watchdog); this.synth.pause(); }
+  resume() {
+    this.paused = false;
+    this.synth.resume();
+    if (this.cur) {
+      const cur = this.cur;
+      this.watchdog = setTimeout(() => {
+        if (this.cur === cur && !this.paused) { try { this.synth.cancel(); } catch (e) {} this.clearTimers(); this.cur = null; cur.reject(new Error('Zeitüberschreitung nach Fortsetzen')); }
+      }, 30000);
+    }
+  }
+  stop() {
+    const c = this.cur;
+    this.cur = null; this.paused = false;
+    this.clearTimers();
+    try { this.synth.cancel(); } catch (e) {}
+    if (c) c.reject({ cancelled: true });
+  }
+  prefetch() {}
+  unload() { this.stop(); }
+}
+
+/* =====================================================================
+   Engine B: Piper (VITS, ONNX Runtime Web + espeak-ng-Phonemizer als WASM)
+   Läuft komplett in einem Web Worker, damit die Oberfläche flüssig bleibt.
+   ===================================================================== */
+function piperWorkerMain() {
+  let ort = null, session = null, cfg = null, phon = null, printed = null, C = {};
+  const queue = [];
+  let busy = false;
+  const post = (m, t) => self.postMessage(m, t || []);
+
+  async function cachedFetch(url, label) {
+    let cache = null;
+    if (self.caches && C.useCache) {
+      try {
+        cache = await caches.open(C.cacheName);
+        const hit = await cache.match(url);
+        if (hit) {
+          const buf = await hit.arrayBuffer();
+          post({ type: 'progress', label, loaded: buf.byteLength, total: buf.byteLength, cached: true });
+          return { buf, cached: true };
+        }
+      } catch (e) { post({ type: 'log', level: 'warn', msg: 'Cache nicht nutzbar: ' + e.message }); cache = null; }
+    }
+    const res = await fetch(url, { mode: 'cors' });
+    if (!res.ok) throw new Error(label + ': HTTP ' + res.status);
+    const total = +res.headers.get('Content-Length') || 0;
+    const chunks = [];
+    let loaded = 0, lastPost = 0;
+    if (res.body && res.body.getReader) {
+      const rd = res.body.getReader();
+      for (;;) {
+        const { done, value } = await rd.read();
+        if (done) break;
+        chunks.push(value); loaded += value.length;
+        if (Date.now() - lastPost > 250) { lastPost = Date.now(); post({ type: 'progress', label, loaded, total }); }
+      }
+    } else { const b = new Uint8Array(await res.arrayBuffer()); chunks.push(b); loaded = b.length; }
+    post({ type: 'progress', label, loaded, total: total || loaded });
+    const blob = new Blob(chunks);
+    chunks.length = 0;
+    if (cache) {
+      try { await cache.put(url, new Response(blob, { headers: { 'Content-Type': 'application/octet-stream' } })); }
+      catch (e) { post({ type: 'log', level: 'warn', msg: label + ' konnte nicht gecacht werden: ' + e.message }); }
+    }
+    return { buf: await blob.arrayBuffer(), cached: false };
+  }
+
+  async function init(m) {
+    C = m;
+    const t0 = performance.now();
+    importScripts(m.ortBase + 'ort.wasm.min.js');
+    importScripts(m.phonBase + 'piper_phonemize.js');
+    ort = self.ort;
+    const threads = self.crossOriginIsolated ? Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1)) : 1;
+    ort.env.wasm.numThreads = threads;
+    ort.env.wasm.wasmPaths = m.ortBase;
+    // ONNX-Runtime-WASM (~10 MB) lädt ORT selbst über wasmPaths; Browser-HTTP-Cache genügt (versionierte CDN-URL).
+    const phWasm = await cachedFetch(m.phonBase + 'piper_phonemize.wasm', 'Phonemizer (WASM)');
+    const phData = await cachedFetch(m.phonBase + 'piper_phonemize.data', 'Phonemizer-Daten (espeak-ng)');
+    const cj = await cachedFetch(m.configUrl, 'Stimmen-Konfiguration');
+    cfg = JSON.parse(new TextDecoder().decode(cj.buf));
+    const model = await cachedFetch(m.modelUrl, 'Stimmenmodell');
+    phon = await self.createPiperPhonemize({
+      print: (d) => { printed = d; },
+      printErr: (e) => post({ type: 'log', level: 'warn', msg: 'espeak: ' + e }),
+      wasmBinary: phWasm.buf,
+      getPreloadedPackage: () => phData.buf,
+      locateFile: (u) => m.phonBase + u
+    });
+    const tSess = performance.now();
+    session = await ort.InferenceSession.create(new Uint8Array(model.buf), { executionProviders: ['wasm'], graphOptimizationLevel: 'all' });
+    post({ type: 'ready', loadMs: performance.now() - t0, sessionMs: performance.now() - tSess, cached: model.cached,
+      sampleRate: cfg.audio.sample_rate, threads, numSpeakers: cfg.num_speakers, espeakVoice: cfg.espeak.voice,
+      modelBytes: model.buf.byteLength });
+  }
+
+  function phonemize(text) {
+    printed = null;
+    phon.callMain(['-l', cfg.espeak.voice, '--input', JSON.stringify([{ text }]), '--espeak_data', '/espeak-ng-data']);
+    if (!printed) throw new Error('Phonemizer lieferte kein Ergebnis');
+    return JSON.parse(printed).phoneme_ids;
+  }
+
+  async function synth(m) {
+    const t0 = performance.now();
+    const sr = cfg.audio.sample_rate;
+    const pcs = [];
+    let speech = 0;
+    for (let k = 0; k < m.parts.length; k++) {
+      const ids = phonemize(m.parts[k]);
+      const feeds = {
+        input: new ort.Tensor('int64', BigInt64Array.from(ids.map(BigInt)), [1, ids.length]),
+        input_lengths: new ort.Tensor('int64', BigInt64Array.from([BigInt(ids.length)]), [1]),
+        scales: new ort.Tensor('float32', Float32Array.from([cfg.inference.noise_scale, cfg.inference.length_scale, cfg.inference.noise_w]), [3])
+      };
+      if (cfg.num_speakers > 1) feeds.sid = new ort.Tensor('int64', BigInt64Array.from([BigInt(m.speakerId || 0)]), [1]);
+      const out = await session.run(feeds);
+      const pcm = (out.output || out[session.outputNames[0]]).data;
+      pcs.push(pcm); speech += pcm.length;
+      if (k < m.parts.length - 1) pcs.push(new Float32Array(Math.round(sr * 0.12)));
+    }
+    pcs.push(new Float32Array(Math.round(sr * m.padSec)));
+    const total = pcs.reduce((a, p) => a + p.length, 0);
+    const all = new Float32Array(total);
+    let o = 0;
+    for (const p of pcs) { all.set(p, o); o += p.length; }
+    // WAV (16 bit mono)
+    const n = all.length, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+    const w = (off, s) => { for (let i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)); };
+    w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    w(36, 'data'); v.setUint32(40, n * 2, true);
+    for (let i = 0, p = 44; i < n; i++, p += 2) { const s = Math.max(-1, Math.min(1, all[i])); v.setInt16(p, s < 0 ? s * 0x8000 : s * 0x7fff, true); }
+    post({ type: 'audio', id: m.id, wav: buf, synthMs: performance.now() - t0, speechSec: speech / sr, totalSec: n / sr }, [buf]);
+  }
+
+  async function pump() {
+    if (busy) return;
+    busy = true;
+    while (queue.length) {
+      const m = queue.shift();
+      try { await synth(m); } catch (e) { post({ type: 'error', id: m.id, msg: (e && e.message) || String(e) }); }
+    }
+    busy = false;
+  }
+
+  self.onmessage = async (e) => {
+    const m = e.data;
+    if (m.type === 'init') {
+      try { await init(m); } catch (err) { post({ type: 'init-error', msg: (err && err.message) || String(err) }); }
+    } else if (m.type === 'synth') { queue.push(m); pump(); }
+    else if (m.type === 'drop') { queue.length = 0; }
+  };
+}
+
+class PiperEngine {
+  constructor(audio) {
+    this.id = 'piper';
+    this.label = 'B · Piper Deutsch (lokal im Browser, WASM)';
+    this.audio = audio;
+    this.worker = null;
+    this.loaded = null;      // {voiceId, info}
+    this.loading = null;
+    this.reqs = new Map();   // reqId -> {resolve, reject}
+    this.byIdx = new Map();  // Satzindex -> {promise, done, url}
+    this.seq = 0;
+    this.cur = null;
+    this.pauseMode = 'native';
+    this.needsLoad = true;
+  }
+  available() { return typeof Worker !== 'undefined' && typeof WebAssembly !== 'undefined'; }
+  voices() { return PIPER_VOICES.map(v => ({ id: v.id, label: v.label })); }
+  isLoaded(voiceId) { return this.loaded && this.loaded.voiceId === voiceId; }
+  unload() {
+    this.stop();
+    if (this.worker) { this.worker.terminate(); this.worker = null; }
+    this.dropAll();
+    if (this.loading) this.loading.reject({ cancelled: true });
+    this.loaded = null;
+    this.loading = null;
+  }
+  load(voiceId, onProgress) {
+    if (this.isLoaded(voiceId)) return Promise.resolve(this.loaded.info);
+    if (this.loading && this.loading.voiceId === voiceId) return this.loading.promise;
+    this.unload();
+    const v = PIPER_VOICES.find(x => x.id === voiceId) || PIPER_VOICES[0];
+    const base = CONFIG.hfBase + v.path + '/' + v.id + '.onnx';
+    try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
+    const src = '(' + piperWorkerMain.toString() + ')();';
+    const url = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
+    const worker = new Worker(url);
+    this.worker = worker;
+    this.speakerId = v.speakerId || 0;
+    let rejectLoad;
+    const promise = new Promise((resolve, reject) => {
+      rejectLoad = reject;
+      worker.onmessage = (e) => {
+        const m = e.data;
+        if (m.type === 'progress') onProgress && onProgress(m);
+        else if (m.type === 'log') log('Piper: ' + m.msg, m.level);
+        else if (m.type === 'ready') {
+          URL.revokeObjectURL(url);
+          const info = { loadMs: m.loadMs, cached: m.cached, name: v.id, sampleRate: m.sampleRate, threads: m.threads, sessionMs: m.sessionMs, modelBytes: m.modelBytes };
+          this.loaded = { voiceId: v.id, info };
+          this.loading = null;
+          resolve(info);
+        } else if (m.type === 'init-error') {
+          this.loading = null;
+          reject(new Error(m.msg));
+        } else if (m.type === 'audio' || m.type === 'error') {
+          const r = this.reqs.get(m.id);
+          this.reqs.delete(m.id);
+          if (!r) return;
+          if (m.type === 'audio') r.resolve(m); else r.reject(new Error(m.msg));
+        }
+      };
+      worker.onerror = (e) => {
+        const msg = 'Worker-Fehler: ' + (e.message || 'unbekannt (evtl. Speicher/Netzwerk)');
+        log(msg, 'error');
+        if (this.loading) { this.loading = null; reject(new Error(msg)); }
+        for (const r of this.reqs.values()) r.reject(new Error(msg));
+        this.reqs.clear();
+      };
+      worker.postMessage({ type: 'init', ortBase: CONFIG.ortBase, phonBase: CONFIG.phonBase, modelUrl: base, configUrl: base + '.json',
+        cacheName: CONFIG.cacheName, useCache: !!window.caches && window.isSecureContext });
+    });
+    this.loading = { voiceId: v.id, promise, reject: rejectLoad };
+    return promise;
+  }
+  request(s) {
+    if (this.byIdx.has(s.i)) return this.byIdx.get(s.i);
+    const id = ++this.seq;
+    const entry = { done: false, url: null, res: null };
+    entry.promise = new Promise((resolve, reject) => {
+      this.reqs.set(id, { resolve, reject });
+      this.worker.postMessage({ type: 'synth', id, parts: s.parts.map(p => p.speech), padSec: s.paraEnd ? CONFIG.pausePara : CONFIG.pauseSentence, speakerId: this.speakerId });
+    }).then((m) => {
+      entry.done = true;
+      entry.res = m;
+      if (this.byIdx.get(s.i) !== entry) return m;   // verworfen
+      entry.url = URL.createObjectURL(new Blob([m.wav], { type: 'audio/wav' }));
+      return m;
+    });
+    entry.promise.catch(() => {});
+    this.byIdx.set(s.i, entry);
+    return entry;
+  }
+  prefetch(list) { if (this.worker) for (const s of list) this.request(s); }
+  release(i) {
+    const e = this.byIdx.get(i);
+    if (e) { if (e.url) URL.revokeObjectURL(e.url); this.byIdx.delete(i); }
+  }
+  dropAll() {
+    for (const e of this.byIdx.values()) if (e.url) URL.revokeObjectURL(e.url);
+    this.byIdx.clear();
+    for (const r of this.reqs.values()) r.reject({ cancelled: true });
+    this.reqs.clear();
+    if (this.worker) this.worker.postMessage({ type: 'drop' });
+  }
+  speak(s, cb) {
+    const a = this.audio;
+    return new Promise((resolve, reject) => {
+      const token = {};
+      this.cur = { token, reject };
+      const entry = this.request(s);
+      const tReq = now();
+      const wasDone = entry.done;
+      entry.promise.then((m) => {
+        if (!this.cur || this.cur.token !== token) return;
+        if (!wasDone) cb.onWait(now() - tReq);
+        cb.onSynth(m.synthMs, m.speechSec);
+        a.onplaying = () => { a.onplaying = null; if (this.cur && this.cur.token === token) cb.onStart(); };
+        a.onended = () => {
+          if (!this.cur || this.cur.token !== token) return;
+          this.cur = null;
+          cb.onAudio(m.totalSec);
+          this.release(s.i);
+          resolve();
+        };
+        a.onerror = () => {
+          if (!this.cur || this.cur.token !== token) return;
+          this.cur = null;
+          reject(new Error('Audio-Element-Fehler ' + (a.error ? a.error.code : '')));
+        };
+        a.src = entry.url;
+        const p = a.play();
+        if (p && p.catch) p.catch((err) => {
+          if (!this.cur || this.cur.token !== token) return;
+          this.cur = null;
+          reject(new Error('play() verweigert: ' + err.name + (IS_IOS ? ' (iOS: bitte erneut Play tippen)' : '')));
+        });
+      }, (err) => {
+        if (!this.cur || this.cur.token !== token) return;
+        this.cur = null;
+        this.release(s.i);
+        reject(err);
+      });
+    });
+  }
+  pause() { this.audio.pause(); }
+  resume() { const p = this.audio.play(); if (p && p.catch) p.catch(e => log('Fortsetzen verweigert: ' + e.name, 'warn')); }
+  stop() {
+    const c = this.cur;
+    this.cur = null;
+    const a = this.audio;
+    a.onended = a.onerror = a.onplaying = null;
+    try { a.pause(); } catch (e) {}
+    if (c) c.reject({ cancelled: true });
+  }
+}
+
+/* =====================================================================
+   Steuerung (engine-unabhängig)
+   ===================================================================== */
+const audioEl = new Audio();
+audioEl.preload = 'auto';
+audioEl.setAttribute('playsinline', '');
+let audioUnlocked = false;
+const SILENT_URL = URL.createObjectURL(new Blob([makeWav(new Float32Array(1600), 16000)], { type: 'audio/wav' }));
+function unlockAudio() {
+  // iOS: Audio-Element muss einmal innerhalb einer Nutzer-Geste abgespielt werden
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  try { audioEl.src = SILENT_URL; const p = audioEl.play(); if (p && p.catch) p.catch(() => { audioUnlocked = false; }); } catch (e) { audioUnlocked = false; }
+}
+
+const engines = { webspeech: new WebSpeechEngine(), piper: new PiperEngine(audioEl) };
+
+const ctl = {
+  state: 'idle', cur: 0, gen: 0, firstInRun: false, tPlay: 0,
+  engine() { return engines[$('engineSel').value]; },
+  voiceLabel() {
+    const o = $('voiceSel').selectedOptions[0];
+    return o ? o.textContent.split(' · ').slice(0, this.engine().id === 'piper' ? 2 : 1).join(' · ') : '?';
+  },
+  metrics() { return M(this.engine().label.split(' (')[0], this.voiceLabel()); },
+  stateLabel() { return { idle: 'bereit', playing: 'spielt', paused: 'pausiert', loading: 'lädt …' }[this.state] || this.state; },
+  setState(s) { this.state = s; updateProgress(Math.max(0, ui.curIdx >= 0 ? ui.curIdx : this.cur)); },
+
+  async play() {
+    const eng = this.engine();
+    if (this.state === 'playing' || this.state === 'loading') return;
+    if (eng.id === 'piper') unlockAudio();               // synchron in der Klick-Geste
+    if (this.state === 'paused') {
+      if (eng.pauseMode === 'restart') return this.start(this.cur);
+      eng.resume(); this.setState('playing'); return;
+    }
+    if (ui.src !== $('src').value || !ui.sentences.length) applyText();
+    if (!ui.sentences.length) { log('Kein Text vorhanden.', 'warn'); return; }
+    if (this.cur >= ui.sentences.length) this.cur = 0;
+    if (eng.needsLoad && !eng.isLoaded($('voiceSel').value)) {
+      this.setState('loading');
+      const ok = await loadSelected();
+      if (this.state !== 'loading') return;           // währenddessen Stop gedrückt
+      if (!ok) { this.setState('idle'); return; }
+    }
+    this.start(this.cur);
+  },
+  start(i) {
+    const g = ++this.gen;
+    this.setState('playing');
+    this.firstInRun = true;
+    this.tPlay = now();
+    if (this.engine().id === 'webspeech') { try { speechSynthesis.cancel(); } catch (e) {} }
+    this.loop(i, g);   // erster speak()-Aufruf läuft synchron (wichtig für iOS)
+  },
+  async loop(i, g) {
+    const eng = this.engine();
+    const met = this.metrics();
+    while (i < ui.sentences.length) {
+      if (g !== this.gen) return;
+      this.cur = i;
+      markSentence(i);
+      const s = ui.sentences[i];
+      eng.prefetch(ui.sentences.slice(i + 1, i + 1 + CONFIG.prefetch));
+      const first = this.firstInRun;
+      try {
+        await eng.speak(s, {
+          onStart: () => { if (this.firstInRun) { this.firstInRun = false; met.ttfa.push(now() - this.tPlay); renderMetrics(); } },
+          onWord: (a, b) => { if (g === this.gen) { met.words++; markWord(i, a, b); } },
+          onWait: (ms) => { if (!first && ms > 30) { met.waits++; met.waitMs += ms; log(`Wartepause ${fmtMs(ms)} vor Satz ${i + 1}`, 'warn'); } },
+          onSynth: (ms, sec) => { met.synthMs += ms; met.speechSec += sec; },
+          onAudio: (sec) => { met.audioSec += sec; }
+        });
+        if (g !== this.gen) return;
+        met.ok++;
+      } catch (e) {
+        if (g !== this.gen || (e && e.cancelled)) return;
+        met.fail++;
+        const msg = `Satz ${i + 1}: ${(e && e.message) || e}`;
+        met.errors.push(msg);
+        log(msg, 'error');
+        this.firstInRun = false;
+      }
+      renderMetrics();
+      i++;
+    }
+    if (g !== this.gen) return;
+    this.cur = 0;
+    markSentence(-1);
+    this.setState('idle');
+    log('Ende des Textes erreicht.');
+  },
+  pause() {
+    if (this.state !== 'playing') return;
+    const eng = this.engine();
+    if (eng.pauseMode === 'restart') { this.gen++; eng.stop(); }
+    else eng.pause();
+    this.setState('paused');
+  },
+  stop() {
+    this.gen++;
+    const eng = this.engine();
+    eng.stop();
+    if (eng.dropAll) eng.dropAll();
+    this.cur = 0;
+    markSentence(-1);
+    this.setState('idle');
+  },
+  jump(i) {
+    if (!ui.sentences.length) return;
+    i = Math.max(0, Math.min(ui.sentences.length - 1, i));
+    const eng = this.engine();
+    const wasActive = this.state === 'playing' || this.state === 'paused';
+    this.gen++;
+    eng.stop();
+    if (eng.dropAll) eng.dropAll();
+    this.cur = i;
+    if (wasActive) this.start(i);
+    else { markSentence(i); this.setState('idle'); }
+  }
+};
+
+/* =====================================================================
+   UI-Verdrahtung
+   ===================================================================== */
+async function fillVoices() {
+  const eng = ctl.engine();
+  const sel = $('voiceSel');
+  sel.textContent = '';
+  if (eng.id === 'webspeech') await eng.loadVoices();
+  if (ctl.engine() !== eng) return;                    // Engine wurde inzwischen gewechselt
+  sel.textContent = '';
+  const vs = eng.voices();
+  for (const v of vs) { const o = document.createElement('option'); o.value = v.id; o.textContent = v.label; sel.appendChild(o); }
+  if (!vs.length) { const o = document.createElement('option'); o.textContent = '(keine Stimmen gefunden)'; o.value = ''; sel.appendChild(o); }
+  $('btnLoad').hidden = eng.id !== 'piper';
+  $('btnClearCache').hidden = eng.id !== 'piper';
+  if (eng.id === 'webspeech') {
+    await eng.load(sel.value);
+    const de = eng.all.filter(v => /^de/i.test(v.lang)).length;
+    $('loadStatus').textContent = `${eng.all.length} Browser-Stimmen, davon ${de} deutsch · Stimmenliste nach ${fmtMs(eng.voicesReadyMs)} verfügbar.` +
+      (IS_IOS ? ' iPhone: Bessere Stimmen unter Einstellungen › Bedienungshilfen › Gesprochene Inhalte › Stimmen › Deutsch laden (z. B. „Anna (Premium)“), danach Seite neu laden.' : '');
+    if (ctl.engine() === eng) ctl.metrics().loadMs = eng.voicesReadyMs;
+  } else {
+    $('loadStatus').textContent = 'Modell wird beim ersten Laden aus dem Internet geholt (Hugging Face) und danach im Browser gespeichert.';
+  }
+  renderMetrics();
+}
+
+async function loadSelected() {
+  const eng = ctl.engine();
+  const vid = $('voiceSel').value;
+  if (eng.id !== 'piper') { await eng.load(vid); return true; }
+  const st = $('loadStatus');
+  const tUi = now();
+  const parts = {};
+  st.textContent = 'Lade …';
+  try {
+    const info = await eng.load(vid, (p) => {
+      parts[p.label] = p;
+      st.textContent = Object.values(parts).map(x => `${x.label}: ${x.cached ? 'aus Cache' : (x.total ? Math.round(100 * x.loaded / x.total) + ' %' : fmtMB(x.loaded))}`).join(' · ');
+    });
+    const met = ctl.metrics();
+    met.loadMs = info.loadMs; met.cached = info.cached;
+    st.textContent = `Geladen: ${info.name} · ${fmtMs(info.loadMs)} (davon Initialisierung inkl. ONNX Runtime ${fmtMs(info.sessionMs)}) · ${info.sampleRate} Hz · Threads: ${info.threads}` +
+      ` · Modell ${info.cached ? 'aus Cache' : 'heruntergeladen'} (${fmtMB(info.modelBytes)})`;
+    log(`Piper geladen: ${info.name} in ${fmtMs(info.loadMs)} (UI ${fmtMs(now() - tUi)}), Cache: ${info.cached ? 'ja' : 'nein'}`);
+    renderMetrics();
+    showEnv();
+    return true;
+  } catch (e) {
+    if (e && e.cancelled) return false;
+    st.textContent = 'Laden fehlgeschlagen: ' + (e.message || e);
+    log('Piper laden fehlgeschlagen: ' + (e.message || e), 'error');
+    const met = ctl.metrics(); met.errors.push('Laden: ' + (e.message || e)); met.fail++;
+    renderMetrics();
+    return false;
+  }
+}
+
+async function showEnv() {
+  const parts = [
+    IS_IOS ? 'iOS' : IS_ANDROID ? 'Android' : 'Desktop',
+    'Kerne: ' + (navigator.hardwareConcurrency || '?'),
+    navigator.deviceMemory ? 'RAM ≈ ' + navigator.deviceMemory + ' GB' : null,
+    'crossOriginIsolated: ' + (self.crossOriginIsolated ? 'ja' : 'nein'),
+    'Cache API: ' + (window.caches && window.isSecureContext ? 'ja' : 'nein (nur über https)'),
+    'WebAssembly: ' + (typeof WebAssembly === 'object' ? 'ja' : 'nein'),
+    'speechSynthesis: ' + (window.speechSynthesis ? 'ja' : 'nein')
+  ];
+  try {
+    if (navigator.storage && navigator.storage.estimate) {
+      const est = await navigator.storage.estimate();
+      parts.push('Speicher belegt: ' + fmtMB(est.usage || 0) + ' / frei ≈ ' + fmtMB((est.quota || 0) - (est.usage || 0)));
+    }
+    if (navigator.storage && navigator.storage.persisted) parts.push('dauerhaft: ' + ((await navigator.storage.persisted()) ? 'ja' : 'nein'));
+  } catch (e) {}
+  $('env').textContent = parts.filter(Boolean).join(' · ') + ' · ' + UA;
+}
+
+function setupEngines() {
+  const sel = $('engineSel');
+  for (const key of Object.keys(engines)) {
+    const e = engines[key];
+    const o = document.createElement('option');
+    o.value = key;
+    o.textContent = e.label + (e.available() ? '' : ' – in diesem Browser nicht verfügbar');
+    o.disabled = !e.available();
+    sel.appendChild(o);
+  }
+  const optC = document.createElement('option');
+  optC.disabled = true;
+  optC.textContent = 'C · Pocket TTS Deutsch – in Phase 1 nicht eingebaut (siehe PROJECT_STATE.md)';
+  sel.appendChild(optC);
+  if (!engines.webspeech.available()) sel.value = 'piper';
+}
+
+$('btnSample').onclick = () => { ctl.stop(); $('src').value = SAMPLE_TEXT; applyText(); };
+$('btnApply').onclick = () => { ctl.stop(); applyText(); };
+$('btnPlay').onclick = () => ctl.play();
+$('btnPause').onclick = () => ctl.pause();
+$('btnStop').onclick = () => ctl.stop();
+$('btnNext').onclick = () => ctl.jump(ctl.cur + 1);
+$('view').onclick = (e) => {
+  const sp = e.target.closest('.s');
+  if (sp) ctl.jump(+sp.dataset.i);
+};
+$('engineSel').onchange = async () => {
+  ctl.stop();
+  for (const k of Object.keys(engines)) if (engines[k] !== ctl.engine() && engines[k].unload) engines[k].unload();
+  await fillVoices();
+};
+$('voiceSel').onchange = async () => {
+  ctl.stop();
+  const eng = ctl.engine();
+  if (eng.id === 'webspeech') { await eng.load($('voiceSel').value); renderMetrics(); }
+  else $('loadStatus').textContent = 'Stimme gewechselt – „Stimme laden“ oder Play tippen.';
+};
+$('btnLoad').onclick = () => { ctl.stop(); loadSelected(); };
+$('btnClearCache').onclick = async () => {
+  ctl.stop();
+  engines.piper.unload();
+  try { const ok = await caches.delete(CONFIG.cacheName); log(ok ? 'Modell-Cache gelöscht.' : 'Kein Modell-Cache vorhanden.'); }
+  catch (e) { log('Cache löschen fehlgeschlagen: ' + e.message, 'warn'); }
+  $('loadStatus').textContent = 'Cache gelöscht. Nächstes Laden lädt neu herunter.';
+  showEnv();
+};
+$('btnCopy').onclick = async () => {
+  const t = metricsText();
+  try { await navigator.clipboard.writeText(t); $('copyMsg').textContent = 'kopiert ✓'; }
+  catch (e) {
+    const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); $('copyMsg').textContent = 'kopiert ✓'; } catch (e2) { $('copyMsg').textContent = 'Kopieren nicht möglich'; }
+    ta.remove();
+  }
+};
+
+// Diagnose: Verhalten bei Bildschirmsperre / App-Wechsel protokollieren
+document.addEventListener('visibilitychange', () => log(`Seite ${document.hidden ? 'verborgen' : 'sichtbar'} (Status: ${ctl.stateLabel()})`));
+audioEl.addEventListener('stalled', () => ctl.state === 'playing' && log('Audio: stalled', 'warn'));
+
+// Sperrbildschirm-/Kopfhörer-Tasten (soweit vom Browser unterstützt)
+if ('mediaSession' in navigator) {
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({ title: 'Hörlabor', artist: 'Stimmen-Testlabor' });
+    navigator.mediaSession.setActionHandler('play', () => ctl.play());
+    navigator.mediaSession.setActionHandler('pause', () => ctl.pause());
+    navigator.mediaSession.setActionHandler('nexttrack', () => ctl.jump(ctl.cur + 1));
+  } catch (e) {}
+}
+
+window.addEventListener('error', (e) => log('JS-Fehler: ' + e.message, 'error'));
+window.addEventListener('unhandledrejection', (e) => { if (!(e.reason && e.reason.cancelled)) log('Unbehandelt: ' + ((e.reason && e.reason.message) || e.reason), 'error'); });
+
+// Start
+setupEngines();
+$('src').value = SAMPLE_TEXT;
+applyText();
+fillVoices();
+showEnv();
+log('Bereit. ' + (location.protocol === 'file:' ? 'Hinweis: Als lokale Datei geöffnet – Modell-Cache funktioniert nur über https.' : ''));
+</script>
+</body>
+</html>
