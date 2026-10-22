@@ -50,7 +50,18 @@
   .foot label.opt { margin: 0; min-height: 44px; font-size: .9rem; gap: 8px; }
   .foot label.opt input { width: 22px; height: 22px; }
   .foot button.link { border: none; background: none; color: var(--accent); font-size: .9rem; padding: 8px 0 8px 8px; margin: 0; min-height: 44px; }
-  .verrow { text-align: right; line-height: 1; }
+  .verrow { display: flex; justify-content: space-between; align-items: center; line-height: 1; }
+  .verrow button.link { border: none; background: none; color: var(--accent); font-size: .85rem; padding: 0; margin: 0; min-height: 26px; }
+  button.chip { font-size: .85rem; padding: 6px 12px; min-height: 36px; margin: 0; border-radius: 18px; background: #fff; color: var(--accent); border-color: #c9d4f3; font-weight: 600; }
+  .og { padding: 12px 0; border-bottom: 1px solid #f0ede7; display: flex; flex-direction: column; gap: 2px; }
+  .og small { color: var(--muted); font-size: .85rem; }
+  .og .seg { margin: 8px 0 0; }
+  .seg button small, .og .seg button small { display: block; font-size: .78rem; font-weight: 400; opacity: .85; color: inherit; }
+  #optModal .tg { border-bottom: 1px solid #f0ede7; }
+  #optModal .primary { margin-top: 14px; }
+  .foot { flex-wrap: nowrap; gap: 8px; }
+  .foot label.opt { font-size: .85rem; gap: 6px; flex: 1 1 auto; min-width: 0; }
+  .foot button.chip { flex: none; font-size: .8rem; padding: 6px 10px; }
   .modal { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 50; display: flex; align-items: flex-end; justify-content: center; }
   .sheet { background: #fff; width: 100%; max-width: 760px; max-height: 88vh; overflow: auto; border-radius: 18px 18px 0 0; padding: 14px 16px calc(16px + env(safe-area-inset-bottom)); }
   .sheet-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 1.05rem; }
@@ -169,7 +180,7 @@
     <label class="tg"><span class="tx"><b>Natürlichere Satzteilung</b><small>Lange Sätze werden nur an Nebensatz-Grenzen geteilt (vor „dass“, „weil“, „die“ …) und seltener.</small></span><input type="checkbox" class="sw" id="fxSplit"></label>
     <label class="tg"><span class="tx"><b>Pausen nach Satzzeichen</b><small>Komma kurz, Semikolon mittel, Frage und Absatz länger – ohne doppelte Pausen.</small></span><input type="checkbox" class="sw" id="fxPause"></label>
     <label class="tg"><span class="tx"><b>Wärmer</b><small>Scharfe Zischlaute etwas leiser, Stimme etwas voller – nicht dumpf.</small></span><input type="checkbox" class="sw" id="fxWarm"></label>
-    <label class="tg"><span class="tx"><b>Tempo leicht variieren <em>(Test)</em></b><small>Jeder Satz minimal schneller oder langsamer (±2,5 %) – gegen Gleichtakt.</small></span><input type="checkbox" class="sw" id="fxVary"></label>
+    <label class="tg"><span class="tx"><b>Natürliche Betonung von Einschüben</b><small>Klammern und Quellen etwas schneller und leiser („beiseite“), Überschriften etwas langsamer mit mehr Luft.</small></span><input type="checkbox" class="sw" id="fxAside"></label>
     <div class="btns"><button id="btnPolishReset" class="soft">↺ Feinschliff auf Standard</button></div>
   </div></details>
 
@@ -222,10 +233,23 @@
   </div>
   <div class="foot">
     <label class="opt"><input type="checkbox" class="sw" id="optSkip"> Quellenangaben überspringen</label>
-    <button id="btnList" class="link">Gemeldete Wörter (0)</button>
+    <button id="btnOpts" class="chip">Vorlese-Optionen</button>
   </div>
-  <div class="verrow"><span class="ver" id="ver"></span></div>
+  <div class="verrow"><button id="btnList" class="link">Gemeldete Wörter (0)</button><span class="ver" id="ver"></span></div>
 </div></div>
+
+<!-- v0.6.1 Vorlese-Optionen -->
+<div id="optModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="optTitle">
+  <div class="sheet">
+    <div class="sheet-h"><b id="optTitle">Vorlese-Optionen</b><button id="optClose" class="x" aria-label="Schließen">✕</button></div>
+    <label class="tg"><span class="tx"><b>Quellenangaben überspringen</b><small>„(Müller 2019, S. 12)“ wird nicht vorgelesen und im Text grau angezeigt.</small></span><input type="checkbox" class="sw" id="optSkip2"></label>
+    <div class="og"><b>Gesetzesangaben</b><small>Wie Kürzel wie „SGB“, „GG“ oder „BGB“ gesprochen werden.</small>
+      <div class="seg" id="segLaws"><button data-v="abbr">Kürzel<small>„S G B acht“</small></button><button data-v="full">Ausgeschrieben<small>„Sozialgesetzbuch acht“</small></button></div></div>
+    <div class="og"><b>Gender-Formen</b><small>Wie „Expert*innen“ oder „Klient:innen“ gesprochen werden.</small>
+      <div class="seg" id="segGender"><button data-v="knack">Knacklaut<small>ein Wort, ohne Pause</small></button><button data-v="pause">Deutliche Pause<small>wie bisher</small></button></div></div>
+    <button id="optDone" class="primary">Fertig</button>
+  </div>
+</div>
 
 <!-- Wort melden -->
 <div id="flagModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="flagTitle">
@@ -265,7 +289,7 @@
    Konfiguration (alle externen Quellen, Versionen fest angepinnt)
    ===================================================================== */
 const CONFIG = {
-  version: 'v0.6 · Klang-Feinschliff',
+  version: 'v0.6.1 · Aussprache-Runde',
   ortBase:  'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/',
   phonBase: 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/',
   hfBase:   'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/de/de_DE/',
@@ -280,9 +304,13 @@ const CONFIG = {
 // v0.6: gespeicherte Einstellungen (Stimme, Regler, Feinschliff) – nur auf diesem Gerät
 const SOUND_KEY = 'hoerlabor-stimme-v1';
 const SAVED = (() => { try { return JSON.parse(localStorage.getItem(SOUND_KEY) || '{}') || {}; } catch (e) { return {}; } })();
-// Klang-Feinschliff (PROJECT_STATE.md 8f): 1 Lautstärke, 2 Übergänge, 3 Satzteilung, 4 Pausenstaffel, 5 wärmer, 6 Tempo-Variation
-const POLISH_DEFAULT = { norm: true, fade: true, split: true, pause: true, warm: true, vary: false };
+// Klang-Feinschliff (PROJECT_STATE.md 8f/8g): 1 Lautstärke, 2 Übergänge, 3 Satzteilung, 4 Pausenstaffel, 5 wärmer,
+// 6 natürliche Betonung von Einschüben (v0.6.1; ersetzt die zufällige Tempo-Variation)
+const POLISH_DEFAULT = { norm: true, fade: true, split: true, pause: true, warm: true, aside: true };
 const polish = Object.assign({}, POLISH_DEFAULT, SAVED.polish || {});
+delete polish.vary;
+// v0.6.1 Vorlese-Optionen (Clara-Ansicht): Quellen überspringen, Gesetzeskürzel, Gender-Aussprache
+const readOpts = Object.assign({ skip: false, laws: 'abbr', gender: 'knack' }, SAVED.read || {});
 
 // v0.5 Klang-Voreinstellungen für Piper/Thorsten (length = length_scale: >1 langsamer; noise = noise_scale: Lebendigkeit
 // der Stimme; noiseW = noise_w: Rhythmus-Variation; Pausen in Sekunden: gap = zwischen Satzteilen langer Sätze,
@@ -316,7 +344,11 @@ Bereits in den 1990er Jahren wurde untersucht, wie sich Ganztagsangebote auf den
 
 Die Ergebnisse gelten jedoch u. U. nur eingeschränkt, da die Daten überwiegend im 20. Jh. erhoben wurden (ebd.). Weitere Befunde finden sich in Abb. 3 und Tab. 2 bzw. in Kap. 4 der 3. Aufl. des Handbuchs (Hrsg. Prof. Dr. Weber), insb. auf S. 12–15. Nach § 3 des Schulgesetzes vom 12.03.2020 dürfen ggf. auch Student*innen als Hilfskräfte eingesetzt werden, i. d. R. jedoch nur mit Zustimmung der Schulleitung, der Eltern usw. Hinweise zur Haftung enthält Nr. 5 der Verordnung u. a. für Ausflüge, Praktika etc. Kosten → Förderantrag, s. u. sowie ebd., S. 12.
 
-Im 3. Semester (Wintersemester 2025/26) befassen sich Sozialarbeiter*innen mit der Psychologie des Kompetenzerlebens und der Selbstbestimmungstheorie. Nach § 8a Abs. 1 S. 2 SGB VIII ist bei einer Kindeswohlgefährdung das Jugendamt zuständig; vgl. auch Art. 6 GG sowie §§ 27 ff. SGB VIII. Die sog. Lebensweltorientierung, Resilienz, Partizipation und Empowerment gehören zum Grundwissen der Sozialpädagogik.`;
+Im 3. Semester (Wintersemester 2025/26) befassen sich Sozialarbeiter*innen mit der Psychologie des Kompetenzerlebens und der Selbstbestimmungstheorie. Nach § 8a Abs. 1 S. 2 SGB VIII ist bei einer Kindeswohlgefährdung das Jugendamt zuständig; vgl. auch Art. 6 GG sowie §§ 27 ff. SGB VIII. Die sog. Lebensweltorientierung, Resilienz, Partizipation und Empowerment gehören zum Grundwissen der Sozialpädagogik.
+
+2.4 Fallbeispiel (v0.6.1)
+
+Rund 63 % der 1.024 befragten Expert*innen und Klient:innen hielten es für nötig, die Lage frühzeitig einzuschätzen und Ganztagsangebote anzubieten (vgl. Weber 2021, S. 23–25). Defizite zeigten sich vor allem beim Schutzauftrag nach § 8a Abs. 1 S. 2 SGB VIII, bei der Inobhutnahme und im Tripelmandat der Sozialen Arbeit (siehe auch Art. 6 GG). Die StudentInnen bewerteten den Beratungsansatz im Durchschnitt mit 3,5 Punkten; im 21. Jahrhundert wird das Angebot weiter wachsen.`;
 
 const SAMPLE_START =
 `2 Theoretischer Rahmen (fiktiver Beispieltext)
@@ -615,14 +647,38 @@ function segment(src) {
     const sm = sectionMark(src, u.start, u.end);
     if (sm) { marks.push(sm); u.paraEnd = true; }             // Überschrift: deutliche Pause danach
   }
+  // v0.6.1 (Feinschliff „Natürliche Betonung von Einschüben“): Inhalte in runden Klammern – auch gelesene Quellenangaben –
+  // werden eigene Sprech-Teile (aside), damit sie etwas schneller und leiser („beiseite“) gesprochen werden können.
+  // Übersprungene Quellen bleiben im normalen Teil (sie werden ohnehin nicht gesprochen).
+  const trimR = (a, b) => { while (a < b && isWs(src[a])) a++; while (b > a && isWs(src[b - 1])) b--; return [a, b]; };
+  const hasWord = (a, b) => /[\p{L}\d]/u.test(src.slice(a, b));
+  const asideRanges = (a, b, skips) => {
+    const plain = (x, y, aside) => splitParts(...trimR(x, y)).map(r => [r[0], r[1], aside]);
+    if (!polish.aside || !speechOpts.help) return plain(a, b, false);
+    const out = [];
+    let pos = a;
+    for (let i = a; i < b; i++) {
+      if (src[i] !== '(' || skips.some(r => r.start === i)) continue;
+      let d = 0, j = i;
+      for (; j < b; j++) { if (src[j] === '(') d++; else if (src[j] === ')' && --d === 0) break; }
+      if (j >= b) break;
+      if (!hasWord(i + 1, j)) { i = j; continue; }
+      if (hasWord(pos, i)) out.push(...plain(pos, i, false));
+      out.push(...plain(i, j + 1, true));
+      pos = j + 1; i = j;
+    }
+    if (!out.length) return plain(a, b, false);
+    if (pos < b) { if (hasWord(pos, b)) out.push(...plain(pos, b, false)); else out[out.length - 1][1] = trimR(pos, b)[1]; }
+    return out;
+  };
   return units.map((s, i) => {
     const cits = findCitations(src, s.start, s.end);
     const skips = speechOpts.skipCitations ? cits : [];
-    const ranges = splitParts(s.start, s.end);
+    const ranges = asideRanges(s.start, s.end, skips);
     return {
       i, start: s.start, end: s.end, paraEnd: s.paraEnd, head: s.head,
       text: src.slice(s.start, s.end), cits, skips,
-      parts: ranges.map(([a, b], k) => speechVersion(src, a, b, { help: speechOpts.help, skips, cits, marks, isLast: k === ranges.length - 1 }))
+      parts: ranges.map(([a, b, aside], k) => Object.assign(speechVersion(src, a, b, { help: speechOpts.help, skips, cits, marks, isLast: k === ranges.length - 1 }), { aside }))
     };
   });
 }
@@ -682,6 +738,120 @@ function ordinal(n, ending) {                 // ending: 'e' | 'en' | 'er'
     stem = (high ? cardinal(high) : '') + base;
   }
   return stem + ending;
+}
+
+/* ---------- v0.6.1: Zahlen für Piper als EIN Wort mit deutscher Betonung ----------
+   espeak liest „63“ als zwei Wörter („drei undsechzig“) und „1.024“ als vier Stücke mit mehreren Hauptbetonungen.
+   Hier werden Zahlen in Bestandteile zerlegt (drei|und|sechzig) und als ein Wort an Piper gegeben:
+   Hauptbetonung auf dem ersten Glied der letzten Zahlgruppe („DREIundsechzig“, „eintausendVIERundzwanzig“,
+   „neunzehnhundertNEUNzig“), alle anderen Glieder nur Nebenbetonung, „und“ unbetont.
+   Die Sprechfassung für Web Speech (Systemstimme) bleibt unverändert (Ziffern). */
+function toks100(n, one) {
+  if (n < 20) return [n === 1 ? one : NUM_ONES[n]];
+  const t = Math.floor(n / 10), u = n % 10;
+  return u ? [u === 1 ? 'ein' : NUM_ONES[u], '~und', NUM_TENS[t]] : [NUM_TENS[t]];
+}
+function toks1000(n, one) {
+  const h = Math.floor(n / 100), r = n % 100, t = [];
+  if (h) t.push(h === 1 ? 'ein' : NUM_ONES[h], 'hundert');
+  if (r) t.push(...toks100(r, one));
+  return t;
+}
+function numToks(n) {                                  // 0 … 999 999, sonst null (dann liest espeak wie bisher)
+  if (!(n >= 0 && n < 1e6) || n !== Math.floor(n)) return null;
+  if (n === 0) return { toks: ['null'], prim: 0 };
+  const th = Math.floor(n / 1000), r = n % 1000, toks = [];
+  if (th) toks.push(...toks1000(th, 'ein'), 'tausend');
+  const rStart = toks.length;
+  if (r) toks.push(...toks1000(r, 'eins'));
+  const prim = r % 100 ? toks.length - toks100(r % 100, 'eins').length : r ? rStart : 0;
+  return { toks, prim };
+}
+function yearToks(n) {                                 // 1100–1999: „neunzehn|hundert|neunzig“
+  if (!(n >= 1100 && n < 2000)) return numToks(n);
+  const r = n % 100, toks = [NUM_ONES[Math.floor(n / 100)], 'hundert'];
+  if (r) toks.push(...toks100(r, 'eins'));
+  return { toks, prim: r ? toks.length - toks100(r, 'eins').length : 0 };
+}
+function ordToks(n, ending) {                          // „dreiundzwanzigsten“ → drei|und|zwanzigsten
+  const t = numToks(n);
+  if (!t) return null;
+  const last = t.toks[t.toks.length - 1].replace(/^~/, '');
+  const st = { eins: 'erst', ein: 'erst', drei: 'dritt', sieben: 'siebt', acht: 'acht' }[last]
+    || (/(?:zig|ßig|hundert|tausend)$/.test(last) ? last + 'st' : last + 't');
+  t.toks[t.toks.length - 1] = st + ending;
+  return t;
+}
+const tokText = (t) => t.toks.map(x => x.replace(/^~/, '')).join('');
+// Wörterbuch-Format für Piper: ⟦Wort=teil|!teil|~teil⟧ (! = Hauptbetonung, ~ = unbetont)
+function tokSpec(t, word) { return '⟦' + (word || tokText(t)) + '=' + t.toks.map((x, k) => (k === t.prim ? '!' : '') + x).join('|') + '⟧'; }
+function numPh(str) {                                  // Ziffernfolge (auch „1.024“) → Piper-Wort, sonst null
+  const n = +String(str).replace(/\./g, '');
+  const t = /^1[1-9]\d\d$/.test(str) ? yearToks(n) : numToks(n);
+  return t ? tokSpec(t) : null;
+}
+function numSay(str) {                                 // für Regeln, die ausgeschriebene Zahlen liefern
+  const ph = numPh(str);
+  return ph ? { text: numWords(String(str).replace(/\./g, '')), ph } : numWords(str);
+}
+// Buchstaben (für Kürzel „SGB“ und „8a“) – Lautschrift wie espeak, ohne eigene Betonung
+const LETTER_IPA = { a: 'ɑː', b: 'beː', c: 'tseː', d: 'deː', e: 'eː', f: 'ɛf', g: 'ɡeː', h: 'hɑː', i: 'iː', j: 'jɔt', k: 'kɑː', l: 'ɛl',
+  m: 'ɛm', n: 'ɛn', o: 'oː', p: 'peː', q: 'kuː', r: 'ɛɾ', s: 'ɛs', t: 'teː', u: 'uː', v: 'faʊ', w: 'veː', x: 'ɪks', y: 'ypsilɔn', z: 'tsɛt' };
+// Kürzel als EIN Wort mit Hauptbetonung auf dem letzten Buchstaben: SGB → ɛsɡeːbˈeː
+function spellPh(abbr) {
+  const ls = [...abbr.toLowerCase()].filter(ch => LETTER_IPA[ch]).map(ch => LETTER_IPA[ch]);
+  const last = ls.pop() || '';
+  const v = last.search(/[aeiouyɑɛɪɔʊəɜøœɐ]/);
+  return '/' + ls.join('') + (v < 0 ? last : last.slice(0, v) + 'ˈ' + last.slice(v));
+}
+
+/* ---------- v0.6.1: Gesetzeskürzel – „Kürzel“ (S G B, Standard) oder „Ausgeschrieben“ (Vorlese-Optionen) ---------- */
+const LAW_FULL = {
+  'UN-BRK': 'UN-Behindertenrechtskonvention', 'BRK': 'Behindertenrechtskonvention', 'SGB': 'Sozialgesetzbuch', 'BGB': 'Bürgerliches Gesetzbuch',
+  'GG': 'Grundgesetz', 'StGB': 'Strafgesetzbuch', 'StPO': 'Strafprozessordnung', 'ZPO': 'Zivilprozessordnung',
+  'KJHG': 'Kinder- und Jugendhilfegesetz', 'BTHG': 'Bundesteilhabegesetz', 'BKiSchG': 'Bundeskinderschutzgesetz',
+  'KKG': 'Gesetz zur Kooperation und Information im Kinderschutz', 'JGG': 'Jugendgerichtsgesetz', 'KJSG': 'Kinder- und Jugendstärkungsgesetz'
+};
+const LAW_RE = new RegExp('(?<![\\p{L}\\d-])(' + Object.keys(LAW_FULL).join('|') + ')(?![\\p{L}\\d])', 'uy');
+// Ausgeschriebene Wörter für Piper durch das Wörterbuch schicken (z. B. „Sozial|gesetzbuch“)
+function phWords(text) {
+  return text.split(' ').map(w => { if (w === 'UN-Behindertenrechtskonvention') return '⟦UN=' + spellPh('UN') + '⟧ Behindertenrechtskonvention';
+    const p = pronounceWord(w); return p ? '⟦' + p + '⟧' : w; }).join(' ');
+}
+function lawSay(m, c) {
+  const k = m[1];
+  if (readOpts.laws !== 'full') return { piper: k + '=' + spellPh(k) };
+  let full = LAW_FULL[k];
+  const prev = (/(\p{L}+)\s*$/u.exec(c.src.slice(Math.max(0, c.pos - 12), c.pos)) || [])[1] || '';
+  if (/^(?:des|dem|im|vom|zum|beim|den)$/i.test(prev)) full = full.replace(/^Bürgerliches/, 'Bürgerlichen');
+  if (/^des$/i.test(prev)) full = full.replace(/gesetz$/, 'gesetzes').replace(/buch$/, 'buchs');
+  return { text: full, ph: phWords(full) };
+}
+
+/* ---------- v0.6.1: Gender-Aussprache – „Knacklaut“ (Standard) oder „Deutliche Pause“ (wie bis v0.6) ----------
+   Thorstens Lautinventar kennt kein eigenes Knacklaut-Zeichen (espeak-Deutsch erzeugt es nie). „Knacklaut“ heißt hier:
+   ein Wort mit EINER Betonung, vor „innen“ nur eine Wortgrenze ohne Pause und ohne neue Betonung → harter Einsatz
+   wie im Radio („ɛkspˈɛɾt ɪnən“). „Deutliche Pause“ = bisheriges Verhalten (zwei betonte Wörter). */
+const GENDER_IPA = { in: 'ɪn', innen: 'ɪnən', inne: 'ɪnə' };
+function genderSay(word, base, suf) {
+  if (readOpts.gender === 'pause') return null;
+  const p = pronounceWord(base);
+  return { piper: word + '=' + (p ? p.slice(p.indexOf('=') + 1) : base) + '|/ ' + GENDER_IPA[suf] };
+}
+
+/* ---------- v0.6.1: „zu“-Infinitive trennbarer Verben (einzuschätzen, anzubieten, festzuschreiben …) ----------
+   espeak liest „zu“ lang und mit Nebenbetonung. Hier: Vorsilbe mit Hauptbetonung, „zu“ kurz und unbetont (tsʊ),
+   Verb mit Nebenbetonung. Nur kleingeschriebene Wörter, die auf -en/-ern/-eln enden. */
+const ZU_PREFIX = { zusammen: 'tsuːzˈamən', zurück: 'tsuːrˈyk', voraus: 'foːrˈaʊs', vorbei: 'foːɾbˈaɪ', voran: 'foːɾˈan', hervor: 'hɛɾfˈoːɾ',
+  herbei: 'hɛɾbˈaɪ', heraus: 'hɛrˈaʊs', herein: 'hɛrˈaɪn', herum: 'hɛrˈʊm', hinaus: 'hɪnˈaʊs', hinein: 'hɪnˈaɪn', hinzu: 'hɪntsˈuː',
+  nieder: 'nˈiːdɜ', weiter: 'vˈaɪtɜ', wieder: 'vˈiːdɜ', kennen: 'kˈɛnən', statt: 'ʃtˈat', fest: 'fˈɛst', fort: 'fˈɔɾt', frei: 'frˈaɪ',
+  teil: 'tˈaɪl', dar: 'dˈɑːɾ', auf: 'ˈaʊf', aus: 'ˈaʊs', bei: 'bˈaɪ', ein: 'ˈaɪn', her: 'hˈeːɾ', hin: 'hˈɪn', los: 'lˈoːs', mit: 'mˈɪt',
+  nach: 'nˈɑːx', vor: 'fˈoːɾ', weg: 'vˈɛk', ab: 'ˈap', an: 'ˈan', um: 'ˈʊm', zu: 'tsˈuː' };
+const ZU_INF = new RegExp('^(' + Object.keys(ZU_PREFIX).join('|') + ')zu([a-zäöüß]{2,}(?:en|ern|eln))$');
+function zuInfinitive(word) {
+  const m = ZU_INF.exec(word);
+  if (!m || ZU_PREFIX[m[1] + 'zu']) return null;          // „hinzufügen“ = hinzu + fügen (kein zu-Infinitiv)
+  return word + '=!/' + ZU_PREFIX[m[1]] + '|~/tsʊ|' + m[2];
 }
 
 /* ---------- Beugung von Ordinalzahlen: nur in sicheren Kontexten ---------- */
@@ -776,7 +946,7 @@ const PRON_DICT = [
   ['Devianz',                  'deːvjˈants',                   '',                 'W'],
   ['Sucht',                    'zˈʊxt',                        '',                 'WH'],
   ['Menschenrechtsprofession', 'mˈɛnʃənrɛçtspɾoːfɛsjˌoːn',     '',                 'W'],
-  ['Inobhutnahme',             'ɪnˈɔphuːtnɑːmə',               'n:n',              'W'],
+  ['Inobhutnahme',             'ɪn ˈɔphuːtnˌɑːmə',             'n:n',              'W'],   // v0.6.1: Wortgrenze vor „ob“ = harter Einsatz
   ['Schulsozialarbeit',        'ʃˈuːlzoːtsjɑːlˌaɾbaɪt',        '',                 'W'],
   ['Akzeptanz',                'aktsɛptˈants',                 '',                 'W'],
   ['Signifikanz',              'zɪɡniːfiːkˈants',              '',                 'W'],
@@ -801,6 +971,32 @@ const PRON_DICT = [
   ['Übernahme',                'ˈyːbɜnɑːmə',                   'n:n',              'W'],
   ['Bachelor',                 'bˈɛtʃəlɜ',                     's:s',              'WH'],
   ['Level',                    'lˈɛvəl',                       's:s',              'W'],
+  // v0.6.1: aus Benjamins Meldungen
+  ['Defizit',                  'dˈeːfiːtsɪt',                  'e:ə en:ən s:s',    'WT'],
+  ['Expert',                   'ɛkspˈɛɾt',                     'e:ə en:ən in:ɪn innen:ɪnən', 'WT'],
+  ['Tripelmandat',             'tɾˌiːpəlmandˈɑːt',             'e:ə s:s',          'W'],
+  ['Doppelmandat',             'dˌɔpəlmandˈɑːt',               'e:ə s:s',          'W'],
+  // v0.6.1: Zweitglieder mit Vokal-Anfang (Ganztags|angebote, Beratungs|ansatz …): Wortgrenze vor dem Zweitglied →
+  // Fugen-s bleibt stimmlos, harter Einsatz; nur großgeschriebene Wörter, erster Teil ≥ 4 Buchstaben (Kennung S)
+  ['Angebot',                  ' ˈanɡəboːt',                   'e:ə en:ən s:s es:əs', 'TS'],
+  ['Ansatz',                   ' ˈanzats',                     'es:əs',            'TS'],
+  ['Ansätze',                  ' ˈanzɛtsə',                    'n:n',              'TS'],
+  ['Anspruch',                 ' ˈanʃpɾʊx',                    's:s es:əs',        'TS'],
+  ['Ansprüche',                ' ˈanʃpɾyçə',                   'n:n',              'TS'],
+  ['Aufgabe',                  ' ˈaʊfɡɑːbə',                   'n:n',              'TS'],
+  ['Auftrag',                  ' ˈaʊftɾɑːk',                   's:s es:əs',        'TS'],
+  ['Aufträge',                 ' ˈaʊftɾɛːɡə',                  'n:n',              'TS'],
+  ['Ausbildung',               ' ˈaʊsbɪldʊŋ',                  'en:ən',            'TS'],
+  ['Alltag',                   ' ˈaltɑːk',                     's:s e:ə es:əs',    'TS'],
+  ['Einrichtung',              ' ˈaɪnrɪçtʊŋ',                  'en:ən',            'TS'],
+  ['Entwicklung',              ' ɛntvˈɪklʊŋ',                  'en:ən',            'TS'],
+  ['Ergebnis',                 ' ɛɾɡˈeːpnɪs',                  'se:sə sen:sən ses:səs', 'TS'],
+  ['Erfahrung',                ' ɛɾfˈɑːrʊŋ',                   'en:ən',            'TS'],
+  ['Umfeld',                   ' ˈʊmfɛlt',                     's:s es:əs',        'TS'],
+  ['Ebene',                    ' ˈeːbənə',                     'n:n',              'TS'],
+  ['Interesse',                ' ɪntəɾˈɛsə',                   'n:n',              'TS'],
+  ['Analyse',                  ' analˈyːzə',                   'n:n',              'TS'],
+  ['Einkommen',                ' ˈaɪnkɔmən',                   's:s',              'TS'],
   // v0.5: aus Claras Test
   ['Transfer',                 'tɾansfˈeːɾ',                   's:s',              'WT'],
   // v0.5: Zweitglieder mit st/sp – espeak liest an der Wortfuge oft „s-t“/„s-p“ statt „scht“/„schp“
@@ -873,6 +1069,7 @@ function fugenSplit(w) {
 // Format: "Wort=teil|teil" – teil = "/Lautschrift" oder ein Wort, das espeak einzeln liest; "!" = Hauptbetonung.
 function pronounceWord(word) {
   const lw = word.toLowerCase();
+  if (word === lw) { const zi = zuInfinitive(word); if (zi) return zi; }
   if (PRON.whole.has(lw)) return word + '=/' + PRON.whole.get(lw);
   if (word.includes('-')) {                                   // „Empowerment-Ansatz“, „Care-Arbeit“ (falls nicht als Ganzes eingetragen)
     const subs = word.split('-').filter(Boolean);
@@ -935,9 +1132,13 @@ const SPEECH_RULES = [
   // Datum TT.MM.JJJJ → „zwölften dritten zweitausendzwanzig“
   { name: 'Datum', re: /(?<![\p{L}\d.])(\d{1,2})\.(\d{1,2})\.(\d{4})(?!\d)/uy,
     say: (m, c) => { const d = +m[1], mo = +m[2]; if (d < 1 || d > 31 || mo < 1 || mo > 12) return null;
-      const e = c.ordEnding() || 'er'; return ordinal(d, e) + ' ' + ordinal(mo, e) + ' ' + yearWords(+m[3]); } },
+      const e = c.ordEnding() || 'er';
+      return { text: ordinal(d, e) + ' ' + ordinal(mo, e) + ' ' + yearWords(+m[3]),
+        ph: tokSpec(ordToks(d, e)) + ' ' + tokSpec(ordToks(mo, e)) + ' ' + numPh(m[3]) }; } },
   // Gesetzesangaben: „§§“, „Art. 3“, „S.“ = Satz innerhalb einer Paragrafen-/Artikel-/Absatz-Angabe
   { name: '§§', re: /§§\s?/uy, say: 'Paragrafen ' },
+  // v0.6.1: einzelnes „§“ für Piper als Wort „Paragraf“ (Anzeige/Systemstimme unverändert)
+  { name: '§', re: /§\s?(?=\d)/uy, say: () => ({ raw: 'Paragraf ' }) },
   { name: 'Art. (Artikel)', re: /(?<![\p{L}])Art\.\s?(?=\d)/uy, say: 'Artikel ' },
   { name: 'S. (Satz)', re: /(?<=(?:§§?\s?|Art\.\s?|Abs\.\s?)\d+[a-z]?(?:\s?(?:Abs\.|Nr\.|Ziff\.)\s?\d+[a-z]?)*\s?)S\.\s?(?=\d)/uy, say: 'Satz ' },
   // Römische Zahlen nur nach sicheren Wörtern: „SGB VIII“ → „S G B acht“, „Teil II“, „Band III“
@@ -954,20 +1155,41 @@ const SPEECH_RULES = [
     say: out })),
   // Bereiche mit Bis-Strich oder Bindestrich zwischen Zahlen: „1990–2010“, „12–15“
   { name: 'Bereich', re: /(?<![\p{L}\d.,])(\d{1,4})\s?[–-]\s?(\d{1,4})(?![\d]|[.,]\d)/uy,
-    say: (m) => numWords(m[1]) + ' bis ' + numWords(m[2]) },
+    say: (m) => { const a = numSay(m[1]), b = numSay(m[2]);
+      return typeof a === 'object' && typeof b === 'object' ? { text: a.text + ' bis ' + b.text, ph: a.ph + ' bis ' + b.ph } : numWords(m[1]) + ' bis ' + numWords(m[2]); } },
   // Jahrzehnte „1990er“
-  { name: 'Jahrzehnt', re: /(?<![\p{L}\d.,])(1[1-9]\d\d|20\d\d)er(?![\p{L}])/uy, say: (m) => yearWords(+m[1]) + 'er' },
+  { name: 'Jahrzehnt', re: /(?<![\p{L}\d.,])(1[1-9]\d\d|20\d\d)er(?![\p{L}])/uy,
+    say: (m) => { const t = yearToks(+m[1]); t.toks[t.toks.length - 1] += 'er'; return { text: yearWords(+m[1]) + 'er', ph: tokSpec(t) }; } },
   // Jahreszahlen 1100–1999 („eintausend neunhundert…“ → „neunzehnhundert…“)
-  { name: 'Jahr 1100–1999', re: /(?<![\p{L}\d.,])(1[1-9]\d\d)(?!\d|[.,]\d)/uy, say: (m) => yearWords(+m[1]) },
+  { name: 'Jahr 1100–1999', re: /(?<![\p{L}\d.,])(1[1-9]\d\d)(?!\d|[.,]\d)/uy, say: (m) => numSay(m[1]) },
   // Ordinalzahlen „20.“ vor einem Wort – nur bei sicherer Beugung
   { name: 'Ordinalzahl', re: /(?<![\p{L}\d.,])(\d{1,3})\.(?=\s+\p{L})/uy,
-    say: (m, c) => { const e = c.ordEnding(); if (!e) return null; c.lastOrd = { end: c.pos + m[0].length, ending: e }; return ordinal(+m[1], e); } },
+    say: (m, c) => { const e = c.ordEnding(); if (!e) return null; c.lastOrd = { end: c.pos + m[0].length, ending: e };
+      return { text: ordinal(+m[1], e), ph: tokSpec(ordToks(+m[1], e)) }; } },
+  // v0.6.1: alle übrigen Zahlen für Piper als ein Wort (63, 1.024, 3,5, 8a, 63 %); Systemstimme liest weiter die Ziffern
+  { name: 'Zahl', re: /(?<![\p{L}\d.,])(\d{1,3}(?:\.\d{3})+|\d{1,6})(?:,(\d{1,4}))?([a-z])?(?![\p{L}\d]|[.,]\d)(\s?%)?/uy,
+    say: (m) => {
+      if (/^0\d/.test(m[1])) return null;
+      const t = numToks(+m[1].replace(/\./g, ''));
+      if (!t) return null;
+      if (m[3]) { t.toks.push('/' + LETTER_IPA[m[3]]); }                     // „8a“ → acht a, eine Betonung
+      let ph = tokSpec(t, m[1].replace(/\D/g, '') + (m[3] || ''));
+      if (m[2]) ph += ' Komma ' + [...m[2]].map(d => NUM_ONES[+d]).join(' ');
+      if (m[4]) ph += ' Prozent';
+      return { raw: ph };
+    } },
   // Zeichen
   { name: '~ vor Zahl', re: /~\s?(?=\d)/uy, say: 'zirka ' },
   { name: 'Pfeil', re: /[→⇒]/uy, say: ', ' },
   // Gender-Zeichen („Klient:innen“, „Student*innen“, auch Tippfehler „…:inne“): Piper bekommt eine Wortgrenze
   // (= kurze Gender-Pause wie bisher), damit Wörterbuch-Wörter davor („Klient“) sauber erkannt werden.
+  // v0.6.1 Gender „Knacklaut“ (Standard): ganzes Wort, eine Betonung, harter Einsatz ohne Pause; Binnen-I genauso
+  { name: 'Gender (Knacklaut)', re: /(?<![\p{L}])(\p{L}+)[:*_](in(?:nen|ne)?)(?![\p{L}])/uy, say: (m) => genderSay(m[0], m[1], m[2]) },
+  { name: 'Binnen-I', re: /(?<![\p{L}])(\p{Lu}\p{Ll}+)(In(?:nen)?)(?![\p{L}])/uy, say: (m) => genderSay(m[0], m[1], m[2].toLowerCase()) },
+  // „Deutliche Pause“ (wie bis v0.6): Gender-Zeichen wird zur Wortgrenze
   { name: 'Gender-Zeichen', re: /(?<=\p{L})[:*_](?=in(?:nen|ne)?(?![\p{L}]))/uy, say: () => ({ raw: ' ' }) },
+  // v0.6.1 Gesetzeskürzel: „Kürzel“ = ein Wort, Betonung am Ende (ɛsɡeːbˈeː); „Ausgeschrieben“ = Sozialgesetzbuch …
+  { name: 'Gesetzeskürzel', re: LAW_RE, say: lawSay },
   // Wörterbuch: mehrteilige Fachbegriffe („Case Management“) und einzelne Wörter (inkl. Zusammensetzungen)
   ...PRON.multi.map(({ word, ipa }) => ({ name: 'Wörterbuch: ' + word,
     re: new RegExp('(?<![\\p{L}])' + word.split(' ').map(escRe).join('\\s+') + '(?![\\p{L}])', 'uy'),
@@ -1050,7 +1272,9 @@ function speechVersion(src, a, b, opt) {
         ctx.ordEnding = () => ordinalEnding(src, i, ctx);
         const say = typeof r.say === 'function' ? r.say(m, ctx) : r.say;
         if (say == null) continue;
-        if (typeof say === 'object') {                        // Wörterbuch: Original bleibt, Piper bekommt Lautschrift
+        if (typeof say === 'object' && say.text !== undefined) {   // v0.6.1: ausgeschrieben (text) + eigene Piper-Fassung (ph)
+          [...say.text].forEach((ch, k) => out.push({ c: ch, s: i, e: i + m[0].length, gen: true, ph: k === 0 ? say.ph : '' }));
+        } else if (typeof say === 'object') {                 // Wörterbuch: Original bleibt, Piper bekommt Lautschrift
           for (let k = 0; k < m[0].length; k++) {
             const ch = /\s/.test(m[0][k]) ? ' ' : m[0][k];
             out.push({ c: ch, s: i + k, e: i + k + 1, ph: k === 0 ? (say.raw !== undefined ? say.raw : '⟦' + say.piper + '⟧') : '' });
@@ -1529,15 +1753,23 @@ function piperWorkerMain() {
   // damit espeak Satzmelodie und Nachbarwörter normal behandelt; danach wird der Platzhalter ersetzt.
   const PLACEHOLDER = 'Zwapf', PH_SEQ = ['t', 's', 'v', 'a', 'p', 'f'];
   const SEP = /[\s.,;:!?]/;
+  const partCache = new Map();                         // v0.6.1: einzelne Wortteile/Zahlwörter nur einmal phonemisieren
+  async function partPh(p) {
+    if (!partCache.has(p)) { if (partCache.size > 2000) partCache.clear(); partCache.set(p, (await espeakPh(p)).filter(x => !SEP.test(x))); }
+    return partCache.get(p).slice();
+  }
   async function itemPhonemes(spec) {
     const parts = spec.split('|');
     let primary = parts.findIndex(p => p.startsWith('!'));
     if (primary < 0) primary = 0;
     const res = [];
     for (let k = 0; k < parts.length; k++) {
-      const p = parts[k].replace(/^!/, '');
-      let seq = p.startsWith('/') ? [...p.slice(1).normalize('NFD')] : (await espeakPh(p)).filter(x => !SEP.test(x));
-      if (k !== primary) seq = seq.map(x => x === 'ˈ' ? 'ˌ' : x);
+      let p = parts[k].replace(/^!/, '');
+      const unstressed = p.startsWith('~');             // v0.6.1: „~“ = unbetont (z. B. „und“ in Zahlen, „zu“)
+      if (unstressed) p = p.slice(1);
+      let seq = p.startsWith('/') ? [...p.slice(1).normalize('NFD')] : await partPh(p);
+      if (unstressed) seq = seq.filter(x => x !== 'ˈ' && x !== 'ˌ');
+      else if (k !== primary) seq = seq.map(x => x === 'ˈ' ? 'ˌ' : x);
       else if (!seq.includes('ˈ')) { const si = seq.indexOf('ˌ'); if (si >= 0) seq[si] = 'ˈ'; }
       res.push(...seq);
     }
@@ -1671,7 +1903,8 @@ function piperWorkerMain() {
       const feeds = {
         input: new ort.Tensor('int64', BigInt64Array.from(ids.map(BigInt)), [1, ids.length]),
         input_lengths: new ort.Tensor('int64', BigInt64Array.from([BigInt(ids.length)]), [1]),
-        scales: new ort.Tensor('float32', Float32Array.from(m.scales || [cfg.inference.noise_scale, cfg.inference.length_scale, cfg.inference.noise_w]), [3])
+        scales: new ort.Tensor('float32', Float32Array.from(m.scales ? [m.scales[0], m.lens ? m.lens[k] : m.scales[1], m.scales[2]]
+          : [cfg.inference.noise_scale, cfg.inference.length_scale, cfg.inference.noise_w]), [3])
       };
       if (cfg.num_speakers > 1) feeds.sid = new ort.Tensor('int64', BigInt64Array.from([BigInt(m.speakerId || 0)]), [1]);
       const out = await session.run(feeds);
@@ -1679,7 +1912,9 @@ function piperWorkerMain() {
       if (fx.trim) pcm = trimSil(pcm, sr);
       if (fx.warm) pcm = warm(pcm, sr);
       if (fx.norm) pcm = normalize(pcm, sr);
+      if (m.gains && m.gains[k] !== 1) { const g = m.gains[k]; const y = new Float32Array(pcm.length); for (let i = 0; i < y.length; i++) y[i] = pcm[i] * g; pcm = y; }
       if (fx.fade) pcm = fades(pcm, sr);
+      if (k === 0 && m.leadSec) pcs.push(new Float32Array(Math.round(sr * m.leadSec)));
       pcs.push(pcm); speech += pcm.length;
       if (k < m.parts.length - 1) pcs.push(new Float32Array(Math.round(sr * (m.gaps ? m.gaps[k] : (m.gapSec != null ? m.gapSec : 0.12)))));
     }
@@ -1729,12 +1964,9 @@ function gapFactor(partText) {
   const c = partText.replace(/\s+$/, '').slice(-1);
   return c === ',' ? 0.6 : (c === ';' || c === ':' || c === '–' || c === '—') ? 1.5 : 1;
 }
-// v0.6 Tempo-Variation (Test): fester Faktor je Satz (aus dem Satztext), ±2,5 % – gleicher Satz klingt immer gleich.
-function varyFactor(t) {
-  let h = 2166136261;
-  for (const ch of t) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); }
-  return 1 + 0.025 * (((h >>> 0) % 2001) / 1000 - 1);
-}
+// v0.6.1 Natürliche Betonung: Werte bewusst dezent (Einschub hörbar abgesetzt, aber gut verständlich)
+const ASIDE = { len: 0.93, gain: 0.8 };                 // Klammer-Einschub: ≈ 7 % schneller, ≈ −2 dB
+const HEAD = { len: 1.08, before: 0.25, after: 0.15 };   // Überschrift: ≈ 8 % langsamer, +0,25 s davor, +0,15 s danach
 
 class PiperEngine {
   constructor(audio) {
@@ -1773,9 +2005,13 @@ class PiperEngine {
       if (s.head) pad = Math.max(pad, k.para);
       else if (!s.paraEnd && (e === '?' || e === '!')) pad = +(k.sent * 1.3).toFixed(3);
     }
-    const len = polish.vary ? +(k.length * varyFactor(s.text)).toFixed(4) : k.length;
+    // v0.6.1 Natürliche Betonung: Einschübe (Klammern) 7 % schneller und 2 dB leiser, Überschriften 8 % langsamer + Luft davor
+    const nat = polish.aside;
+    const lens = parts.map(p => +(k.length * (nat && p.aside ? ASIDE.len : 1) * (nat && s.head ? HEAD.len : 1)).toFixed(4));
+    const gains = parts.map(p => (nat && p.aside ? ASIDE.gain : 1));
+    if (nat && s.head) pad = Math.max(pad, k.para + HEAD.after);
     return { type: 'synth', id, parts: parts.map(p => p.piper || p.speech), padSec: pad, gaps, gapSec: k.gap,
-      scales: [k.noise, len, k.noiseW], speakerId: this.speakerId,
+      scales: [k.noise, k.length, k.noiseW], lens, gains, leadSec: nat && s.head && s.i > 0 ? HEAD.before : 0, speakerId: this.speakerId,
       fx: { norm: polish.norm, fade: polish.fade, trim: polish.pause, warm: polish.warm } };
   }
   cacheName() { return CONFIG.cacheName; }
@@ -2200,7 +2436,28 @@ $('btnPaste').onclick = () => {
 };
 $('btnClearText').onclick = () => { ctl.stop(); emptyAndFocus('Feld ist leer – ins Feld tippen → „Einsetzen“, dann ▶'); };
 $('optHelp').onchange = () => { ctl.stop(); speechOpts.help = $('optHelp').checked; applyText(); log('Aussprache-Hilfe ' + (speechOpts.help ? 'an' : 'aus')); };
-$('optSkip').onchange = () => { ctl.stop(); speechOpts.skipCitations = $('optSkip').checked; applyText(); log('Quellenangaben überspringen ' + (speechOpts.skipCitations ? 'an' : 'aus')); };
+$('optSkip').onchange = () => { setSkip($('optSkip').checked); };
+// v0.6.1 Vorlese-Optionen: gespeichert, gelten sofort (Text wird neu aufbereitet)
+function setSkip(on) {
+  ctl.stop(); speechOpts.skipCitations = on; readOpts.skip = on;
+  $('optSkip').checked = on; $('optSkip2').checked = on;
+  applyText(); saveSound(); log('Quellenangaben überspringen ' + (on ? 'an' : 'aus'));
+}
+function showReadOpts() {
+  $('optSkip2').checked = readOpts.skip;
+  for (const b of $('segLaws').children) b.classList.toggle('on', b.dataset.v === readOpts.laws);
+  for (const b of $('segGender').children) b.classList.toggle('on', b.dataset.v === readOpts.gender);
+}
+function setReadOpt(key, v) {
+  if (readOpts[key] === v) return;
+  ctl.stop(); readOpts[key] = v; showReadOpts(); applyText(); saveSound(); log('Vorlese-Option ' + key + ': ' + v);
+}
+$('optSkip2').onchange = () => setSkip($('optSkip2').checked);
+for (const b of $('segLaws').children) b.onclick = () => setReadOpt('laws', b.dataset.v);
+for (const b of $('segGender').children) b.onclick = () => setReadOpt('gender', b.dataset.v);
+$('btnOpts').onclick = () => { showReadOpts(); $('optModal').hidden = false; };
+$('optClose').onclick = $('optDone').onclick = () => { $('optModal').hidden = true; };
+$('optModal').onclick = (e) => { if (e.target.id === 'optModal') $('optModal').hidden = true; };
 $('btnApply').onclick = () => { ctl.stop(); applyText(); };
 $('btnPlay').onclick = () => ctl.toggle();
 $('btnStop').onclick = () => { cmpRun++; cmpBanner(''); ctl.stop(); };
@@ -2472,6 +2729,7 @@ updateFlagCount();
 // Start
 $('ver').textContent = CONFIG.version;
 speechOpts.help = $('optHelp').checked;
+$('optSkip').checked = !!readOpts.skip;
 speechOpts.skipCitations = $('optSkip').checked;
 /* =====================================================================
    v0.6 – Stimme & Klang: Voreinstellungen, Regler, Klang-Feinschliff, Vorher/Nachher
@@ -2494,7 +2752,7 @@ function curSound() {
   return p.sound === 'own' ? ownSound : SOUND_PRESETS[p.sound];
 }
 function saveSound() {
-  try { localStorage.setItem(SOUND_KEY, JSON.stringify({ profile: soundProfile, own: ownSound, polish, wsVoice })); } catch (e) {}
+  try { localStorage.setItem(SOUND_KEY, JSON.stringify({ profile: soundProfile, own: ownSound, polish, wsVoice, read: readOpts })); } catch (e) {}
 }
 const SLIDERS = [   // [id, Feld, Anzeige]
   ['sTempo', 'length', (v) => Math.round(100 / v) + ' %'],
@@ -2570,24 +2828,26 @@ $('profileSel').onchange = () => applyProfile($('profileSel').value);
 $('btnSoundReset').onclick = () => { ownSound = Object.assign({}, SOUND_PRESETS.std); applyProfile('t-std'); };
 
 // Klang-Feinschliff: 6 Schalter (gespeichert). Satzteilung wirkt auf die Aufteilung → Text neu aufbereiten.
-const FX = [['fxNorm', 'norm'], ['fxFade', 'fade'], ['fxSplit', 'split'], ['fxPause', 'pause'], ['fxWarm', 'warm'], ['fxVary', 'vary']];
+const FX = [['fxNorm', 'norm'], ['fxFade', 'fade'], ['fxSplit', 'split'], ['fxPause', 'pause'], ['fxWarm', 'warm'], ['fxAside', 'aside']];
 function showPolish() { for (const [id, key] of FX) $(id).checked = !!polish[key]; }
 for (const [id, key] of FX) {
   $(id).onchange = () => {
     polish[key] = $(id).checked;
     ctl.stop();
-    if (key === 'split' && ui.src) applyText();
+    if ((key === 'split' || key === 'aside') && ui.src) applyText();
     saveSound();
     log('Feinschliff ' + key + ': ' + (polish[key] ? 'an' : 'aus'));
   };
 }
 $('btnPolishReset').onclick = () => { ctl.stop(); Object.assign(polish, POLISH_DEFAULT); showPolish(); if (ui.src) applyText(); saveSound(); log('Feinschliff auf Standard'); };
 
-// Probeabsatz (fiktiv, ≈ 25 s): Fachbegriffe, Jahrzehnt, Quelle, ein langer Satz mit Nebensätzen, Frage, Auslassung.
-const COMPARE_TEXT = 'Die Lebensweltorientierung gehört seit den 1990er Jahren zu den zentralen Konzepten der Sozialen Arbeit ' +
-  '(vgl. Hartmann 2019, S. 23). Fachkräfte fragen deshalb zuerst, wie Menschen ihren Alltag selbst erleben, welche Ressourcen ' +
-  'sie mitbringen und welche Unterstützung sie sich wünschen, bevor gemeinsam Ziele vereinbart werden, die im Alltag der ' +
-  'Klient:innen tatsächlich etwas verändern und nicht nur auf dem Papier stehen. Gelingt das immer? Nicht ganz … aber erstaunlich oft.';
+// Probeabsatz (fiktiv, ≈ 35 s): Überschrift, Fachbegriffe, Jahrzehnt, Quelle und Klammer (Einschub), Gesetzesangabe,
+// zu-Infinitiv, Gender, Fugen-s, Prozentzahl, langer Satz mit Nebensätzen, Frage, Auslassung.
+const COMPARE_TEXT = '2.3 Schutzauftrag in der Praxis\n\n' +
+  'Die Lebensweltorientierung gehört seit den 1990er Jahren zu den zentralen Konzepten der Sozialen Arbeit (vgl. Hartmann 2019, S. 23). ' +
+  'Nach § 8a SGB VIII sind Fachkräfte verpflichtet, das Risiko gemeinsam einzuschätzen, bevor Hilfen vereinbart werden, die im Alltag ' +
+  'der Expert*innen für ihr eigenes Leben tatsächlich etwas verändern (etwa Ganztagsangebote oder Beratung). Rund 63 % der Befragten ' +
+  'sehen hier Defizite. Gelingt das immer? Nicht ganz … aber erstaunlich oft.';
 let cmpRun = 0;
 function cmpBanner(t) { const b = $('cmpBanner'); b.hidden = !t; b.textContent = t || ''; }
 const pause = (ms) => new Promise(z => setTimeout(z, ms));
@@ -2624,7 +2884,7 @@ function runCompare() {
 }
 function runBeforeAfter() {
   const after = FX.some(([, k]) => polish[k]) ? Object.assign({}, polish) : Object.assign({}, POLISH_DEFAULT);
-  const off = { norm: false, fade: false, split: false, pause: false, warm: false, vary: false };
+  const off = { norm: false, fade: false, split: false, pause: false, warm: false, aside: false };
   return runPasses([
     ['Vorher – ohne Feinschliff', async () => { Object.assign(polish, off); }],
     ['Nachher – mit Feinschliff', async () => { Object.assign(polish, after); }]
