@@ -22,6 +22,10 @@
   select { max-width: 100%; }
   button { min-height: 44px; }
   .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
+  .sl { display: grid; grid-template-columns: 9.5em 1fr 4.2em; gap: 8px; align-items: center; margin: 4px 0; font-size: .95rem; }
+  .sl input { width: 100%; }
+  .sl span { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+  .cmpb { margin: 6px 0; padding: 10px 12px; border-radius: 10px; background: #fff7e0; border: 1px solid #e8c766; font-weight: 600; }
   #view { white-space: pre-wrap; word-wrap: break-word; font-size: 19px; line-height: 1.65; padding: 14px; min-height: 3rem; background: #fff; border: 1px solid var(--line); border-radius: 12px; }
   #view .s { cursor: pointer; border-radius: 4px; }
   #view .s.cur { background: var(--cur); box-shadow: 0 0 0 2px var(--cur); }
@@ -95,6 +99,7 @@
 </div>
 <div id="readBox" hidden>
   <div class="row"><button id="btnEdit">✎ Anderen Text einfügen</button></div>
+  <div id="cmpBanner" class="cmpb" hidden></div>
   <div id="view"></div>
 </div>
 
@@ -112,12 +117,28 @@
   <div id="nowText" class="hint">–</div>
   <details id="speechBox"><summary>So wird der aktuelle Satz gesprochen</summary><div id="speechText">–</div></details>
 
-  <h2>Engine &amp; Stimme</h2>
+  <h2>Stimme &amp; Klang</h2>
+  <div class="row"><select id="profileSel" aria-label="Stimme"></select></div>
+  <div class="row"><button id="btnCompare">▶ Vergleich abspielen</button></div>
+  <p class="hint">Die Auswahl wird gespeichert und gilt auch in der normalen Ansicht. „Vergleich abspielen“ ersetzt den Text im Feld durch einen kurzen Probeabsatz (ca. 20 s) und liest ihn nacheinander mit allen Stimmen; oben über dem Text steht, welche gerade läuft. Beim ersten Mal lädt Supertonic ≈ 190 MB (WLAN!).</p>
+  <div id="soundBox">
+    <div class="sl"><label for="sTempo">Tempo</label><input type="range" id="sTempo" min="70" max="130" step="1"><span id="sTempoV"></span></div>
+    <div class="sl"><label for="sNoise">Lebendigkeit</label><input type="range" id="sNoise" min="0.2" max="1" step="0.01"><span id="sNoiseV"></span></div>
+    <div class="sl"><label for="sNoiseW">Rhythmus-Variation</label><input type="range" id="sNoiseW" min="0.2" max="1.3" step="0.01"><span id="sNoiseWV"></span></div>
+    <div class="sl"><label for="sGap">Pause Satzteil</label><input type="range" id="sGap" min="0" max="0.6" step="0.02"><span id="sGapV"></span></div>
+    <div class="sl"><label for="sSent">Pause Satz</label><input type="range" id="sSent" min="0.1" max="1.5" step="0.05"><span id="sSentV"></span></div>
+    <div class="sl"><label for="sPara">Pause Absatz</label><input type="range" id="sPara" min="0.3" max="2.5" step="0.05"><span id="sParaV"></span></div>
+    <div class="row"><button id="btnSoundReset">Zurücksetzen</button><span id="soundHint" class="hint"></span></div>
+  </div>
+  <div class="row"><label class="hint" for="stSteps">Supertonic-Qualität</label>
+    <select id="stSteps"><option value="5">5 Rechenschritte (schneller, Standard)</option><option value="8">8 Rechenschritte (etwas besser, ≈ 1,6× langsamer)</option></select></div>
+
+  <h2>Engine &amp; Stimme (Labor)</h2>
   <div class="row"><select id="engineSel" aria-label="Engine"></select></div>
   <div class="row">
     <select id="voiceSel" aria-label="Stimme"></select>
     <button id="btnLoad">Stimme laden</button>
-    <button id="btnClearCache" title="Gespeicherte Piper-Modelle löschen">Modell-Cache löschen</button>
+    <button id="btnClearCache" title="Gespeicherte Modelle (Piper, Supertonic) löschen">Modell-Cache löschen</button>
   </div>
   <div id="loadStatus" class="hint"></div>
 
@@ -187,7 +208,7 @@
    Konfiguration (alle externen Quellen, Versionen fest angepinnt)
    ===================================================================== */
 const CONFIG = {
-  version: 'v0.4.1 · Aufzählungen',
+  version: 'v0.5 · Stimmenvergleich',
   ortBase:  'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/',
   phonBase: 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/',
   hfBase:   'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/de/de_DE/',
@@ -195,7 +216,21 @@ const CONFIG = {
   maxPartChars: 220,       // längere Sätze werden intern für die Sprachausgabe geteilt
   pauseSentence: 0.30,     // Sekunden Stille nach Satz (Piper)
   pausePara: 0.75,         // Sekunden Stille nach Absatz (Piper)
-  prefetch: 2              // so viele Sätze rechnet Piper voraus
+  prefetch: 2,             // so viele Sätze rechnet die Stimme voraus
+  stCacheName: 'hoerlabor-supertonic-v1',
+  stKeyBase: 'https://cdn.jsdelivr.net/npm/@3sln/donki-lle-voice-multi@0.1.1/hoerlabor/'   // nur Speicher-Schlüssel (Cache)
+};
+
+// v0.5 Klang-Voreinstellungen für Piper/Thorsten (length = length_scale: >1 langsamer; noise = noise_scale: Lebendigkeit
+// der Stimme; noiseW = noise_w: Rhythmus-Variation; Pausen in Sekunden: gap = zwischen Satzteilen langer Sätze,
+// sent = nach jedem Satz, para = nach Absatz/Überschrift).
+const SOUND_PRESETS = {
+  // bisheriges Verhalten (Modell-Standardwerte von Thorsten medium) – Vergleichsbasis
+  std:  { length: 1.00, noise: 0.667, noiseW: 0.80, gap: 0.12, sent: 0.30, para: 0.75 },
+  // für langes Zuhören: etwas langsamer, gleichmäßigere Stimme, längere Pausen zum Mitdenken
+  calm: { length: 1.12, noise: 0.55, noiseW: 0.60, gap: 0.20, sent: 0.50, para: 1.10 },
+  // weniger „Roboter-Takt“: mehr Variation in Klang und Silbenlängen, Tempo minimal schneller
+  live: { length: 0.96, noise: 0.80, noiseW: 1.05, gap: 0.10, sent: 0.28, para: 0.70 }
 };
 
 const PIPER_VOICES = [
@@ -665,6 +700,28 @@ const PRON_DICT = [
   ['Übernahme',                'ˈyːbɜnɑːmə',                   'n:n',              'W'],
   ['Bachelor',                 'bˈɛtʃəlɜ',                     's:s',              'WH'],
   ['Level',                    'lˈɛvəl',                       's:s',              'W'],
+  // v0.5: aus Claras Test
+  ['Transfer',                 'tɾansfˈeːɾ',                   's:s',              'WT'],
+  // v0.5: Zweitglieder mit st/sp – espeak liest an der Wortfuge oft „s-t“/„s-p“ statt „scht“/„schp“
+  // (Familienstand, Mittelstand, Fallstudie, Sprechstunde, Werkstatt …). Nur als Endteil (T) großgeschriebener Wörter;
+  // „S“ = erster Teil mind. 4 Buchstaben und keine unbetonte Vorsilbe (Verstand, Bestand, Vorstand, Beispiel bleiben espeak überlassen).
+  ['Zustand',                  'tsˈuːʃtant',                   's:s es:əs',        'TS'],
+  ['Zustände',                 'tsˈuːʃtɛndə',                  'n:n',              'TS'],
+  ['Stand',                    'ʃtˈant',                       's:s es:əs',        'TS'],
+  ['Stände',                   'ʃtˈɛndə',                      'n:n',              'TS'],
+  ['Stelle',                   'ʃtˈɛlə',                       'n:n',              'TS'],
+  ['Spiel',                    'ʃpˈiːl',                       's:s e:ə en:ən',    'TS'],
+  ['Sprache',                  'ʃpɾˈɑːxə',                     'n:n',              'TS'],
+  ['Studie',                   'ʃtˈuːdɪə',                     'n:n',              'TS'],
+  ['Struktur',                 'ʃtɾʊktˈuːɾ',                   'en:ən',            'TS'],
+  ['Strategie',                'ʃtɾateːɡˈiː',                  'n:n',              'TS'],
+  ['Stunde',                   'ʃtˈʊndə',                      'n:n',              'TS'],
+  ['Stufe',                    'ʃtˈuːfə',                      'n:n',              'TS'],
+  ['Stil',                     'ʃtˈiːl',                       's:s e:ə en:ən',    'TS'],
+  ['Staat',                    'ʃtˈɑːt',                       's:s es:əs en:ən',  'TS'],
+  ['Stoff',                    'ʃtˈɔf',                        's:s e:ə en:ən es:əs', 'TS'],
+  ['Statt',                    'ʃtˈat',                        '',                 'TS'],
+  ['Stätte',                   'ʃtˈɛtə',                       'n:n',              'TS'],
   // Englische Fachbegriffe
   ['Management',               'mˈɛnɪdʒmənt',                  's:s',              'WT'],
   ['Empowerment',              'ɪmpˈaʊɜmənt',                  '',                 'W'],
@@ -694,7 +751,7 @@ const PRON = (() => {
     if (/\s/.test(word)) { multi.push({ word, ipa }); continue; }
     if (use.includes('W')) for (const [e, ei] of ends) whole.set(key + e, ipa + ei);
     if (use.includes('H')) heads.push({ key, ipa });
-    if (use.includes('T')) tails.push({ key, ipa, ends, primary: use.includes('!') });
+    if (use.includes('T')) tails.push({ key, ipa, ends, primary: use.includes('!'), noPrefix: use.includes('S') });
   }
   heads.sort((x, y) => y.key.length - x.key.length);
   return { whole, heads, tails, multi };
@@ -740,6 +797,7 @@ function pronounceWord(word) {
     const k = t.key + e;
     if (lc.endsWith(k) && core.length - k.length >= 3 && (!tail || k.length > tail.len)) {
       if (t.primary && !/[bcdfghjklmnpqrstvwxzß]$/i.test(core.slice(0, core.length - k.length)) && t.key === 'alität') continue;
+      if (t.noPrefix && (core.length - k.length < 4 || /^(?:be|ge|ver|ent|er|zer|emp|miss|unter|über)$/i.test(core.slice(0, core.length - k.length)))) continue;
       tail = { len: k.length, ipa: t.ipa + ei, primary: t.primary };
     }
   }
@@ -817,7 +875,9 @@ const SPEECH_RULES = [
     say: (m) => { const p = pronounceWord(m[0]); return p ? { piper: p } : null; } },
   // Klammern und Anführungszeichen: nicht sprechen, kurze Pause
   { name: 'Klammer', re: /[()[\]]/uy, say: ', ' },
-  { name: 'Anführungszeichen', re: /[„“”"»«]/uy, say: ', ' }
+  { name: 'Anführungszeichen', re: /[„“”"»«›‹‚‘]/uy, say: ', ' },
+  // v0.5: Auslassungspunkte „…“/„...“ verschluckt espeak komplett (nicht mal Wortgrenze) → kurze Pause
+  { name: 'Auslassung', re: /…|\.\.\./uy, say: ', ' }
 ];
 
 /* ---------- Quellenangaben erkennen (immer), überspringen (nur mit Schalter) ---------- */
@@ -853,6 +913,9 @@ function findCitations(src, a, b) {
   }
   return res;
 }
+
+// Wörter nach „Wort- “, bei denen der Strich ein Ergänzungsstrich ist („Kinder- und Jugendhilfe“, „Ein- bis Zweimal“)
+const HYPH_KEEP = new Set('und oder bzw bis sowie wie noch als beziehungsweise respektive resp versus vs statt anstatt sondern u o'.split(' '));
 
 /* ---------- Sprechfassung eines Teilstücks [a, b) ---------- */
 function speechVersion(src, a, b, opt) {
@@ -898,6 +961,9 @@ function speechVersion(src, a, b, opt) {
     if (c === '-' && /\p{L}/u.test(src[i - 1] || '')) {                // Silbentrennung am Zeilenende
       const m = /^-[ \t]*\n\s*(?=[a-zäöüß])/.exec(src.slice(i, b));
       if (m) { i += m[0].length - 1; continue; }
+      // v0.5: „Einkom- men“ → „Einkommen“; aber „Arbeits- und Lebensbedingungen“ (Ergänzungsstrich) bleibt
+      const m2 = /^-[ \t]+(?=([a-zäöüß]+))/.exec(src.slice(i, b));
+      if (m2 && !HYPH_KEEP.has(m2[1])) { i += m2[0].length - 1; continue; }
     }
     if (/\s/.test(c)) { out.push({ c: ' ', s: i, e: i + 1 }); continue; }
     out.push({ c, s: i, e: i + 1 });
@@ -1429,13 +1495,13 @@ function piperWorkerMain() {
       const feeds = {
         input: new ort.Tensor('int64', BigInt64Array.from(ids.map(BigInt)), [1, ids.length]),
         input_lengths: new ort.Tensor('int64', BigInt64Array.from([BigInt(ids.length)]), [1]),
-        scales: new ort.Tensor('float32', Float32Array.from([cfg.inference.noise_scale, cfg.inference.length_scale, cfg.inference.noise_w]), [3])
+        scales: new ort.Tensor('float32', Float32Array.from(m.scales || [cfg.inference.noise_scale, cfg.inference.length_scale, cfg.inference.noise_w]), [3])
       };
       if (cfg.num_speakers > 1) feeds.sid = new ort.Tensor('int64', BigInt64Array.from([BigInt(m.speakerId || 0)]), [1]);
       const out = await session.run(feeds);
       const pcm = (out.output || out[session.outputNames[0]]).data;
       pcs.push(pcm); speech += pcm.length;
-      if (k < m.parts.length - 1) pcs.push(new Float32Array(Math.round(sr * 0.12)));
+      if (k < m.parts.length - 1) pcs.push(new Float32Array(Math.round(sr * (m.gapSec != null ? m.gapSec : 0.12))));
     }
     pcs.push(new Float32Array(Math.round(sr * m.padSec)));
     const total = pcs.reduce((a, p) => a + p.length, 0);
@@ -1493,6 +1559,22 @@ class PiperEngine {
   }
   available() { return typeof Worker !== 'undefined' && typeof WebAssembly !== 'undefined'; }
   voices() { return PIPER_VOICES.map(v => ({ id: v.id, label: v.label })); }
+  voiceInfo(id) { return PIPER_VOICES.find(x => x.id === id) || PIPER_VOICES[0]; }
+  workerMain() { return piperWorkerMain; }
+  modelName(v) { return v.id; }
+  modelUrl(v) { return CONFIG.hfBase + v.path + '/' + v.id + '.onnx'; }
+  initMsg(v) {
+    const base = this.modelUrl(v);
+    return { type: 'init', ortBase: CONFIG.ortBase, phonBase: CONFIG.phonBase, modelUrl: base, configUrl: base + '.json',
+      cacheName: CONFIG.cacheName, useCache: !!window.caches && window.isSecureContext };
+  }
+  synthMsg(s, id) {
+    const k = curSound();                     // v0.5: Klangwerte (Tempo, Lebendigkeit, Rhythmus, Pausen)
+    return { type: 'synth', id, parts: s.parts.filter(p => /[\p{L}\d]/u.test(p.speech)).map(p => p.piper || p.speech),
+      padSec: s.paraEnd ? k.para : k.sent, gapSec: k.gap, scales: [k.noise, k.length, k.noiseW], speakerId: this.speakerId };
+  }
+  cacheName() { return CONFIG.cacheName; }
+  cacheProbe(v) { return this.modelUrl(v); }
   isLoaded(voiceId) { return this.loaded && this.loaded.voiceId === voiceId; }
   unload() {
     this.stop();
@@ -1506,10 +1588,9 @@ class PiperEngine {
     if (this.isLoaded(voiceId)) return Promise.resolve(this.loaded.info);
     if (this.loading && this.loading.voiceId === voiceId) return this.loading.promise;
     this.unload();
-    const v = PIPER_VOICES.find(x => x.id === voiceId) || PIPER_VOICES[0];
-    const base = CONFIG.hfBase + v.path + '/' + v.id + '.onnx';
+    const v = this.voiceInfo(voiceId);
     try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
-    const src = '(' + piperWorkerMain.toString() + ')();';
+    const src = '(' + this.workerMain().toString() + ')();';
     const url = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
     const worker = new Worker(url);
     this.worker = worker;
@@ -1520,10 +1601,10 @@ class PiperEngine {
       worker.onmessage = (e) => {
         const m = e.data;
         if (m.type === 'progress') onProgress && onProgress(m);
-        else if (m.type === 'log') log('Piper: ' + m.msg, m.level);
+        else if (m.type === 'log') log(this.label.split(' (')[0] + ': ' + m.msg, m.level);
         else if (m.type === 'ready') {
           URL.revokeObjectURL(url);
-          const info = { loadMs: m.loadMs, cached: m.cached, name: v.id, sampleRate: m.sampleRate, threads: m.threads, sessionMs: m.sessionMs, modelBytes: m.modelBytes };
+          const info = { loadMs: m.loadMs, cached: m.cached, name: this.modelName(v), sampleRate: m.sampleRate, threads: m.threads, sessionMs: m.sessionMs, modelBytes: m.modelBytes };
           this.loaded = { voiceId: v.id, info };
           this.loading = null;
           resolve(info);
@@ -1544,8 +1625,7 @@ class PiperEngine {
         for (const r of this.reqs.values()) r.reject(new Error(msg));
         this.reqs.clear();
       };
-      worker.postMessage({ type: 'init', ortBase: CONFIG.ortBase, phonBase: CONFIG.phonBase, modelUrl: base, configUrl: base + '.json',
-        cacheName: CONFIG.cacheName, useCache: !!window.caches && window.isSecureContext });
+      worker.postMessage(this.initMsg(v));
     });
     this.loading = { voiceId: v.id, promise, reject: rejectLoad };
     return promise;
@@ -1556,7 +1636,7 @@ class PiperEngine {
     const entry = { done: false, url: null, res: null };
     entry.promise = new Promise((resolve, reject) => {
       this.reqs.set(id, { resolve, reject });
-      this.worker.postMessage({ type: 'synth', id, parts: s.parts.filter(p => /[\p{L}\d]/u.test(p.speech)).map(p => p.piper || p.speech), padSec: s.paraEnd ? CONFIG.pausePara : CONFIG.pauseSentence, speakerId: this.speakerId });
+      this.worker.postMessage(this.synthMsg(s, id));
     }).then((m) => {
       entry.done = true;
       entry.res = m;
@@ -1637,6 +1717,257 @@ class PiperEngine {
 }
 
 /* =====================================================================
+   Engine C (v0.5, Testkandidat): Supertonic 3 (Supertone Inc., 2026)
+   - 4 ONNX-Modelle: duration_predictor → text_encoder → vector_estimator (N Schritte) → vocoder, 44,1 kHz
+   - liest Text direkt (Unicode-Zeichen, kein espeak/Phonemizer) → das Lautschrift-Wörterbuch wirkt hier NICHT
+   - int8-Fassung (sherpa-onnx-Konvertierung, ~145 MB) aus dem npm-Paket @3sln/donki-lle-voice-multi@0.1.1
+     (3 Teile, Base64 in .js-Dateien) über jsDelivr; nach dem ersten Laden im Browser gespeichert (Cache API)
+   - Lizenz Modell: OpenRAIL-M (privat/kostenlos erlaubt; Hinweis: Sprache ist computergeneriert), Code: MIT
+   - ONNX Runtime Web 1.18 (WASM, wie Piper). WebGPU bewusst nicht: die int8-Bausteine (MatMulInteger,
+     DynamicQuantizeLinear) laufen dort nicht → ständiges Hin- und Herkopieren; WASM ist auf dem iPhone verlässlicher.
+   ===================================================================== */
+const ST_PKG = 'https://cdn.jsdelivr.net/npm/@3sln/donki-lle-voice-multi';
+const ST_PART = (pkg, c) => ST_PKG + pkg + '@0.1.1/c/' + c + '.js';
+const ST_FILES = [   // [Dateiname, Größe in Bytes, [[Paket-Suffix, Teil, Größe der .js-Datei], …]]
+  ['tts.json', 8253, [['-3', '001', 11023]]],
+  ['unicode_indexer.bin', 262144, [['-3', '002', 349547]]],
+  ['voice.bin', 517168, [['-3', '003', 689579]]],
+  ['duration_predictor.onnx', 3700147, [['', '000', 4933551]]],
+  ['text_encoder.onnx', 36416150, [['', '001', 12582931], ['', '002', 12582931], ['', '003', 12582931], ['', '004', 10806151]]],
+  ['vector_estimator.onnx', 78400833, [['', '005', 12582931], ['', '006', 12582931], ['', '007', 12582931], ['-2', '000', 12582931],
+    ['-2', '001', 12582931], ['-2', '002', 12582931], ['-2', '003', 12582931], ['-2', '004', 12582931], ['-2', '005', 3871167]]],
+  ['vocoder.onnx', 25991073, [['-2', '006', 12582931], ['-2', '007', 12582931], ['-3', '000', 9488959]]]
+].map(([name, size, parts]) => ({ name, size, parts: parts.map(([p, c, b]) => ({ url: ST_PART(p, c), bytes: b })) }));
+// Stimmen-Reihenfolge in voice.bin: F1–F5, M1–M5 (per Tonhöhen-Messung geprüft: 0–4 ≈ 165–195 Hz, 5–9 ≈ 90–135 Hz)
+const ST_VOICES = ['F1', 'F2', 'F3', 'F4', 'F5', 'M1', 'M2', 'M3', 'M4', 'M5'].map((id, k) => ({
+  id, idx: k, label: 'Supertonic ' + id + ' · ' + (k < 5 ? 'weiblich' : 'männlich') + ' · 145 MB (Test)' }));
+
+function supertonicWorkerMain() {
+  let ort = null, cfg = null, idx = null, ttl = null, dp = null, C = {};
+  const S = {};
+  const queue = [];
+  let busy = false;
+  const post = (m, t) => self.postMessage(m, t || []);
+
+  // Lädt eine Modelldatei (aus Cache oder aus den Base64-Teilen) und meldet den Fortschritt als „Stimmenmodell“.
+  let loadedBytes = 0, totalBytes = 0, lastPost = 0, allCached = true;
+  const prog = (force) => { if (force || Date.now() - lastPost > 250) { lastPost = Date.now(); post({ type: 'progress', label: 'Stimmenmodell', loaded: loadedBytes, total: totalBytes, cached: allCached }); } };
+  async function getFile(f) {
+    const key = C.keyBase + f.name;
+    const b64 = f.parts.reduce((a, p) => a + p.bytes, 0);
+    let cache = null;
+    if (self.caches && C.useCache) {
+      try {
+        cache = await caches.open(C.cacheName);
+        const hit = await cache.match(key);
+        if (hit) {
+          const buf = await hit.arrayBuffer();
+          if (buf.byteLength === f.size) { loadedBytes += b64; prog(); return buf; }
+        }
+      } catch (e) { post({ type: 'log', level: 'warn', msg: 'Cache nicht nutzbar: ' + e.message }); cache = null; }
+    }
+    allCached = false;
+    const out = new Uint8Array(f.size);
+    let o = 0;
+    for (const p of f.parts) {
+      let res;
+      try { res = await fetch(p.url, { mode: 'cors' }); }
+      catch (e) { throw new Error('Download fehlgeschlagen (' + f.name + '): ' + (e.message || e) + ' – Internet prüfen'); }
+      if (!res.ok) throw new Error('Download fehlgeschlagen (' + f.name + '): HTTP ' + res.status);
+      const chunks = []; let n = 0;
+      const rd = res.body && res.body.getReader ? res.body.getReader() : null;
+      if (rd) for (;;) { const { done, value } = await rd.read(); if (done) break; chunks.push(value); n += value.length; loadedBytes += value.length; prog(); }
+      else { const u = new Uint8Array(await res.arrayBuffer()); chunks.push(u); n = u.length; loadedBytes += n; }
+      const all = new Uint8Array(n); let q = 0;
+      for (const c of chunks) { all.set(c, q); q += c.length; }
+      chunks.length = 0;
+      const txt = new TextDecoder().decode(all);
+      const a = txt.indexOf('"'), z = txt.lastIndexOf('"');
+      if (a < 0 || z <= a) throw new Error('Unerwartetes Dateiformat: ' + p.url);
+      const bin = atob(txt.slice(a + 1, z));
+      if (o + bin.length > f.size) throw new Error(f.name + ': Datei größer als erwartet');
+      for (let i = 0; i < bin.length; i++) out[o++] = bin.charCodeAt(i);
+    }
+    if (o !== f.size) throw new Error(f.name + ': unvollständig (' + o + ' statt ' + f.size + ' Bytes)');
+    if (cache) {
+      try { await cache.put(key, new Response(out, { headers: { 'Content-Type': 'application/octet-stream' } })); }
+      catch (e) { post({ type: 'log', level: 'warn', msg: f.name + ' konnte nicht gespeichert werden: ' + e.message }); }
+    }
+    return out.buffer;
+  }
+
+  async function init(m) {
+    C = m;
+    const t0 = performance.now();
+    try { importScripts(m.ortBase + 'ort.wasm.min.js'); }
+    catch (e) { throw new Error('ONNX Runtime konnte nicht geladen werden (Internet?)'); }
+    ort = self.ort;
+    const threads = self.crossOriginIsolated ? Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1)) : 1;
+    ort.env.wasm.numThreads = threads;
+    ort.env.wasm.wasmPaths = m.ortBase;
+    totalBytes = m.files.reduce((a, f) => a + f.parts.reduce((b, p) => b + p.bytes, 0), 0);
+    prog(true);
+    let tSess = 0, modelBytes = 0;
+    for (const f of m.files) {
+      const buf = await getFile(f);
+      modelBytes += buf.byteLength;
+      if (f.name === 'tts.json') cfg = JSON.parse(new TextDecoder().decode(buf));
+      else if (f.name === 'unicode_indexer.bin') idx = new Int32Array(buf);
+      else if (f.name === 'voice.bin') {
+        const h = Array.from(new BigInt64Array(buf, 0, 6), Number);   // [10,50,256] [10,8,16]
+        const nT = h[0] * h[1] * h[2], nD = h[3] * h[4] * h[5];
+        ttl = { data: new Float32Array(buf, 48, nT), dims: [h[1], h[2]], n: h[0] };
+        dp = { data: new Float32Array(buf, 48 + nT * 4, nD), dims: [h[4], h[5]] };
+      } else {
+        const t1 = performance.now();
+        try { S[f.name.replace('.onnx', '')] = await ort.InferenceSession.create(new Uint8Array(buf), { executionProviders: ['wasm'], graphOptimizationLevel: 'all' }); }
+        catch (e) { throw new Error('Modell ' + f.name + ' ließ sich nicht starten: ' + ((e && e.message) || e) + ' (evtl. zu wenig Speicher)'); }
+        tSess += performance.now() - t1;
+      }
+    }
+    prog(true);
+    post({ type: 'ready', loadMs: performance.now() - t0, sessionMs: tSess, cached: allCached, sampleRate: cfg.ae.sample_rate, threads, modelBytes });
+  }
+
+  // Textvorbereitung wie im offiziellen Supertonic-Code (NFKD, Zeichen vereinheitlichen, Sprachmarke <de>…</de>)
+  const REPL = { '–': '-', '‑': '-', '—': '-', '¯': ' ', '_': ' ', '“': '"', '”': '"', '„': '"',
+    '‘': "'", '’': "'", '‚': "'", '´': "'", '`': "'", '[': ' ', ']': ' ', '|': ' ', '/': ' ', '#': ' ', '→': ' ', '←': ' ',
+    '»': '"', '«': '"', '›': "'", '‹': "'" };
+  function prep(t) {
+    t = t.normalize('NFKD');
+    t = t.replace(/[\u{1F300}-\u{1FAFF}☀-➿]/gu, '');
+    t = [...t].map(c => REPL[c] !== undefined ? REPL[c] : c).join('');
+    t = t.replace(/[♥☆♡©\\]/g, '').replace(/ ([,.!?;:'])/g, '$1').replace(/(["'])\1+/g, '$1').replace(/\s+/g, ' ').trim();
+    if (!/[.!?;:,'")\]}…›»]$/.test(t)) t += '.';
+    return '<de>' + t + '</de>';
+  }
+  const missing = new Set();
+  function textIds(text) {
+    const ids = [];
+    for (const ch of prep(text)) {
+      const cp = ch.codePointAt(0);
+      const id = cp < idx.length ? idx[cp] : -1;
+      if (id >= 0) ids.push(id); else if (!missing.has(ch)) { missing.add(ch); post({ type: 'log', level: 'warn', msg: 'Supertonic kennt das Zeichen „' + ch + '“ nicht – übersprungen' }); }
+    }
+    return ids;
+  }
+  function gauss(n) {
+    const x = new Float32Array(n);
+    for (let i = 0; i < n; i += 2) {
+      const u = Math.random() || 1e-9, v = Math.random(), r = Math.sqrt(-2 * Math.log(u));
+      x[i] = r * Math.cos(2 * Math.PI * v); if (i + 1 < n) x[i + 1] = r * Math.sin(2 * Math.PI * v);
+    }
+    return x;
+  }
+  async function part(text, vi, steps, speed) {
+    const T = (d, dims, t) => new ort.Tensor(t || 'float32', d, dims);
+    const ids = textIds(text), L = ids.length;
+    const tid = T(BigInt64Array.from(ids.map(BigInt)), [1, L], 'int64');
+    const mask = T(new Float32Array(L).fill(1), [1, 1, L]);
+    const nT = ttl.dims[0] * ttl.dims[1], nD = dp.dims[0] * dp.dims[1];
+    const sT = T(ttl.data.slice(vi * nT, (vi + 1) * nT), [1, ttl.dims[0], ttl.dims[1]]);
+    const sD = T(dp.data.slice(vi * nD, (vi + 1) * nD), [1, dp.dims[0], dp.dims[1]]);
+    const dur = (await S.duration_predictor.run({ text_ids: tid, style_dp: sD, text_mask: mask })).duration.data[0] / speed;
+    const emb = (await S.text_encoder.run({ text_ids: tid, style_ttl: sT, text_mask: mask })).text_emb;
+    const sr = cfg.ae.sample_rate, cs = cfg.ae.base_chunk_size * cfg.ttl.chunk_compress_factor, ch = cfg.ttl.latent_dim * cfg.ttl.chunk_compress_factor;
+    const wl = Math.max(1, Math.floor(dur * sr)), ll = Math.max(1, Math.ceil(wl / cs));
+    let xt = T(gauss(ch * ll), [1, ch, ll]);
+    const lm = T(new Float32Array(ll).fill(1), [1, 1, ll]), tot = T(new Float32Array([steps]), [1]);
+    for (let s = 0; s < steps; s++) {
+      xt = (await S.vector_estimator.run({ noisy_latent: xt, text_emb: emb, style_ttl: sT, latent_mask: lm, text_mask: mask,
+        current_step: T(new Float32Array([s]), [1]), total_step: tot })).denoised_latent;
+    }
+    const wav = (await S.vocoder.run({ latent: xt })).wav_tts.data;
+    return wav.slice(0, Math.min(wl, wav.length));
+  }
+
+  async function synth(m) {
+    const t0 = performance.now();
+    const sr = cfg.ae.sample_rate;
+    const pcs = [];
+    let speech = 0;
+    for (let k = 0; k < m.parts.length; k++) {
+      const pcm = await part(m.parts[k], m.voice, m.steps, m.speed);
+      pcs.push(pcm); speech += pcm.length;
+      if (k < m.parts.length - 1) pcs.push(new Float32Array(Math.round(sr * m.gapSec)));
+    }
+    pcs.push(new Float32Array(Math.round(sr * m.padSec)));
+    const n = pcs.reduce((a, p) => a + p.length, 0);
+    const buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+    const w = (off, s) => { for (let i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)); };
+    w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    w(36, 'data'); v.setUint32(40, n * 2, true);
+    let p = 44;
+    for (const pc of pcs) for (let i = 0; i < pc.length; i++, p += 2) { const s = Math.max(-1, Math.min(1, pc[i])); v.setInt16(p, s < 0 ? s * 0x8000 : s * 0x7fff, true); }
+    post({ type: 'audio', id: m.id, wav: buf, synthMs: performance.now() - t0, speechSec: speech / sr, totalSec: n / sr }, [buf]);
+  }
+
+  async function pump() {
+    if (busy) return;
+    busy = true;
+    while (queue.length) {
+      const m = queue.shift();
+      try { await synth(m); } catch (e) { post({ type: 'error', id: m.id, msg: 'Supertonic: ' + ((e && e.message) || String(e)) }); }
+    }
+    busy = false;
+  }
+  self.onmessage = async (e) => {
+    const m = e.data;
+    if (m.type === 'init') {
+      try { await init(m); } catch (err) { post({ type: 'init-error', msg: (err && err.message) || String(err) }); }
+    } else if (m.type === 'synth') { queue.push(m); pump(); }
+    else if (m.type === 'drop') { queue.length = 0; }
+  };
+}
+
+// Text für Supertonic: Sprechfassung (Abkürzungen, Daten, Ordinalzahlen, Gesetzesangaben, Quellen …) ohne Lautschrift,
+// zusätzlich verbleibende Ziffern/Zeichen in Wörtern (Supertonic liest Ziffern sonst selbst – im Deutschen unsicher).
+function stText(p) {
+  return (p.piper || p.speech).replace(/⟦([^=⟧]*)=[^⟧]*⟧/g, '$1')
+    .replace(/\s[–—]\s/g, ', ')                                  // Gedankenstrich → Pause (espeak macht das selbst)
+    .replace(/§§\s?/g, 'Paragrafen ').replace(/§\s?/g, 'Paragraf ')
+    .replace(/(\d)\s?%/g, '$1 Prozent').replace(/\s?&\s?/g, ' und ')
+    .replace(/(?<![\d.,])\d{1,3}(?:\.\d{3})+(?![\d,])/g, (m) => cardinal(+m.replace(/\./g, '')))
+    .replace(/(\d+),(\d+)/g, (m, a, b) => cardinal(+a) + ' Komma ' + [...b].map(d => NUM_ONES[+d]).join(' '))
+    .replace(/(\d+)([a-z])(?![\p{L}])/gu, (m, a, l) => cardinal(+a) + ' ' + l)
+    .replace(/\d+/g, (m) => cardinal(+m));
+}
+
+class SupertonicEngine extends PiperEngine {
+  constructor(audio) {
+    super(audio);
+    this.id = 'supertonic';
+    this.label = 'C · Supertonic 3 (Test, lokal im Browser, WASM)';
+    this.voiceIdx = 5;
+  }
+  voices() { return ST_VOICES.map(v => ({ id: v.id, label: v.label })); }
+  voiceInfo(id) { return ST_VOICES.find(v => v.id === id) || ST_VOICES[5]; }
+  // Ein Modell für alle 10 Stimmen: Stimmwechsel braucht kein neues Laden.
+  isLoaded(voiceId) { if (!this.loaded) return false; this.voiceIdx = this.voiceInfo(voiceId).idx; return true; }
+  load(voiceId, onProgress) {
+    this.voiceIdx = this.voiceInfo(voiceId).idx;
+    if (this.loaded) return Promise.resolve(this.loaded.info);
+    if (this.loading) return this.loading.promise;
+    return super.load(voiceId, onProgress);
+  }
+  workerMain() { return supertonicWorkerMain; }
+  modelName() { return 'Supertonic 3 (int8)'; }
+  initMsg() {
+    return { type: 'init', ortBase: CONFIG.ortBase, files: ST_FILES, cacheName: CONFIG.stCacheName, keyBase: CONFIG.stKeyBase,
+      useCache: !!window.caches && window.isSecureContext };
+  }
+  synthMsg(s, id) {
+    return { type: 'synth', id, voice: this.voiceIdx, steps: stSettings.steps, speed: 1.05, gapSec: SOUND_PRESETS.std.gap,
+      padSec: s.paraEnd ? SOUND_PRESETS.std.para : SOUND_PRESETS.std.sent,
+      parts: s.parts.filter(p => /[\p{L}\d]/u.test(p.speech)).map(stText) };
+  }
+  cacheName() { return CONFIG.stCacheName; }
+  cacheProbe() { return CONFIG.stKeyBase + 'vector_estimator.onnx'; }
+}
+
+/* =====================================================================
    Steuerung (engine-unabhängig)
    ===================================================================== */
 const audioEl = new Audio();
@@ -1651,7 +1982,7 @@ function unlockAudio() {
   try { audioEl.src = SILENT_URL; const p = audioEl.play(); if (p && p.catch) p.catch(() => { audioUnlocked = false; }); } catch (e) { audioUnlocked = false; }
 }
 
-const engines = { webspeech: new WebSpeechEngine(), piper: new PiperEngine(audioEl) };
+const engines = { webspeech: new WebSpeechEngine(), piper: new PiperEngine(audioEl), supertonic: new SupertonicEngine(audioEl) };
 
 const ctl = {
   state: 'idle', cur: 0, gen: 0, firstInRun: false, tPlay: 0,
@@ -1660,7 +1991,10 @@ const ctl = {
     const o = $('voiceSel').selectedOptions[0];
     return o ? o.textContent.split(' · ').slice(0, this.engine().id === 'piper' ? 2 : 1).join(' · ') : '?';
   },
-  metrics() { return M(this.engine().label.split(' (')[0], this.voiceLabel()); },
+  metrics() {
+    const p = PROFILES.find(x => x.id === soundProfile);
+    return M(this.engine().label.split(' (')[0], this.voiceLabel() + (p && p.engine === 'piper' && this.engine().id === 'piper' ? ' · ' + p.label.split('– ')[1] : ''));
+  },
   stateLabel() { return { idle: 'bereit', playing: 'spielt', paused: 'pausiert', loading: 'lädt …' }[this.state] || this.state; },
   setState(s, msg) {
     this.state = s;
@@ -1673,11 +2007,15 @@ const ctl = {
     else if (s === 'idle') setStatus('Bereit');
   },
   toggle() { if (this.state === 'playing') this.pause(); else this.play(); },
+  // v0.5 (Stimmenvergleich): von vorn abspielen und warten, bis der Text zu Ende ist (true), gestoppt (false) oder 'fail'
+  doneCb: null,
+  done(v) { const d = this.doneCb; this.doneCb = null; if (d) d(v); },
+  playToEnd() { return new Promise((res) => { this.done(false); this.cur = 0; this.doneCb = res; this.play(); }); },
 
   async play() {
     const eng = this.engine();
     if (this.state === 'playing' || this.state === 'loading') return;
-    if (eng.id === 'piper') unlockAudio();               // synchron in der Klick-Geste
+    if (eng.audio) unlockAudio();                        // synchron in der Klick-Geste (Piper, Supertonic)
     if (this.state === 'paused') {
       if (eng.pauseMode === 'restart') return this.start(this.cur);
       eng.resume(); this.setState('playing', 'Liest vor'); return;
@@ -1691,7 +2029,7 @@ const ctl = {
       this.setState('loading', 'Stimme wird geladen …');
       const ok = await loadSelected();
       if (this.state !== 'loading') return;           // währenddessen Stop gedrückt
-      if (!ok) { this.setState('idle', 'Stimme konnte nicht geladen werden – Internet prüfen und ▶ erneut drücken'); return; }
+      if (!ok) { this.setState('idle', 'Stimme konnte nicht geladen werden' + (lastLoadError ? ' (' + lastLoadError + ')' : '') + ' – Internet prüfen und ▶ erneut drücken'); this.done('fail'); return; }
     }
     this.start(this.cur);
   },
@@ -1739,6 +2077,7 @@ const ctl = {
     markSentence(-1);
     this.setState('idle', 'Fertig – ▶ liest noch einmal von vorn');
     log('Ende des Textes erreicht.');
+    this.done(true);
   },
   pause() {
     if (this.state !== 'playing') return;
@@ -1755,6 +2094,7 @@ const ctl = {
     this.cur = 0;
     markSentence(-1);
     this.setState('idle');
+    this.done(false);
   },
   jump(i) {
     if (!ui.sentences.length) return;
@@ -1783,24 +2123,29 @@ async function fillVoices() {
   const vs = eng.voices();
   for (const v of vs) { const o = document.createElement('option'); o.value = v.id; o.textContent = v.label; sel.appendChild(o); }
   if (!vs.length) { const o = document.createElement('option'); o.textContent = '(keine Stimmen gefunden)'; o.value = ''; sel.appendChild(o); }
-  $('btnLoad').hidden = eng.id !== 'piper';
-  $('btnClearCache').hidden = eng.id !== 'piper';
+  $('btnLoad').hidden = eng.id === 'webspeech';
+  $('btnClearCache').hidden = eng.id === 'webspeech';
   if (eng.id === 'webspeech') {
     await eng.load(sel.value);
     const de = eng.all.filter(v => /^de/i.test(v.lang)).length;
     $('loadStatus').textContent = `${eng.all.length} Browser-Stimmen, davon ${de} deutsch · Stimmenliste nach ${fmtMs(eng.voicesReadyMs)} verfügbar.` +
       (IS_IOS ? ' iPhone: Bessere Stimmen unter Einstellungen › Bedienungshilfen › Gesprochene Inhalte › Stimmen › Deutsch laden (z. B. „Anna (Premium)“), danach Seite neu laden.' : '');
     if (ctl.engine() === eng) ctl.metrics().loadMs = eng.voicesReadyMs;
+  } else if (eng.id === 'supertonic') {
+    $('loadStatus').textContent = 'Supertonic 3 (Test): Modell ≈ 145 MB, Download ≈ 190 MB über jsDelivr, danach im Browser gespeichert. ' +
+      'Modell: Supertone Inc., Lizenz OpenRAIL-M (privat und kostenlos erlaubt) – die Sprache ist computergeneriert.';
   } else {
     $('loadStatus').textContent = 'Modell wird beim ersten Laden aus dem Internet geholt (Hugging Face) und danach im Browser gespeichert.';
   }
   renderMetrics();
 }
 
+let lastLoadError = '';
 async function loadSelected() {
+  lastLoadError = '';
   const eng = ctl.engine();
   const vid = $('voiceSel').value;
-  if (eng.id !== 'piper') { await eng.load(vid); return true; }
+  if (eng.id === 'webspeech') { await eng.load(vid); return true; }
   const st = $('loadStatus');
   const tUi = now();
   const parts = {};
@@ -1816,14 +2161,15 @@ async function loadSelected() {
     met.loadMs = info.loadMs; met.cached = info.cached;
     st.textContent = `Geladen: ${info.name} · ${fmtMs(info.loadMs)} (davon Initialisierung inkl. ONNX Runtime ${fmtMs(info.sessionMs)}) · ${info.sampleRate} Hz · Threads: ${info.threads}` +
       ` · Modell ${info.cached ? 'aus Cache' : 'heruntergeladen'} (${fmtMB(info.modelBytes)})`;
-    log(`Piper geladen: ${info.name} in ${fmtMs(info.loadMs)} (UI ${fmtMs(now() - tUi)}), Cache: ${info.cached ? 'ja' : 'nein'}`);
+    log(`${eng.label.split(' (')[0]} geladen: ${info.name} in ${fmtMs(info.loadMs)} (UI ${fmtMs(now() - tUi)}), Cache: ${info.cached ? 'ja' : 'nein'}`);
     renderMetrics();
     showEnv();
     return true;
   } catch (e) {
     if (e && e.cancelled) return false;
     st.textContent = 'Laden fehlgeschlagen: ' + (e.message || e);
-    log('Piper laden fehlgeschlagen: ' + (e.message || e), 'error');
+    lastLoadError = eng.label.split(' (')[0].replace(/^[A-C] · /, '') + ': ' + (e.message || e);
+    log(eng.label.split(' (')[0] + ' laden fehlgeschlagen: ' + (e.message || e), 'error');
     const met = ctl.metrics(); met.errors.push('Laden: ' + (e.message || e)); met.fail++;
     renderMetrics();
     return false;
@@ -1860,10 +2206,6 @@ function setupEngines() {
     o.disabled = !e.available();
     sel.appendChild(o);
   }
-  const optC = document.createElement('option');
-  optC.disabled = true;
-  optC.textContent = 'C · Pocket TTS Deutsch – in Phase 1 nicht eingebaut (siehe PROJECT_STATE.md)';
-  sel.appendChild(optC);
   sel.value = 'piper';                                 // App-Stimme: Piper Thorsten medium (E15)
 }
 
@@ -1871,10 +2213,10 @@ function setupEngines() {
 let preloadQuiet = false;
 async function preloadIfCached() {
   try {
-    if (ctl.engine().id !== 'piper' || !window.caches || !window.isSecureContext) return;
-    const v = PIPER_VOICES.find(x => x.id === $('voiceSel').value) || PIPER_VOICES[0];
-    const c = await caches.open(CONFIG.cacheName);
-    if (!(await c.match(CONFIG.hfBase + v.path + '/' + v.id + '.onnx'))) return;
+    const eng = ctl.engine();
+    if (!eng.cacheProbe || !window.caches || !window.isSecureContext) return;
+    const c = await caches.open(eng.cacheName());
+    if (!(await c.match(eng.cacheProbe(eng.voiceInfo($('voiceSel').value))))) return;
     preloadQuiet = true;
     if (ctl.state === 'idle') setStatus('Stimme wird vorbereitet …');
     await loadSelected();
@@ -1887,7 +2229,7 @@ $('btnSample').onclick = () => { ctl.stop(); $('src').value = SAMPLE_TEXT; apply
 $('btnSamplePron').onclick = () => { ctl.stop(); $('src').value = SAMPLE_PRON; applyText(); };
 $('btnSampleSA').onclick = () => { ctl.stop(); $('src').value = SAMPLE_SA; applyText(); };
 $('btnSampleStart').onclick = () => { ctl.stop(); $('src').value = SAMPLE_START; applyText(); };
-$('btnEdit').onclick = () => { ctl.stop(); showRead(false); setStatus('Bereit'); };
+$('btnEdit').onclick = () => { cmpRun++; cmpBanner(''); ctl.stop(); showRead(false); setStatus('Bereit'); };
 // „Eigenen Text einfügen“: liest die Zwischenablage (iPhone zeigt dazu kurz „Einsetzen“ an – einmal tippen).
 // Klappt das nicht (verweigert/leer), wird das Feld geleert und ausgewählt: dann ins Feld tippen → „Einsetzen“.
 function emptyAndFocus(msg) {
@@ -1909,7 +2251,7 @@ $('optHelp').onchange = () => { ctl.stop(); speechOpts.help = $('optHelp').check
 $('optSkip').onchange = () => { ctl.stop(); speechOpts.skipCitations = $('optSkip').checked; applyText(); log('Quellenangaben überspringen ' + (speechOpts.skipCitations ? 'an' : 'aus')); };
 $('btnApply').onclick = () => { ctl.stop(); applyText(); };
 $('btnPlay').onclick = () => ctl.toggle();
-$('btnStop').onclick = () => ctl.stop();
+$('btnStop').onclick = () => { cmpRun++; cmpBanner(''); ctl.stop(); };
 $('btnNext').onclick = () => ctl.jump(ctl.cur + 1);
 $('view').onclick = (e) => {
   const sp = e.target.closest('.s');
@@ -1919,9 +2261,11 @@ $('engineSel').onchange = async () => {
   ctl.stop();
   for (const k of Object.keys(engines)) if (engines[k] !== ctl.engine() && engines[k].unload) engines[k].unload();
   await fillVoices();
+  soundProfile = 'lab'; fillProfiles(); showSliders();           // freie Labor-Auswahl (wird nicht gespeichert)
 };
 $('voiceSel').onchange = async () => {
   ctl.stop();
+  soundProfile = 'lab'; fillProfiles(); showSliders();
   const eng = ctl.engine();
   if (eng.id === 'webspeech') { await eng.load($('voiceSel').value); renderMetrics(); }
   else $('loadStatus').textContent = 'Stimme gewechselt – „Stimme laden“ oder Play tippen.';
@@ -1929,8 +2273,8 @@ $('voiceSel').onchange = async () => {
 $('btnLoad').onclick = () => { ctl.stop(); loadSelected(); };
 $('btnClearCache').onclick = async () => {
   ctl.stop();
-  engines.piper.unload();
-  try { const ok = await caches.delete(CONFIG.cacheName); log(ok ? 'Modell-Cache gelöscht.' : 'Kein Modell-Cache vorhanden.'); }
+  engines.piper.unload(); engines.supertonic.unload();
+  try { const ok = (await caches.delete(CONFIG.cacheName)) | (await caches.delete(CONFIG.stCacheName)); log(ok ? 'Modell-Cache gelöscht (Piper + Supertonic).' : 'Kein Modell-Cache vorhanden.'); }
   catch (e) { log('Cache löschen fehlgeschlagen: ' + e.message, 'warn'); }
   $('loadStatus').textContent = 'Cache gelöscht. Nächstes Laden lädt neu herunter.';
   showEnv();
@@ -2172,10 +2516,141 @@ updateFlagCount();
 $('ver').textContent = CONFIG.version;
 speechOpts.help = $('optHelp').checked;
 speechOpts.skipCitations = $('optSkip').checked;
+/* =====================================================================
+   v0.5 – Stimme & Klang: Voreinstellungen, Regler, Stimmenvergleich
+   Gespeichert in localStorage (nur auf diesem Gerät). Die gewählte Stimme gilt auch in der normalen Ansicht.
+   ===================================================================== */
+const SOUND_KEY = 'hoerlabor-stimme-v1';
+const PROFILES = [
+  { id: 't-std',  label: 'Thorsten – Standard',  engine: 'piper', voice: 'de_DE-thorsten-medium', sound: 'std',  cmp: true },
+  { id: 't-calm', label: 'Thorsten – Ruhig',     engine: 'piper', voice: 'de_DE-thorsten-medium', sound: 'calm', cmp: true },
+  { id: 't-live', label: 'Thorsten – Lebendig',  engine: 'piper', voice: 'de_DE-thorsten-medium', sound: 'live', cmp: true },
+  { id: 't-own',  label: 'Thorsten – Eigene Einstellung (Regler)', engine: 'piper', voice: 'de_DE-thorsten-medium', sound: 'own' },
+  { id: 'st-f',   label: 'Supertonic – Test (weiblich, F1)', engine: 'supertonic', voice: 'F1', sound: 'std', cmp: true },
+  { id: 'st-m',   label: 'Supertonic – Test (männlich, M1)', engine: 'supertonic', voice: 'M1', sound: 'std', cmp: true },
+  { id: 'lab',    label: 'Labor: Engine/Stimme unten frei gewählt', hidden: true }
+];
+const st = (() => { try { return JSON.parse(localStorage.getItem(SOUND_KEY) || '{}') || {}; } catch (e) { return {}; } })();
+let soundProfile = PROFILES.some(p => p.id === st.profile && !p.hidden) ? st.profile : 't-std';
+let ownSound = Object.assign({}, SOUND_PRESETS.std, st.own || {});
+const stSettings = { steps: st.stSteps === 8 ? 8 : 5 };
+function curSound() {
+  const p = PROFILES.find(x => x.id === soundProfile);
+  if (!p || p.engine !== 'piper') return SOUND_PRESETS.std;
+  return p.sound === 'own' ? ownSound : SOUND_PRESETS[p.sound];
+}
+function saveSound() {
+  try { localStorage.setItem(SOUND_KEY, JSON.stringify({ profile: soundProfile, own: ownSound, stSteps: stSettings.steps })); } catch (e) {}
+}
+const SLIDERS = [   // [id, Feld, Anzeige]
+  ['sTempo', 'length', (v) => Math.round(100 / v) + ' %'],
+  ['sNoise', 'noise', (v) => v.toFixed(2)],
+  ['sNoiseW', 'noiseW', (v) => v.toFixed(2)],
+  ['sGap', 'gap', (v) => v.toFixed(2) + ' s'],
+  ['sSent', 'sent', (v) => v.toFixed(2) + ' s'],
+  ['sPara', 'para', (v) => v.toFixed(2) + ' s']
+];
+function showSliders() {
+  const s = curSound();
+  const p = PROFILES.find(x => x.id === soundProfile);
+  const on = !p || p.engine === 'piper';
+  for (const [id, key, fmt] of SLIDERS) {
+    const el = $(id);
+    el.value = key === 'length' ? Math.round(100 / s[key]) : s[key];
+    el.disabled = !on;
+    $(id + 'V').textContent = fmt(s[key]);
+  }
+  $('soundHint').textContent = on ? 'Regler verändern Thorsten. Jede Änderung wird als „Thorsten – Eigene Einstellung“ gespeichert.'
+    : 'Regler gelten nur für Thorsten (Supertonic nutzt feste Werte).';
+}
+function fillProfiles() {
+  const sel = $('profileSel');
+  sel.textContent = '';
+  for (const p of PROFILES) {
+    if (p.hidden && soundProfile !== p.id) continue;
+    const o = document.createElement('option'); o.value = p.id; o.textContent = p.label; sel.appendChild(o);
+  }
+  sel.value = soundProfile;
+}
+// Stimme anwenden: Engine + Stimme in der Technik-Auswahl setzen, Klangwerte übernehmen.
+async function applyProfile(id, opt) {
+  opt = opt || {};
+  const p = PROFILES.find(x => x.id === id);
+  if (!p || p.hidden) return;
+  ctl.stop();
+  soundProfile = id;
+  if ($('engineSel').value !== p.engine) {
+    $('engineSel').value = p.engine;
+    for (const k of Object.keys(engines)) if (engines[k] !== ctl.engine() && engines[k].unload) engines[k].unload();
+    await fillVoices();
+  }
+  if ($('voiceSel').value !== p.voice) $('voiceSel').value = p.voice;
+  fillProfiles();
+  showSliders();
+  if (opt.save !== false) { saveSound(); log('Stimme: ' + p.label); }
+}
+function onSliderInput(id) {
+  const [, key, fmt] = SLIDERS.find(x => x[0] === id);
+  const raw = +$(id).value;
+  const v = key === 'length' ? +(100 / raw).toFixed(3) : raw;
+  $(id + 'V').textContent = fmt(v);
+  return [key, v];
+}
+for (const [id] of SLIDERS) {
+  $(id).addEventListener('input', () => onSliderInput(id));
+  $(id).addEventListener('change', () => {
+    const [key, v] = onSliderInput(id);
+    if (soundProfile !== 't-own') ownSound = Object.assign({}, curSound());
+    ownSound[key] = v;
+    ctl.stop();                                      // bereits vorausberechnete Sätze verwerfen
+    soundProfile = 't-own';
+    fillProfiles(); saveSound();
+    log(`Klang: ${key} = ${v}`);
+  });
+}
+$('profileSel').onchange = () => applyProfile($('profileSel').value);
+$('btnSoundReset').onclick = () => { ownSound = Object.assign({}, SOUND_PRESETS.std); applyProfile('t-std'); };
+$('stSteps').value = String(stSettings.steps);
+$('stSteps').onchange = () => { ctl.stop(); stSettings.steps = +$('stSteps').value; saveSound(); log('Supertonic-Schritte: ' + stSettings.steps); };
+
+// Stimmenvergleich: derselbe kurze Probeabsatz nacheinander mit allen Stimmen. Angesagt wird nur in der Anzeige.
+const COMPARE_TEXT = 'Die Lebensweltorientierung gehört seit den 1990er Jahren zu den zentralen Konzepten der Sozialen Arbeit ' +
+  '(vgl. Hartmann 2019, S. 23). In einer Befragung von 412 Fachkräften gaben rund 63 % an, dass Partizipation und Empowerment ' +
+  'ihre Beratung prägen. Gleichzeitig zeigt sich, wie wichtig klare Zuständigkeiten im Case Management sind.';
+let cmpRun = 0;
+function cmpBanner(t) { const b = $('cmpBanner'); b.hidden = !t; b.textContent = t || ''; }
+async function runCompare() {
+  const run = ++cmpRun;
+  const keep = soundProfile;
+  ctl.stop();
+  $('src').value = COMPARE_TEXT; applyText(); showRead(true);
+  const list = PROFILES.filter(p => p.cmp);
+  const res = [];
+  for (let k = 0; k < list.length && run === cmpRun; k++) {
+    const p = list[k];
+    await applyProfile(p.id, { save: false });
+    if (run !== cmpRun) break;
+    const head = `Vergleich ${k + 1}/${list.length}: ${p.label}`;
+    cmpBanner('▶ ' + head);
+    log(head);
+    const r = await ctl.playToEnd();
+    if (run !== cmpRun) break;
+    res.push(p.label + ': ' + (r === true ? 'ok' : 'nicht abgespielt'));
+    if (r !== true) { cmpBanner('⚠ ' + head + ' – konnte nicht abgespielt werden (siehe Protokoll)'); await new Promise(z => setTimeout(z, 2500)); }
+    else await new Promise(z => setTimeout(z, 900));
+  }
+  const done = run === cmpRun;
+  await applyProfile(keep, { save: false });
+  cmpBanner(done ? 'Vergleich fertig: ' + res.map(x => x.split(':')[1].trim() === 'ok' ? '✓' : '✗').join(' ') + ' – Auswahl unter Technik › Stimme & Klang' : '');
+  if (done) { setStatus('Vergleich fertig'); log('Vergleich: ' + res.join(' · ')); }
+}
+$('btnCompare').onclick = () => { unlockAudio(); runCompare(); };
+
 setupEngines();
 $('src').value = SAMPLE_START;                       // Beispieltext, damit Clara sofort ▶ drücken kann
 showRead(false);
-fillVoices().then(preloadIfCached);
+fillProfiles(); showSliders();
+fillVoices().then(() => applyProfile(soundProfile, { save: false })).then(preloadIfCached);
 showEnv();
 log('Bereit. ' + (location.protocol === 'file:' ? 'Hinweis: Als lokale Datei geöffnet – Modell-Cache funktioniert nur über https.' : ''));
 </script>
