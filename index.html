@@ -45,7 +45,6 @@
   #status { font-size: 1rem; font-weight: 600; min-height: 1.5em; }
   .ctrls button .ico { display: block; font-size: 1.5rem; line-height: 1.1; }
   .ctrls button .cap { display: block; font-size: .7rem; line-height: 1.1; }
-  .ctrls button#btnFlag { padding: 4px 2px; }
   .foot { align-items: center; flex-wrap: wrap; }
   .foot label.opt { margin: 0; min-height: 44px; font-size: .9rem; gap: 8px; }
   .foot label.opt input { width: 22px; height: 22px; }
@@ -139,14 +138,36 @@
   .pgrange { display: flex; gap: 16px; margin-top: 10px; }
   .pgrange input { width: 5.5em; font: inherit; padding: 8px; border: 1px solid var(--line); border-radius: 10px; margin-left: 6px; }
   #pdfModal .primary { margin-top: 14px; }
+  /* v0.8 Leiste, Tempo, Weiterhören */
+  .tools { display: flex; gap: 8px; margin-top: 8px; }
+  .tools .chip { flex: 1 1 auto; min-height: 44px; font-size: .9rem; padding: 6px 8px; white-space: nowrap; }
+  .tools #btnTempo { flex: 0 0 auto; min-width: 64px; font-variant-numeric: tabular-nums; }
+  .foot { margin-top: 2px; }
+  h1 .ver { font-size: .7rem; font-weight: 400; color: var(--muted); margin-left: 6px; vertical-align: middle; }
+  .tval { font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); }
+  #tempoRange { width: 100%; height: 36px; accent-color: var(--accent); margin-top: 8px; }
+  .tscale { display: flex; justify-content: space-between; font-size: .8rem; color: var(--muted); }
+  .tpre { margin-top: 12px; }
+  .tpre button { padding: 8px 2px; }
+  button.primary.soft2 { background: #fff; color: var(--accent); }
+  .resume { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 6px 12px 8px; margin: 0 0 12px; }
+  .resume h3 { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 6px 0 4px; }
+  .witem { display: flex; align-items: stretch; gap: 6px; border-top: 1px solid #f0ede7; }
+  .witem:first-child { border-top: none; }
+  .wopen { flex: 1; min-width: 0; text-align: left; border: none; background: none; padding: 8px 0; margin: 0; display: flex; flex-direction: column; gap: 3px; min-height: 52px; }
+  .wt { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .wm { font-size: .82rem; color: var(--muted); }
+  .wbar { display: block; height: 4px; border-radius: 2px; background: linear-gradient(90deg, var(--accent) var(--p), #e8e5de var(--p)); }
+  .wdel { border: none; background: none; color: var(--muted); min-width: 44px; margin: 0; font-size: 1rem; }
   [hidden] { display: none !important; }
 </style>
 </head>
 <body>
-<h1>Hörlabor</h1>
+<h1>Hörlabor <span class="ver" id="ver"></span></h1>
 <p id="firstHint" class="hint">Zum Ausprobieren steht schon ein Beispieltext im Feld: einfach ▶ drücken.<br>Eigenen Text: „Eigenen Text einfügen“ oder „PDF öffnen“ tippen.</p>
 
 <div id="editBox">
+  <div id="resumeBox" class="resume" hidden><h3>Weiterhören</h3><div id="resumeList"></div></div>
   <div class="row">
     <button id="btnPaste" class="pastebtn">📋 Eigenen Text einfügen</button>
     <button id="btnPdf" class="pastebtn">📄 PDF öffnen</button>
@@ -174,7 +195,7 @@
     <p class="hint">Beide Knöpfe ersetzen den Text im Feld durch einen kurzen Probeabsatz. Über dem Text steht, was gerade läuft. ■ bricht ab.</p>
     <h3>Feinregler</h3>
     <div id="soundBox">
-      <div class="sl"><label for="sTempo">Tempo</label><input type="range" id="sTempo" min="70" max="130" step="1"><span id="sTempoV"></span></div>
+      <div class="sl"><label for="sTempo">Grundtempo</label><input type="range" id="sTempo" min="70" max="130" step="1"><span id="sTempoV"></span></div>
       <div class="sl"><label for="sNoise">Lebendigkeit</label><input type="range" id="sNoise" min="0.2" max="1" step="0.01"><span id="sNoiseV"></span></div>
       <div class="sl"><label for="sNoiseW">Rhythmus</label><input type="range" id="sNoiseW" min="0.2" max="1.3" step="0.01"><span id="sNoiseWV"></span></div>
       <div class="sl"><label for="sGap">Pause Satzteil</label><input type="range" id="sGap" min="0" max="0.6" step="0.02"><span id="sGapV"></span></div>
@@ -240,17 +261,43 @@
   <div class="statusrow"><span id="status" aria-live="polite">Bereit</span><span id="progText" class="hint"></span></div>
   <progress id="prog" max="1" value="0"></progress>
   <div class="ctrls">
+    <button id="btnPrev" aria-label="Satz zurück (zweimal: vorheriger Satz)">⏮</button>
     <button id="btnPlay" aria-label="Abspielen">▶</button>
     <button id="btnStop" aria-label="Stopp">■</button>
     <button id="btnNext" aria-label="Nächster Satz">⏭</button>
-    <button id="btnFlag" aria-label="Wort melden"><span class="ico">⚑</span><span class="cap">Wort melden</span></button>
   </div>
-  <div class="foot">
-    <label class="opt"><input type="checkbox" class="sw" id="optSkip"> Quellenangaben überspringen</label>
+  <div class="tools">
+    <button id="btnTempo" class="chip" aria-label="Tempo">1,0×</button>
+    <button id="btnFlag" class="chip" aria-label="Wort melden">⚑ Wort melden</button>
     <button id="btnOpts" class="chip">Vorlese-Optionen</button>
   </div>
-  <div class="verrow"><button id="btnList" class="link">Gemeldete Wörter (0)</button><span class="ver" id="ver"></span></div>
+  <div class="foot">
+    <label class="opt"><input type="checkbox" class="sw" id="optSkip"> Quellen überspringen</label>
+    <button id="btnList" class="link">Gemeldete Wörter (0)</button>
+  </div>
 </div></div>
+
+<!-- v0.8 Tempo -->
+<div id="tempoModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="tempoTitle">
+  <div class="sheet">
+    <div class="sheet-h"><b id="tempoTitle">Tempo</b><span id="tempoVal" class="tval">1,0×</span></div>
+    <input id="tempoRange" type="range" min="0.8" max="1.5" step="0.05" value="1" aria-label="Tempo">
+    <div class="tscale"><span>langsamer 0,8×</span><span>1,5× schneller</span></div>
+    <div id="tempoPresets" class="seg tpre"><button data-v="0.9">0,9×</button><button data-v="1">1,0×</button><button data-v="1.1">1,1×</button><button data-v="1.25">1,25×</button><button data-v="1.5">1,5×</button></div>
+    <p class="hint">Gilt ab dem nächsten Satz und wird gespeichert. Die Stimmlage bleibt gleich.</p>
+    <button id="tempoDone" class="primary">Fertig</button>
+  </div>
+</div>
+
+<!-- v0.8 Weiterhören? -->
+<div id="resumeModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="resumeTitle">
+  <div class="sheet">
+    <div class="sheet-h"><b id="resumeTitle">An der letzten Stelle weiterhören?</b></div>
+    <p id="resumeText" class="hint"></p>
+    <button id="resumeYes" class="primary">Ja, weiterhören</button>
+    <button id="resumeNo" class="primary soft2">Von vorn</button>
+  </div>
+</div>
 
 <!-- v0.7 PDF öffnen -->
 <div id="pdfModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="pdfTitle">
@@ -322,7 +369,7 @@
    Konfiguration (alle externen Quellen, Versionen fest angepinnt)
    ===================================================================== */
 const CONFIG = {
-  version: 'v0.7 · PDF-Import',
+  version: 'v0.8 · Komfort',
   ortBase:  'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/',
   phonBase: 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/',
   // v0.7 PDF: pdf.js 4.10.38 (Mozilla, Apache 2.0), „legacy“-Fassung = mit Ausweichcode für ältere Safari-Versionen
@@ -346,6 +393,8 @@ const polish = Object.assign({}, POLISH_DEFAULT, SAVED.polish || {});
 delete polish.vary;
 // v0.6.1 Vorlese-Optionen (Clara-Ansicht): Quellen überspringen, Gesetzeskürzel, Gender-Aussprache
 const readOpts = Object.assign({ skip: false, laws: 'abbr', gender: 'knack', margins: false, footnotes: false }, SAVED.read || {});
+// v0.8: Tempo aus der Clara-Ansicht (0,8–1,5×), wirkt zusätzlich zur Klang-Voreinstellung
+let tempo = Math.min(1.5, Math.max(0.8, +SAVED.tempo || 1));
 // v0.7: Zusatzinfos zum PDF-Text (graue Bereiche, Seitenmarken) – gilt nur, solange der Text im Feld unverändert ist
 let pdfInfo = null;
 
@@ -1783,6 +1832,7 @@ const ui = { src: '', sentences: [], spans: [], curIdx: -1, wordSpan: -1 };
 function setStatus(t) { $('status').textContent = t; }
 // Clara-Ansicht: entweder Eingabefeld (Text einfügen) oder Leseansicht (Text mit Markierung)
 function showRead(on) {
+  if (!on) weiterRender();                               // v0.8: Liste „Weiterhören“
   $('editBox').hidden = on;
   $('readBox').hidden = !on;
   $('firstHint').hidden = on;
@@ -2002,7 +2052,7 @@ class WebSpeechEngine {
   arm(textLeft, onTimeout) {
     clearTimeout(this.watchdog);
     if (this.paused) return;
-    this.watchdog = setTimeout(onTimeout, 8000 + textLeft.length * 140);
+    this.watchdog = setTimeout(onTimeout, (8000 + textLeft.length * 140) / Math.min(1, tempo));
   }
   speak(sentence, cb) {
     const synth = this.synth;
@@ -2030,7 +2080,7 @@ class WebSpeechEngine {
         const u = new SpeechSynthesisUtterance(p.speech);
         u.lang = (this.voice && this.voice.lang) || 'de-DE';
         if (this.voice) u.voice = this.voice;
-        u.rate = 1; u.pitch = 1; u.volume = 1;
+        u.rate = tempo; u.pitch = 1; u.volume = 1;       // v0.8: Tempo aus der Clara-Ansicht
         this.cur.u = u;                         // Referenz halten (Safari verliert sonst Events)
         let tStart = 0;
         u.onstart = () => {
@@ -2453,7 +2503,9 @@ class PiperEngine {
       cacheName: CONFIG.cacheName, useCache: !!window.caches && window.isSecureContext };
   }
   synthMsg(s, id) {
-    const k = curSound();                     // Klangwerte (Tempo, Lebendigkeit, Rhythmus, Pausen)
+    const k0 = curSound();                    // Klangwerte (Tempo, Lebendigkeit, Rhythmus, Pausen)
+    // v0.8 Tempo: Sprechdauer (length_scale) und Pausen ÷ Tempo – Tonhöhe bleibt gleich
+    const k = Object.assign({}, k0, { length: k0.length / tempo, gap: k0.gap / tempo, sent: k0.sent / tempo, para: k0.para / tempo });
     const parts = s.parts.filter(p => /[\p{L}\d]/u.test(p.speech));
     // v0.6 Pausenstaffel: Pause nach einem Satzteil je nach Satzzeichen, nach dem Satz je nach Satzende
     const gaps = parts.slice(0, -1).map(p => polish.pause ? +(k.gap * gapFactor(s.text.slice(p.start - s.start, p.end - s.start))).toFixed(3) : k.gap);
@@ -2469,7 +2521,7 @@ class PiperEngine {
     const gains = parts.map(p => (nat && p.aside ? ASIDE.gain : 1));
     if (nat && s.head) pad = Math.max(pad, k.para + HEAD.after);
     return { type: 'synth', id, parts: parts.map(p => p.piper || p.speech), padSec: pad, gaps, gapSec: k.gap,
-      scales: [k.noise, k.length, k.noiseW], lens, gains, leadSec: nat && s.head && s.i > 0 ? HEAD.before : 0, speakerId: this.speakerId,
+      scales: [k.noise, k.length, k.noiseW], lens, gains, leadSec: nat && s.head && s.i > 0 ? HEAD.before / tempo : 0, speakerId: this.speakerId,
       fx: { norm: polish.norm, fade: polish.fade, trim: polish.pause, warm: polish.warm } };
   }
   cacheName() { return CONFIG.cacheName; }
@@ -2555,6 +2607,11 @@ class PiperEngine {
   release(i) {
     const e = this.byIdx.get(i);
     if (e) { if (e.url) URL.revokeObjectURL(e.url); this.byIdx.delete(i); }
+  }
+  // v0.8: vorausberechnete Sätze verwerfen, den gerade laufenden behalten (Tempo-Wechsel wirkt ab dem nächsten Satz)
+  dropFuture(keep) {
+    for (const [i, e] of [...this.byIdx]) if (i !== keep) { if (e.url) URL.revokeObjectURL(e.url); this.byIdx.delete(i); }
+    if (this.worker) this.worker.postMessage({ type: 'drop' });
   }
   dropAll() {
     for (const e of this.byIdx.values()) if (e.url) URL.revokeObjectURL(e.url);
@@ -2646,6 +2703,7 @@ const ctl = {
   stateLabel() { return { idle: 'bereit', playing: 'spielt', paused: 'pausiert', loading: 'lädt …' }[this.state] || this.state; },
   setState(s, msg) {
     this.state = s;
+    if (s === 'idle') this.idleMsg = msg !== undefined ? msg : 'Bereit';   // v0.8: Ruhe-Meldung (z. B. „Weiter ab Satz …“) merken
     updateProgress(Math.max(0, ui.curIdx >= 0 ? ui.curIdx : this.cur));
     const b = $('btnPlay');
     b.textContent = s === 'playing' ? '⏸' : '▶';
@@ -2655,6 +2713,23 @@ const ctl = {
     else if (s === 'idle') setStatus('Bereit');
   },
   toggle() { if (this.state === 'playing') this.pause(); else this.play(); },
+  // v0.8 ⏮: einmal = aktuellen Satz von vorn; nochmal innerhalb ~1,2 s oder in den ersten ~2 s eines Satzes = vorheriger Satz
+  lastBack: 0, sentStartT: 0,
+  back() {
+    if (!ui.sentences.length || this.state === 'loading') return;
+    const t = now();
+    const quick = t - this.lastBack < 1200 || (this.state === 'playing' && t - this.sentStartT < 2000);
+    this.lastBack = t;
+    let i = ui.curIdx >= 0 ? ui.curIdx : Math.min(this.cur, ui.sentences.length - 1);
+    if (quick) { let k = i - 1; while (k > 0 && ui.sentences[k].silent) k--; i = Math.max(0, k); }
+    if (this.state === 'playing') { this.jump(i); return; }
+    const wasPaused = this.state === 'paused';
+    const eng = this.engine();
+    this.gen++; eng.stop(); if (eng.dropAll) eng.dropAll();
+    this.cur = i; markSentence(i);
+    this.setState('idle', wasPaused ? 'Pausiert – ▶ liest ab diesem Satz' : 'Bereit – ▶ liest ab diesem Satz');
+    weiterSave(i);
+  },
   // v0.5 (Stimmenvergleich): von vorn abspielen und warten, bis der Text zu Ende ist (true), gestoppt (false) oder 'fail'
   doneCb: null,
   done(v) { const d = this.doneCb; this.doneCb = null; if (d) d(v); },
@@ -2669,9 +2744,11 @@ const ctl = {
       eng.resume(); this.setState('playing', 'Liest vor'); return;
     }
     if (!$('src').value.trim()) { setStatus('Bitte zuerst Text einfügen'); return; }
-    if (ui.src !== $('src').value || !ui.sentences.length) applyText();
+    const fresh = ui.src !== $('src').value || !ui.sentences.length;
+    if (fresh) applyText();
     showRead(true);
     if (!ui.sentences.length) { log('Kein Text vorhanden.', 'warn'); return; }
+    if (fresh && weiterOffer(() => this.play())) return;  // v0.8: schon angefangener Text → „Weiterhören?“
     if (this.cur >= ui.sentences.length) this.cur = 0;
     if (eng.needsLoad && !eng.isLoaded($('voiceSel').value)) {
       this.setState('loading', 'Stimme wird geladen …');
@@ -2682,6 +2759,7 @@ const ctl = {
     this.start(this.cur);
   },
   start(i) {
+    weiterBegin();                                       // v0.8: Text für „Weiterhören“ merken
     const g = ++this.gen;
     this.setState('playing', 'Wird vorbereitet …');
     this.firstInRun = true;
@@ -2697,6 +2775,7 @@ const ctl = {
       if (ui.sentences[i].silent) { i++; continue; }        // v0.7: Kopfzeile/Seitenzahl/Fußnote – nicht vorlesen
       this.cur = i;
       markSentence(i);
+      weiterSave(i);                                       // v0.8: Leseposition bei jedem Satzwechsel
       const s = ui.sentences[i];
       const next = [];
       for (let k = i + 1; k < ui.sentences.length && next.length < CONFIG.prefetch; k++) if (!ui.sentences[k].silent) next.push(ui.sentences[k]);
@@ -2704,7 +2783,7 @@ const ctl = {
       const first = this.firstInRun;
       try {
         await eng.speak(s, {
-          onStart: () => { if (this.firstInRun) { this.firstInRun = false; met.ttfa.push(now() - this.tPlay); renderMetrics(); } if (g === this.gen) setStatus('Liest vor'); },
+          onStart: () => { this.sentStartT = now(); if (this.firstInRun) { this.firstInRun = false; met.ttfa.push(now() - this.tPlay); renderMetrics(); } if (g === this.gen) setStatus('Liest vor'); },
           onWord: (a, b) => { if (g === this.gen) { met.words++; markWord(i, a, b); } },
           onWait: (ms) => { if (!first && ms > 30) { met.waits++; met.waitMs += ms; log(`Wartepause ${fmtMs(ms)} vor Satz ${i + 1}`, 'warn'); } },
           onSynth: (ms, sec) => { met.synthMs += ms; met.speechSec += sec; },
@@ -2724,6 +2803,7 @@ const ctl = {
       i++;
     }
     if (g !== this.gen) return;
+    weiterSave(-1, true);                                  // v0.8: Text zu Ende gehört
     this.cur = 0;
     markSentence(-1);
     this.setState('idle', 'Fertig – ▶ liest noch einmal von vorn');
@@ -2736,8 +2816,10 @@ const ctl = {
     if (eng.pauseMode === 'restart') { this.gen++; eng.stop(); }
     else eng.pause();
     this.setState('paused');
+    if (ui.curIdx >= 0) weiterSave(ui.curIdx);
   },
   stop() {
+    if ((this.state === 'playing' || this.state === 'paused') && ui.curIdx >= 0) weiterSave(ui.curIdx);   // v0.8
     this.gen++;
     const eng = this.engine();
     eng.stop();
@@ -2870,7 +2952,7 @@ async function preloadIfCached() {
     if (ctl.state === 'idle') setStatus('Stimme wird vorbereitet …');
     await loadSelected();
     preloadQuiet = false;
-    if (ctl.state === 'idle') setStatus('Bereit');
+    if (ctl.state === 'idle') setStatus(ctl.idleMsg || 'Bereit');
   } catch (e) { preloadQuiet = false; }
 }
 
@@ -2988,18 +3070,20 @@ async function pdfTake() {
       $('pdfGo').disabled = false; $('pdfProg').hidden = true; $('pdfRangeBox').hidden = true;
       return;
     }
-    pdfInfo = Object.assign(res, { name: pdfState.name, from, to });
+    pdfInfo = Object.assign(res, { name: pdfState.name, from, to, total: doc.numPages });
     $('src').value = res.src;
     pdfClose();
     applyText();
     ctl.cur = 0;
+    weiter.asked = '';                                      // neu geöffnet → wieder fragen
+    const offered = weiterOffer(null);                     // v0.8: diese PDF schon angefangen?
     const grey = res.ranges.filter(r => r.kind !== 'fnref').length;
     let msg = `PDF übernommen: ${to - from + 1} ${to > from ? 'Seiten' : 'Seite'} – ▶ drücken`;
     if (res.scanPages.length) {
       msg = `Achtung: Seite ${pageList(res.scanPages)} ohne lesbaren Text (vermutlich eingescannt) – wird übersprungen. ▶ drücken`;
       toast(`Seite ${pageList(res.scanPages)} enthält keinen Text (Scan?) und wird übersprungen.`, 5000);
     }
-    setStatus(msg);
+    if (!offered) setStatus(msg);
     log(`PDF „${pdfState.name || pdfInfo.name}“: Seiten ${from}–${to}, ${res.src.length} Zeichen, ${grey} graue Stellen, ${res.ranges.filter(r => r.kind === 'fnref').length} Fußnotenziffern, ${fmtMs(now() - t0)}` +
       (res.scanPages.length ? `, ohne Text: ${pageList(res.scanPages)}` : ''));
   } catch (e) {
@@ -3007,6 +3091,202 @@ async function pdfTake() {
     log('PDF lesen fehlgeschlagen: ' + ((e && e.message) || e), 'error');
   } finally { $('pdfGo').disabled = false; }
 }
+/* =====================================================================
+   v0.8 Leseposition merken – „Weiterhören“
+   - Positionen (klein) in localStorage, Texte (groß, z. B. PDF-Reader) in IndexedDB. Alles bleibt auf dem Gerät.
+   - Position = Zeichenstelle im Original (Anfang des aktuellen Satzes) + kurzer Textausschnitt zur Kontrolle,
+     nicht die Satznummer → bleibt richtig, auch wenn sich die Satzteilung (Optionen, neue Version) ändert.
+   - Höchstens 5 Texte; der älteste fällt heraus. Eingebaute Beispiel-/Testtexte werden nicht gemerkt.
+   ===================================================================== */
+const WEITER_KEY = 'hoerlabor-weiter-v1', WEITER_MAX = 5;
+const weiter = { cur: null, asked: '' };                  // cur = { id, title, kind } des laufenden Textes
+function weiterList() { try { const v = JSON.parse(localStorage.getItem(WEITER_KEY) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+function weiterSaveList(l) { try { localStorage.setItem(WEITER_KEY, JSON.stringify(l)); } catch (e) { log('Leseposition: Speichern nicht möglich (' + e.message + ')', 'warn'); } }
+const WDB = {
+  p: null,
+  open() {
+    if (!this.p) this.p = new Promise((res, rej) => {
+      if (!window.indexedDB) return rej(new Error('IndexedDB nicht verfügbar'));
+      const r = indexedDB.open('hoerlabor', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('texte', { keyPath: 'id' });
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+    return this.p;
+  },
+  async run(mode, fn) {
+    const db = await this.open();
+    return new Promise((res, rej) => {
+      const tx = db.transaction('texte', mode), st = tx.objectStore('texte');
+      const r = fn(st);
+      tx.oncomplete = () => res(r && r.result);
+      tx.onerror = tx.onabort = () => rej(tx.error || (r && r.error));
+    });
+  },
+  put(o) { return this.run('readwrite', st => st.put(o)); },
+  get(id) { return this.run('readonly', st => st.get(id)); },
+  del(id) { return this.run('readwrite', st => st.delete(id)); }
+};
+// Fingerabdruck des Textes (gleicher Text / gleiche PDF-Seiten → gleicher Eintrag)
+function textId(src) {
+  let h1 = 0x811c9dc5, h2 = 0x01000193;
+  for (let i = 0; i < src.length; i++) { const c = src.charCodeAt(i); h1 = Math.imul(h1 ^ c, 16777619); h2 = Math.imul(h2 + c, 2246822507) ^ (h2 >>> 13); }
+  return 't' + (h1 >>> 0).toString(36) + (h2 >>> 0).toString(36) + src.length.toString(36);
+}
+function isBuiltinText(src) {
+  const t = src.trim();
+  return [SAMPLE_START, SAMPLE_TEXT, SAMPLE_PRON, SAMPLE_SA, COMPARE_TEXT, ...TEST_TEXTS.map(x => x[1])].some(x => x.trim() === t);
+}
+function textTitle(src) {
+  if (pdfInfo && pdfInfo.src === src && pdfInfo.name) return pdfInfo.name.replace(/\.pdf$/i, '') + (pdfInfo.from > 1 || pdfInfo.to < (pdfInfo.total || pdfInfo.to) ? ` (S. ${pdfInfo.from}–${pdfInfo.to})` : '');
+  const line = (src.split('\n').map(l => l.trim()).find(l => /\p{L}/u.test(l)) || 'Text').replace(/\s+/g, ' ');
+  if (line.length <= 60) return line;
+  const cut = line.slice(0, 60);
+  return cut.slice(0, Math.max(30, cut.lastIndexOf(' '))) + ' …';
+}
+function pageAt(offset) {
+  if (!pdfInfo || pdfInfo.src !== ui.src || !pdfInfo.marks.length) return null;
+  let pg = pdfInfo.marks[0].page;
+  for (const m of pdfInfo.marks) { if (m.pos <= offset) pg = m.page; else break; }
+  return pg;
+}
+// Beim Start der Wiedergabe: Text merken (einmal), Eintrag anlegen/nach oben holen
+async function weiterBegin() {
+  const src = ui.src;
+  if (!src.trim() || isBuiltinText(src)) { weiter.cur = null; return; }
+  const id = textId(src);
+  if (weiter.cur && weiter.cur.id === id) return;
+  const kind = pdfInfo && pdfInfo.src === src ? 'pdf' : 'text';
+  weiter.cur = { id, title: textTitle(src), kind };
+  let l = weiterList();
+  if (!l.some(e => e.id === id)) {
+    const rec = { id, src, pdf: kind === 'pdf' ? { ranges: pdfInfo.ranges, marks: pdfInfo.marks, scanPages: pdfInfo.scanPages, name: pdfInfo.name, from: pdfInfo.from, to: pdfInfo.to } : null };
+    for (let tries = 0; ; tries++) {
+      try { await WDB.put(rec); break; }
+      catch (e) {
+        l = weiterList();
+        const old = l.filter(x => x.id !== id).sort((a, b) => a.updated - b.updated)[0];
+        if (!old || tries > 4) { log('Leseposition: Text konnte nicht gespeichert werden (' + ((e && e.name) || e) + ')', 'warn'); weiter.cur = null; return; }
+        weiterSaveList(l.filter(x => x.id !== old.id)); try { await WDB.del(old.id); } catch (e2) {}
+        log('Speicher voll – ältesten Weiterhören-Eintrag entfernt: ' + old.title, 'warn');
+      }
+    }
+    l = weiterList();
+  }
+  const ent = l.find(e => e.id === id) || { id, offset: 0, pct: 0 };
+  Object.assign(ent, { title: weiter.cur.title, kind, chars: src.length, pages: kind === 'pdf' ? pdfInfo.to - pdfInfo.from + 1 : null, updated: Date.now() });
+  l = [ent].concat(l.filter(e => e.id !== id));
+  while (l.length > WEITER_MAX) { const old = l.pop(); WDB.del(old.id).catch(() => {}); }
+  weiterSaveList(l);
+}
+// Position speichern (bei Satzwechsel, Pause, Stopp, Seite im Hintergrund, Textende)
+function weiterSave(i, done) {
+  if (!weiter.cur || weiter.cur.id !== textId.lastId(ui.src)) return;
+  const s = ui.sentences[i];
+  const l = weiterList(), ent = l.find(e => e.id === weiter.cur.id);
+  if (!ent) return;
+  if (done) Object.assign(ent, { offset: 0, pct: 100, snippet: '', page: null });
+  else if (s) Object.assign(ent, { offset: s.start, pct: Math.min(99, Math.round(100 * s.start / Math.max(1, ui.src.length))), snippet: ui.src.slice(s.start, s.start + 40), page: pageAt(s.start) });
+  ent.updated = Date.now();
+  weiterSaveList([ent].concat(l.filter(e => e.id !== ent.id)));
+}
+// schneller Vergleich, ob der Text noch derselbe ist (Fingerabdruck nur bei Änderung neu berechnen)
+textId.lastId = (src) => { if (textId._src !== src) { textId._src = src; textId._id = textId(src); } return textId._id; };
+// Satz, der die gespeicherte Zeichenstelle enthält (Ausschnitt zur Kontrolle; notfalls danach suchen)
+function sentenceAtOffset(ent) {
+  let off = ent.offset || 0;
+  if (ent.snippet && ui.src.slice(off, off + ent.snippet.length) !== ent.snippet) {
+    const k = ui.src.indexOf(ent.snippet);
+    if (k >= 0) off = k;
+  }
+  const S = ui.sentences;
+  let lo = 0, hi = S.length - 1, best = 0;
+  while (lo <= hi) { const m = (lo + hi) >> 1; if (S[m].start <= off) { best = m; lo = m + 1; } else hi = m - 1; }
+  while (best < S.length - 1 && S[best].silent) best++;
+  return best;
+}
+function weiterPosition(ent, msg) {
+  const i = sentenceAtOffset(ent);
+  ctl.cur = i;
+  markSentence(i);
+  ctl.setState('idle', msg || `Weiter ab Satz ${i + 1} (${ent.pct} %${ent.page ? ', Seite ' + ent.page : ''}) – ▶ drücken`);
+  weiter.asked = ent.id;
+}
+// Eintrag aus der Liste öffnen: Text (und PDF-Infos) laden und am gespeicherten Satz positionieren
+async function weiterOpen(id) {
+  ctl.stop();
+  const ent = weiterList().find(e => e.id === id);
+  let rec = null;
+  try { rec = await WDB.get(id); } catch (e) {}
+  if (!ent || !rec) { toast('Dieser Text ist nicht mehr gespeichert.'); weiterSaveList(weiterList().filter(e => e.id !== id)); weiterRender(); return; }
+  $('src').value = rec.src;
+  pdfInfo = rec.pdf ? Object.assign({ src: rec.src }, rec.pdf) : null;
+  applyText();
+  weiter.cur = { id, title: ent.title, kind: ent.kind };
+  if (ent.pct >= 100) { ctl.cur = 0; ctl.setState('idle', 'Fertig gehört – ▶ liest von vorn'); }
+  else weiterPosition(ent);
+}
+// Neuer Text, der schon einmal angefangen wurde → „An der letzten Stelle weiterhören?“
+function weiterOffer(after) {
+  const id = textId.lastId(ui.src);
+  const ent = weiterList().find(e => e.id === id);
+  if (!ent || weiter.asked === id || !(ent.pct > 0 && ent.pct < 100)) return false;
+  weiter.asked = id;
+  $('resumeText').textContent = `„${ent.title}“ – zuletzt bei ${ent.pct} %${ent.page ? ' (Seite ' + ent.page + ')' : ''}, ${fmtDate(new Date(ent.updated).toISOString())}.`;
+  $('resumeModal').hidden = false;
+  $('resumeYes').onclick = () => { $('resumeModal').hidden = true; weiterPosition(ent); if (after) after(); };
+  $('resumeNo').onclick = () => { $('resumeModal').hidden = true; ctl.cur = 0; markSentence(-1); if (after) after(); };
+  return true;
+}
+function weiterRender() {
+  const l = weiterList(), box = $('resumeBox'), list = $('resumeList');
+  box.hidden = !l.length;
+  list.textContent = '';
+  for (const e of l) {
+    const row = document.createElement('div'); row.className = 'witem';
+    const b = document.createElement('button'); b.className = 'wopen';
+    const t = document.createElement('span'); t.className = 'wt'; t.textContent = (e.kind === 'pdf' ? '📄 ' : '📝 ') + e.title;
+    const m = document.createElement('span'); m.className = 'wm';
+    m.textContent = (e.pct >= 100 ? 'fertig gehört' : e.pct + ' %') + (e.page ? ' · Seite ' + e.page : '') + ' · ' + fmtDate(new Date(e.updated).toISOString());
+    const bar = document.createElement('span'); bar.className = 'wbar'; bar.style.setProperty('--p', Math.min(100, e.pct) + '%');
+    b.append(t, m, bar);
+    b.onclick = () => weiterOpen(e.id);
+    const x = document.createElement('button'); x.className = 'wdel'; x.textContent = '✕'; x.setAttribute('aria-label', 'Eintrag löschen: ' + e.title);
+    x.onclick = () => { weiterSaveList(weiterList().filter(y => y.id !== e.id)); WDB.del(e.id).catch(() => {}); if (weiter.cur && weiter.cur.id === e.id) weiter.cur = null; weiterRender(); };
+    row.append(b, x);
+    list.appendChild(row);
+  }
+}
+$('src').addEventListener('input', () => { weiter.asked = ''; });   // Text neu eingefügt → beim ▶ wieder fragen
+document.addEventListener('visibilitychange', () => { if (document.hidden && (ctl.state === 'playing' || ctl.state === 'paused') && ui.curIdx >= 0) weiterSave(ui.curIdx); });
+window.addEventListener('pagehide', () => { if ((ctl.state === 'playing' || ctl.state === 'paused') && ui.curIdx >= 0) weiterSave(ui.curIdx); });
+
+/* ---------- v0.8 Tempo in der Clara-Ansicht ---------- */
+const fmtTempo = (v) => v.toFixed(2).replace(/0$/, '').replace('.', ',') + '×';
+function showTempo() { $('btnTempo').textContent = fmtTempo(tempo); $('tempoRange').value = tempo; $('tempoVal').textContent = fmtTempo(tempo);
+  for (const b of $('tempoPresets').children) b.classList.toggle('on', Math.abs(+b.dataset.v - tempo) < 0.001); }
+function setTempo(v) {
+  v = Math.round(Math.min(1.5, Math.max(0.8, v)) * 20) / 20;
+  if (v === tempo) { showTempo(); return; }
+  tempo = v; saveSound(); showTempo();
+  log('Tempo: ' + fmtTempo(tempo));
+  // ab dem nächsten Satz: vorausberechnete Sätze verwerfen und sofort mit neuem Tempo neu berechnen
+  const eng = ctl.engine();
+  if (eng.dropFuture && ctl.state === 'playing') {
+    eng.dropFuture(ui.curIdx);
+    const next = [];
+    for (let k = ui.curIdx + 1; k < ui.sentences.length && next.length < CONFIG.prefetch; k++) if (!ui.sentences[k].silent) next.push(ui.sentences[k]);
+    eng.prefetch(next);
+  } else if (eng.dropAll && ctl.state !== 'playing') { if (ctl.state === 'paused') eng.dropFuture(ui.curIdx); else eng.dropAll(); }
+}
+$('btnTempo').onclick = () => { showTempo(); $('tempoModal').hidden = false; };
+$('tempoRange').oninput = () => { $('tempoVal').textContent = fmtTempo(+$('tempoRange').value); };
+$('tempoRange').onchange = () => setTempo(+$('tempoRange').value);
+for (const b of $('tempoPresets').children) b.onclick = () => setTempo(+b.dataset.v);
+$('tempoDone').onclick = () => { setTempo(+$('tempoRange').value); $('tempoModal').hidden = true; };
+$('tempoModal').onclick = (e) => { if (e.target.id === 'tempoModal') { setTempo(+$('tempoRange').value); $('tempoModal').hidden = true; } };
+showTempo();
+
 $('btnPdf').onclick = () => $('pdfFile').click();
 $('pdfFile').onchange = () => { const f = $('pdfFile').files && $('pdfFile').files[0]; if (f) pdfOpenFile(f); };
 for (const b of $('segPages').children) b.onclick = () => { pdfState.all = b.dataset.v === 'all'; pdfShowRange(); };
@@ -3057,6 +3337,7 @@ $('btnApply').onclick = () => { ctl.stop(); applyText(); };
 $('btnPlay').onclick = () => ctl.toggle();
 $('btnStop').onclick = () => { cmpRun++; cmpBanner(''); ctl.stop(); };
 $('btnNext').onclick = () => ctl.jump(ctl.cur + 1);
+$('btnPrev').onclick = () => ctl.back();
 $('view').onclick = (e) => {
   const sp = e.target.closest('.s');
   if (sp) ctl.jump(+sp.dataset.i);
@@ -3109,6 +3390,7 @@ if ('mediaSession' in navigator) {
     navigator.mediaSession.setActionHandler('play', () => ctl.play());
     navigator.mediaSession.setActionHandler('pause', () => ctl.pause());
     navigator.mediaSession.setActionHandler('nexttrack', () => ctl.jump(ctl.cur + 1));
+    navigator.mediaSession.setActionHandler('previoustrack', () => ctl.back());   // v0.8
   } catch (e) {}
 }
 
@@ -3348,7 +3630,7 @@ function curSound() {
   return p.sound === 'own' ? ownSound : SOUND_PRESETS[p.sound];
 }
 function saveSound() {
-  try { localStorage.setItem(SOUND_KEY, JSON.stringify({ profile: soundProfile, own: ownSound, polish, wsVoice, read: readOpts })); } catch (e) {}
+  try { localStorage.setItem(SOUND_KEY, JSON.stringify({ profile: soundProfile, own: ownSound, polish, wsVoice, read: readOpts, tempo })); } catch (e) {}
 }
 const SLIDERS = [   // [id, Feld, Anzeige]
   ['sTempo', 'length', (v) => Math.round(100 / v) + ' %'],
