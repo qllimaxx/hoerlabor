@@ -130,17 +130,28 @@
   #log { border-radius: 8px; }
   .cmpb { border-radius: 12px; }
   #view { border-radius: 14px; box-shadow: 0 1px 2px rgba(0,0,0,.03); }
+  /* v0.7 PDF */
+  #view .skip-margin, #view .skip-fn { font-size: .82em; }
+  #view .skip-fnref { font-size: .9em; }
+  .pgmark::before { content: attr(data-p); display: block; margin: 14px 0 6px; padding: 2px 0; border-top: 1px dashed #d6d3cc; color: #9a968c; font-size: .75rem; letter-spacing: .03em; }
+  .pgmark.scan::before { color: #b06b00; }
+  #pdfProg { width: 100%; height: 10px; margin: 10px 0 4px; }
+  .pgrange { display: flex; gap: 16px; margin-top: 10px; }
+  .pgrange input { width: 5.5em; font: inherit; padding: 8px; border: 1px solid var(--line); border-radius: 10px; margin-left: 6px; }
+  #pdfModal .primary { margin-top: 14px; }
   [hidden] { display: none !important; }
 </style>
 </head>
 <body>
 <h1>Hörlabor</h1>
-<p id="firstHint" class="hint">Zum Ausprobieren steht schon ein Beispieltext im Feld: einfach ▶ drücken.<br>Eigenen Text: „Eigenen Text einfügen“ tippen.</p>
+<p id="firstHint" class="hint">Zum Ausprobieren steht schon ein Beispieltext im Feld: einfach ▶ drücken.<br>Eigenen Text: „Eigenen Text einfügen“ oder „PDF öffnen“ tippen.</p>
 
 <div id="editBox">
   <div class="row">
     <button id="btnPaste" class="pastebtn">📋 Eigenen Text einfügen</button>
+    <button id="btnPdf" class="pastebtn">📄 PDF öffnen</button>
     <button id="btnClearText">Feld leeren</button>
+    <input id="pdfFile" type="file" accept="application/pdf,.pdf" hidden>
   </div>
   <textarea id="src" spellcheck="false" placeholder="Text hier einfügen (ins Feld tippen → „Einsetzen“)"></textarea>
 </div>
@@ -185,6 +196,7 @@
   </div></details>
 
   <details class="grp" id="gPron"><summary>🗣 Aussprache</summary><div class="body">
+    <label class="tg"><span class="tx"><b>Fußnoten vorlesen (PDF)</b><small>Sicherheitsnetz: nur einschalten, falls echter Text fälschlich als Fußnote grau markiert wurde.</small></span><input type="checkbox" class="sw" id="optFn"></label>
     <label class="tg"><span class="tx"><b>Aussprache-Hilfe</b><small>Wörterbuch für Fachbegriffe, Abkürzungen, Zahlen, Paragrafen, Aufzählungen.</small></span><input type="checkbox" class="sw" id="optHelp" checked></label>
     <div id="nowText" class="hint">–</div>
     <details id="speechBox"><summary>So wird der aktuelle Satz gesprochen</summary><div id="speechText">–</div></details>
@@ -198,6 +210,8 @@
       <button id="btnSample" class="soft">Phase-1-Text</button>
       <button id="btnApply" class="soft">Text neu übernehmen</button>
     </div>
+    <div class="fld"><label for="testSel">Fachtexte zum Testen (fiktiv, mit vielen Fachwörtern – für „Wort melden“)</label>
+      <select id="testSel"><option value="">– Text auswählen –</option></select></div>
     <p class="hint">Ersetzt den Text im Feld. <span id="integrity"></span></p>
   </div></details>
 
@@ -238,11 +252,30 @@
   <div class="verrow"><button id="btnList" class="link">Gemeldete Wörter (0)</button><span class="ver" id="ver"></span></div>
 </div></div>
 
+<!-- v0.7 PDF öffnen -->
+<div id="pdfModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="pdfTitle">
+  <div class="sheet">
+    <div class="sheet-h"><b id="pdfTitle">PDF öffnen</b><button id="pdfClose" class="x" aria-label="Schließen">✕</button></div>
+    <div id="pdfInfoLine" class="hint"></div>
+    <div id="pdfRangeBox" hidden>
+      <div class="og"><b>Welche Seiten?</b>
+        <div class="seg" id="segPages"><button data-v="all" class="on">Alle Seiten</button><button data-v="range">Seite von – bis</button></div>
+        <div id="pdfRange" class="pgrange" hidden><label>von <input id="pdfFrom" type="number" inputmode="numeric" min="1" value="1"></label><label>bis <input id="pdfTo" type="number" inputmode="numeric" min="1" value="1"></label></div>
+      </div>
+      <button id="pdfGo" class="primary">Text übernehmen</button>
+    </div>
+    <progress id="pdfProg" max="1" value="0" hidden></progress>
+    <div id="pdfMsg" class="hint"></div>
+    <p class="hint">Die PDF bleibt auf diesem Gerät und wird nicht gespeichert. Kopfzeilen, Seitenzahlen und Fußnoten werden grau angezeigt und nicht vorgelesen.</p>
+  </div>
+</div>
+
 <!-- v0.6.1 Vorlese-Optionen -->
 <div id="optModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="optTitle">
   <div class="sheet">
     <div class="sheet-h"><b id="optTitle">Vorlese-Optionen</b><button id="optClose" class="x" aria-label="Schließen">✕</button></div>
     <label class="tg"><span class="tx"><b>Quellenangaben überspringen</b><small>„(Müller 2019, S. 12)“ wird nicht vorgelesen und im Text grau angezeigt.</small></span><input type="checkbox" class="sw" id="optSkip2"></label>
+    <label class="tg"><span class="tx"><b>Kopfzeilen &amp; Seitenzahlen vorlesen</b><small>Nur bei PDFs: wiederkehrende Kopf- und Fußzeilen, Seitenzahlen (grau). Normalerweise aus.</small></span><input type="checkbox" class="sw" id="optMargins"></label>
     <div class="og"><b>Gesetzesangaben</b><small>Wie Kürzel wie „SGB“, „GG“ oder „BGB“ gesprochen werden.</small>
       <div class="seg" id="segLaws"><button data-v="abbr">Kürzel<small>„S G B acht“</small></button><button data-v="full">Ausgeschrieben<small>„Sozialgesetzbuch acht“</small></button></div></div>
     <div class="og"><b>Gender-Formen</b><small>Wie „Expert*innen“ oder „Klient:innen“ gesprochen werden.</small>
@@ -289,9 +322,11 @@
    Konfiguration (alle externen Quellen, Versionen fest angepinnt)
    ===================================================================== */
 const CONFIG = {
-  version: 'v0.6.1 · Aussprache-Runde',
+  version: 'v0.7 · PDF-Import',
   ortBase:  'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/',
   phonBase: 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/',
+  // v0.7 PDF: pdf.js 4.10.38 (Mozilla, Apache 2.0), „legacy“-Fassung = mit Ausweichcode für ältere Safari-Versionen
+  pdfBase:  'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/',
   hfBase:   'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/de/de_DE/',
   cacheName: 'hoerlabor-piper-v1',
   maxPartChars: 220,       // längere Sätze werden intern für die Sprachausgabe geteilt
@@ -310,7 +345,9 @@ const POLISH_DEFAULT = { norm: true, fade: true, split: true, pause: true, warm:
 const polish = Object.assign({}, POLISH_DEFAULT, SAVED.polish || {});
 delete polish.vary;
 // v0.6.1 Vorlese-Optionen (Clara-Ansicht): Quellen überspringen, Gesetzeskürzel, Gender-Aussprache
-const readOpts = Object.assign({ skip: false, laws: 'abbr', gender: 'knack' }, SAVED.read || {});
+const readOpts = Object.assign({ skip: false, laws: 'abbr', gender: 'knack', margins: false, footnotes: false }, SAVED.read || {});
+// v0.7: Zusatzinfos zum PDF-Text (graue Bereiche, Seitenmarken) – gilt nur, solange der Text im Feld unverändert ist
+let pdfInfo = null;
 
 // v0.5 Klang-Voreinstellungen für Piper/Thorsten (length = length_scale: >1 langsamer; noise = noise_scale: Lebendigkeit
 // der Stimme; noiseW = noise_w: Rhythmus-Variation; Pausen in Sekunden: gap = zwischen Satzteilen langer Sätze,
@@ -349,6 +386,91 @@ Im 3. Semester (Wintersemester 2025/26) befassen sich Sozialarbeiter*innen mit d
 2.4 Fallbeispiel (v0.6.1)
 
 Rund 63 % der 1.024 befragten Expert*innen und Klient:innen hielten es für nötig, die Lage frühzeitig einzuschätzen und Ganztagsangebote anzubieten (vgl. Weber 2021, S. 23–25). Defizite zeigten sich vor allem beim Schutzauftrag nach § 8a Abs. 1 S. 2 SGB VIII, bei der Inobhutnahme und im Tripelmandat der Sozialen Arbeit (siehe auch Art. 6 GG). Die StudentInnen bewerteten den Beratungsansatz im Durchschnitt mit 3,5 Punkten; im 21. Jahrhundert wird das Angebot weiter wachsen.`;
+
+// v0.7 Testtexte für „Wort melden“ (alle FIKTIV, Stil Lehrbuch/Hausarbeit; Quellen erfunden).
+// Bewusst NICHT ans Wörterbuch angepasst – sie sollen Aussprachelücken sichtbar machen.
+const TEST_TEXTS = [
+['Kinderschutz & Jugendhilferecht',
+`3.4 Schutzauftrag und Hilfeplanung im Kinder- und Jugendhilferecht (fiktiver Beispieltext)
+
+Der Schutzauftrag bei Kindeswohlgefährdung ist in § 8a SGB VIII geregelt und verpflichtet das Jugendamt, gewichtige Anhaltspunkte im Zusammenwirken mehrerer Fachkräfte abzuschätzen (vgl. Brenner & Sauer, 2021, S. 112 ff.). Ergänzend konkretisiert das Bundeskinderschutzgesetz die Kooperation mit Berufsgeheimnisträger:innen wie Ärzt:innen, Hebammen und Lehrkräften; nach § 4 KKG dürfen diese unter bestimmten Voraussetzungen Informationen an das Jugendamt übermitteln. In der Praxis zeigt sich jedoch, dass Gefährdungseinschätzungen häufig unter Zeitdruck erfolgen und die Dokumentation uneinheitlich ist (Wiegand 2020: 47).
+
+Kommt es zu einer akuten Gefahr, kann das Jugendamt das Kind nach § 42 SGB VIII in Obhut nehmen. Die Inobhutnahme ist als vorläufige Schutzmaßnahme konzipiert; spätestens dann muss ein Hilfeplanverfahren nach § 36 SGB VIII eingeleitet werden, an dem die Personensorgeberechtigten sowie das Kind oder die bzw. der Jugendliche angemessen zu beteiligen sind. Im Jahr 2023 wurden bundesweit rund 74.400 Inobhutnahmen gezählt, davon etwa 39 % wegen Überforderung der Eltern und ca. 26 % aufgrund unbegleiteter Einreise (Statistisches Landesamt Nordheim 2024).
+
+Kritisch diskutiert wird das Spannungsverhältnis zwischen Elternrecht nach Art. 6 GG und staatlichem Wächteramt. Fachkräfte bewegen sich in einem Dilemma: Greifen sie zu früh ein, gefährden sie das Vertrauensverhältnis und die Mitwirkungsbereitschaft der Familie; handeln sie zu spät, drohen Vernachlässigung, Misshandlung oder sexualisierte Gewalt. Instrumente wie standardisierte Risikoeinschätzungsbögen, kollegiale Fallberatung und das Vier-Augen-Prinzip sollen die Entscheidungsqualität erhöhen. Studien weisen allerdings darauf hin, dass Checklisten das professionelle Ermessen nicht ersetzen können (vgl. Hollmann et al. 2019; Petersen 2022, S. 18–23).
+
+Mit dem Kinder- und Jugendstärkungsgesetz (KJSG) wurde zudem die Ombudschaft gestärkt: Nach § 9a SGB VIII sollen unabhängige Ombudsstellen junge Menschen und ihre Familien bei Konflikten mit öffentlichen und freien Trägern beraten.`],
+['Armut, Ungleichheit & Bürgergeld',
+`5.2.10.1 Armut und soziale Ungleichheit (fiktiver Beispieltext)
+
+Armut wird in der Sozialberichterstattung überwiegend relativ gemessen: Als armutsgefährdet gilt, wer weniger als 60 % des Medianeinkommens zur Verfügung hat. Für einen Einpersonenhaushalt lag diese Schwelle 2023 bei etwa 1.314 Euro netto im Monat (Mikrozensus-Sonderauswertung, zit. n. Albrecht 2024, S. 9). Die Armutsgefährdungsquote stieg im Zehnjahresvergleich von 15,5 % auf 16,8 %, wobei Alleinerziehende, kinderreiche Familien und Erwerbslose überproportional betroffen sind.
+
+Neben der Einkommensarmut beschreibt der Lebenslagenansatz Unterversorgung in den Dimensionen Wohnen, Gesundheit, Bildung und gesellschaftliche Partizipation (vgl. Neumann & Okafor, 2020). Pierre Bourdieus Kapitaltheorie ergänzt diese Perspektive: Ökonomisches, kulturelles und soziales Kapital sind ungleich verteilt und reproduzieren sich intergenerational. Kinder aus einkommensschwachen Haushalten erreichen seltener die gymnasiale Oberstufe, und Bildungsaufstiege bleiben trotz Bildungsexpansion die Ausnahme.
+
+Mit dem Bürgergeld-Gesetz wurde die Grundsicherung für Arbeitsuchende nach dem SGB II zum 1. Januar 2023 reformiert. Die Regelbedarfe wurden angehoben, die Karenzzeit für Wohnkosten und Schonvermögen eingeführt und das Kooperationsverfahren an die Stelle der Eingliederungsvereinbarung gesetzt. Kritiker:innen bemängeln, dass Leistungsminderungen weiterhin möglich sind und die Regelsätze die Inflation nur verzögert abbilden; Befürworter:innen verweisen auf den Vorrang von Qualifizierung vor schneller Vermittlung (Krüger 2023; Demir/Lang 2024, S. 77).
+
+Für die Soziale Arbeit ergeben sich daraus Aufgaben auf mehreren Ebenen: Existenzsicherungsberatung, Schuldner- und Insolvenzberatung, Unterstützung bei Widersprüchen gegen Bescheide sowie sozialpolitische Lobbyarbeit. Das Konzept der Armutssensibilität fordert, Stigmatisierung zu vermeiden und Teilhabechancen aktiv zu eröffnen – etwa über das Bildungs- und Teilhabepaket nach § 28 SGB II.`],
+['Entwicklungspsychologie & Bindung',
+`2.3 Bindungstheorie und frühkindliche Entwicklung (fiktiver Beispieltext)
+
+Die Bindungstheorie nach John Bowlby und Mary Ainsworth beschreibt das angeborene Bedürfnis von Säuglingen, emotionale Nähe zu einer oder mehreren Bezugspersonen herzustellen. In der sogenannten Fremden Situation, einem standardisierten Laborverfahren mit acht Episoden, wurden vier Bindungsqualitäten unterschieden: sicher, unsicher-vermeidend, unsicher-ambivalent sowie desorganisiert/desorientiert (vgl. Lindner 2018, S. 64–70). Etwa 55 bis 65 % der untersuchten Kinder in nichtklinischen Stichproben zeigen ein sicheres Bindungsmuster.
+
+Feinfühligkeit gilt als zentrale Determinante: Bezugspersonen, die kindliche Signale wahrnehmen, richtig interpretieren sowie prompt und angemessen reagieren, fördern die Exploration und die Emotionsregulation. Mentalisierungsfähigkeit, also die Fähigkeit, eigenes und fremdes Verhalten über mentale Zustände zu verstehen, entwickelt sich in diesem Beziehungskontext (Fonagy et al., zit. n. Hartwig 2021). Frühe Traumatisierungen, Vernachlässigung oder häufige Beziehungsabbrüche erhöhen das Risiko für Bindungsstörungen, Verhaltensauffälligkeiten und spätere Psychopathologie.
+
+Entwicklungspsychologische Stufenmodelle, etwa Eriksons psychosoziales Modell mit acht Krisen oder Piagets Stadien der kognitiven Entwicklung (sensomotorisch, präoperational, konkret-operational, formal-operational), werden heute zunehmend durch transaktionale und systemische Ansätze ergänzt. Diese betonen die Wechselwirkung zwischen Temperament, Umwelt und Resilienzfaktoren.
+
+Für pädagogische Fachkräfte in Kitas und in der Frühförderung bedeutet das, Eingewöhnungsmodelle wie das Berliner oder das Münchener Modell bindungsorientiert umzusetzen und Übergänge – von der Familie in die Krippe, von der Kita in die Grundschule – behutsam zu begleiten. Videogestützte Interaktionsanalysen (z. B. Marte Meo) unterstützen Eltern dabei, ihre Responsivität zu verbessern.`],
+['Beratung & Gesprächsführung',
+`4.1 Personzentrierte, systemische und motivierende Gesprächsführung (fiktiver Beispieltext)
+
+Carl Rogers' klientenzentrierter Ansatz nennt drei Basisvariablen gelingender Beratung: Empathie, bedingungslose Wertschätzung und Kongruenz. Die beratende Person verzichtet auf direktive Ratschläge und unterstützt stattdessen die Selbstexploration der Ratsuchenden (vgl. Weiland 2017, S. 31). Techniken wie aktives Zuhören, Paraphrasieren und das Verbalisieren emotionaler Erlebnisinhalte gehören bis heute zum Grundrepertoire.
+
+Systemische Beratung versteht Probleme dagegen als Ausdruck von Interaktionsmustern im Familiensystem oder im sozialen Netzwerk. Zirkuläres Fragen, Reframing, Genogrammarbeit und lösungsorientierte Skalierungsfragen („Auf einer Skala von 0 bis 10 …") sollen neue Perspektiven eröffnen. Konstruktivistische Grundannahmen und die Haltung der Allparteilichkeit bzw. Neutralität prägen das Setting; Hypothesenbildung dient als Arbeitswerkzeug, nicht als Diagnose (Schreiber & Yilmaz, 2022).
+
+Motivational Interviewing (MI) wurde ursprünglich für die Suchtberatung entwickelt und zielt darauf ab, Ambivalenz gegenüber Veränderung zu explorieren. Kernelemente sind offene Fragen, Würdigung, reflektierendes Zuhören und Zusammenfassungen (OARS). „Change Talk" soll verstärkt, „Sustain Talk" dagegen nicht konfrontativ bekämpft werden. Metaanalysen berichten kleine bis mittlere Effektstärken (d = 0,2 bis 0,5), insbesondere bei Alkohol- und Cannabiskonsum (Hoffmann & Ruiz 2020, S. 205 ff.).
+
+In der Praxis werden die Ansätze häufig integrativ kombiniert. Entscheidend sind Arbeitsbündnis, Transparenz über den Beratungsauftrag und eine Auftragsklärung, die auch Zwangskontexte – etwa nach einer Auflage des Familiengerichts – reflektiert. Supervision und Intervision sichern die Qualität der Beratungsprozesse.`],
+['Theorien der Sozialen Arbeit',
+`1.2 Theorien und Wissenschaftsverständnis der Sozialen Arbeit (fiktiver Beispieltext)
+
+Die Lebensweltorientierung nach Hans Thiersch fragt, wie Menschen ihren Alltag in Zeit, Raum und sozialen Bezügen bewältigen. Strukturmaximen wie Prävention, Dezentralisierung, Alltagsnähe, Integration und Partizipation übersetzen das Konzept in sozialpädagogisches Handeln (vgl. Thiersch, zit. n. Pfeiffer 2019, S. 52). Kritik richtet sich gegen eine mögliche Individualisierung struktureller Probleme.
+
+Silvia Staub-Bernasconi versteht Soziale Arbeit als Menschenrechtsprofession und ergänzt das Doppelmandat von Hilfe und Kontrolle um ein drittes Mandat, das sich aus wissenschaftlicher Fundierung und dem Berufskodex ableitet. Ihre systemistische Problemtheorie unterscheidet Ausstattungs-, Austausch-, Macht- und Kriterienprobleme. Damit wird ein normativer Bezugspunkt geschaffen, der auch gegen Aufträge von Anstellungsträgern ins Feld geführt werden kann (Rademacher 2021).
+
+Aus systemtheoretischer Perspektive im Anschluss an Niklas Luhmann erscheint Soziale Arbeit als Funktionssystem bzw. als Teilsystem, das Inklusion vermittelt und Exklusionsfolgen bearbeitet. Der binäre Code Hilfe/Nichthilfe, Autopoiesis und operative Geschlossenheit sind zentrale Begriffe; normative Ansprüche werden eher beobachtet als begründet (Bommes & Scherr, zit. n. Lindqvist 2018, S. 99–104).
+
+Weitere Positionen – etwa der Capability Approach nach Sen und Nussbaum, feministische und postkoloniale Ansätze oder die Dienstleistungstheorie – erweitern das Theoriespektrum. Für Studierende ist wichtig, Theorien nicht als Rezeptwissen, sondern als reflexive Deutungsangebote zu verstehen, die Professionalität und Handlungskompetenz begründen.`],
+['Empirische Sozialforschung & Statistik',
+`6.1 Quantitative und qualitative Forschungsdesigns (fiktiver Beispieltext)
+
+In der empirischen Sozialforschung unterscheidet man explorative, deskriptive und hypothesenprüfende Designs. Eine Querschnittsstudie erhebt Daten zu einem Messzeitpunkt, eine Längsschnitt- oder Panelstudie verfolgt dieselben Befragten über mehrere Wellen (vgl. Brückner & Haas, 2022, S. 140). In einer fiktiven Online-Befragung von n = 1.248 Fachkräften der Kinder- und Jugendhilfe gaben 42,7 % an, mehr als zehn Überstunden pro Monat zu leisten; der Mittelwert der Arbeitszufriedenheit lag bei M = 3,4 (SD = 0,9) auf einer fünfstufigen Likert-Skala.
+
+Für Zusammenhangshypothesen werden Korrelationskoeffizienten (Pearson r, Spearman ρ) berechnet; Unterschiedshypothesen prüft man je nach Skalenniveau mit t-Test, ANOVA oder dem Mann-Whitney-U-Test. Signifikanz (p < 0,05) sagt dabei nichts über die praktische Relevanz aus, weshalb zusätzlich Effektstärken wie Cohens d oder η² berichtet werden sollten. Multiple Regressionsanalysen erlauben, Störvariablen zu kontrollieren; bei hierarchischen Daten – etwa Kinder in Kitagruppen – sind Mehrebenenmodelle angemessen (Ostrowski 2019: 211).
+
+Qualitative Verfahren wie das problemzentrierte Interview, die Gruppendiskussion oder die teilnehmende Beobachtung zielen auf Sinnrekonstruktion. Ausgewertet wird beispielsweise mit der qualitativen Inhaltsanalyse nach Mayring, der Grounded-Theory-Methodologie (offenes, axiales und selektives Kodieren) oder der dokumentarischen Methode. Gütekriterien sind hier intersubjektive Nachvollziehbarkeit, Gegenstandsangemessenheit und reflektierte Subjektivität.
+
+Mixed-Methods-Designs kombinieren beide Zugänge, etwa sequenziell-explanativ: Auf eine standardisierte Befragung folgen vertiefende Leitfadeninterviews. Forschungsethische Grundsätze – informierte Einwilligung, Anonymisierung, Datenschutz nach DSGVO – gelten für alle Designs.`],
+['Sucht, Gesundheit & Psychiatrie',
+`7.2 Suchthilfe und sozialpsychiatrische Versorgung (fiktiver Beispieltext)
+
+Nach ICD-10 bzw. ICD-11 wird ein Abhängigkeitssyndrom diagnostiziert, wenn innerhalb von zwölf Monaten mehrere Kriterien vorliegen, etwa starkes Verlangen (Craving), verminderte Kontrollfähigkeit, Toleranzentwicklung und Entzugssymptome. Schätzungen zufolge sind in Deutschland rund 1,6 Mio. Menschen alkoholabhängig, hinzu kommen etwa 2,3 Mio. Menschen mit problematischem Medikamentengebrauch, vor allem von Benzodiazepinen und Opioid-Analgetika (vgl. Jahrbuch Sucht, zit. n. Kessler 2022, S. 13).
+
+Das Suchthilfesystem ist mehrstufig aufgebaut: niedrigschwellige Angebote wie Kontaktläden und Drogenkonsumräume, ambulante Beratungsstellen, qualifizierter Entzug, Entwöhnungsbehandlung und Adaptionseinrichtungen sowie Nachsorge und Selbsthilfe. Harm Reduction und akzeptierende Drogenarbeit ergänzen abstinenzorientierte Konzepte; Substitutionsbehandlung mit Methadon oder Buprenorphin hat die Mortalität nachweislich gesenkt (Gerlach & Novak, 2021).
+
+Psychische Erkrankungen wie Depression, Angststörungen, Schizophrenie oder Persönlichkeitsstörungen gehen häufig mit Komorbidität einher. Sozialpsychiatrische Dienste, Soziotherapie nach § 37a SGB V und die Eingliederungshilfe nach dem SGB IX unterstützen Betroffene dabei, möglichst selbstbestimmt zu leben. Mit dem Bundesteilhabegesetz (BTHG) wurde die Eingliederungshilfe aus der Sozialhilfe herausgelöst und personenzentriert neu ausgerichtet; das bio-psycho-soziale Modell der ICF bildet die Grundlage der Bedarfsermittlung.
+
+Recovery-Orientierung und Peer-Support gewinnen an Bedeutung: Genesungsbegleiter:innen mit eigener Krisenerfahrung (EX-IN) arbeiten gleichberechtigt in multiprofessionellen Teams. Stigmatisierung, Zwangsmaßnahmen und die Frage informierter Zustimmung bleiben zentrale ethische Spannungsfelder (Mertens 2023, S. 88–91).`],
+['Migration, Flucht & Diversität',
+`8.1 Migrationsgesellschaft und diversitätsbewusste Soziale Arbeit (fiktiver Beispieltext)
+
+Rund 28 % der Bevölkerung in Deutschland haben eine Einwanderungsgeschichte. Migrationsbewegungen entstehen aus Arbeits-, Familien- und Bildungsgründen ebenso wie infolge von Krieg, Verfolgung und klimabedingter Vertreibung. Geflüchtete Menschen durchlaufen ein Asylverfahren nach dem Asylgesetz (AsylG); bis zur Entscheidung erhalten sie Leistungen nach dem Asylbewerberleistungsgesetz, die unterhalb des Bürgergeld-Niveaus liegen (vgl. Aydın & Schulte, 2022, S. 57).
+
+Migrationssozialarbeit umfasst Erstorientierung, Asylverfahrensberatung, Unterstützung bei Wohnungssuche, Spracherwerb und Arbeitsmarktintegration sowie psychosoziale Begleitung. Traumasensible Ansätze berücksichtigen, dass viele Geflüchtete Gewalt, Trennung und Verlust erlebt haben; Sprach- und Kulturmittler:innen ermöglichen eine Verständigung jenseits von Dolmetscher-Notlösungen durch Kinder. Unbegleitete minderjährige Ausländer:innen werden nach § 42a SGB VIII vorläufig in Obhut genommen und anschließend bundesweit verteilt.
+
+Diversitätsbewusste und rassismuskritische Ansätze fragen, wie gesellschaftliche Ordnungen Zugehörigkeit herstellen und wer als „anders" markiert wird. Konzepte wie Intersektionalität (Crenshaw) machen sichtbar, dass sich Diskriminierungen aufgrund von Herkunft, Geschlecht, Religion, sozialer Lage oder Behinderung überlagern. Interkulturelle Kompetenz wird dabei zunehmend kritisch gesehen, weil sie Kultur häufig essentialisiert (Okonkwo 2020; Brandl/Petrović 2021, S. 34–39).
+
+Für Einrichtungen bedeutet Diversity Management, Zugangsbarrieren abzubauen, mehrsprachige Informationen bereitzustellen und Teams divers zusammenzusetzen. Empowerment-Ansätze und Selbstorganisationen von Migrant:innen stärken die Handlungsmacht der Betroffenen und verschieben die Perspektive von Defiziten hin zu Ressourcen.`]
+];
 
 const SAMPLE_START =
 `2 Theoretischer Rahmen (fiktiver Beispieltext)
@@ -532,7 +654,7 @@ function segment(src) {
       const c = src[i];
       if (!'.!?…'.includes(c)) continue;
       let j = i + 1;
-      while (j < be && /[.!?…"'»«“”„‘’)\]]/.test(src[j])) j++;
+      while (j < be && /[.!?…"'»«“”„‘’)\]⁰¹²³⁴⁵⁶⁷⁸⁹]/.test(src[j])) j++;
       if (j < be && !isWs(src[j])) continue;          // z. B. "1.248" oder "z.B."
       let k = j;
       while (k < be && isWs(src[k])) k++;
@@ -671,15 +793,37 @@ function segment(src) {
     if (pos < b) { if (hasWord(pos, b)) out.push(...plain(pos, b, false)); else out[out.length - 1][1] = trimR(pos, b)[1]; }
     return out;
   };
+  // v0.7 PDF: Kopf-/Fußzeilen, Seitenzahlen (margin), Fußnoten (fn) und Fußnotenziffern (fnref) nicht sprechen
+  const pdfR = pdfInfo && pdfInfo.src === src ? pdfInfo.ranges.filter(r => r.kind === 'fnref' ||
+    (r.kind === 'margin' && !readOpts.margins) || (r.kind === 'fn' && !readOpts.footnotes)) : [];
   return units.map((s, i) => {
     const cits = findCitations(src, s.start, s.end);
-    const skips = speechOpts.skipCitations ? cits : [];
-    const ranges = asideRanges(s.start, s.end, skips);
-    return {
-      i, start: s.start, end: s.end, paraEnd: s.paraEnd, head: s.head,
-      text: src.slice(s.start, s.end), cits, skips,
-      parts: ranges.map(([a, b, aside], k) => Object.assign(speechVersion(src, a, b, { help: speechOpts.help, skips, cits, marks, isLast: k === ranges.length - 1 }), { aside }))
-    };
+    let skips = speechOpts.skipCitations ? cits : [];
+    if (pdfR.length) {
+      const own = pdfR.filter(r => r.start < s.end && r.end > s.start);
+      if (own.length) skips = skips.concat(own).sort((x, y) => x.start - y.start);
+    }
+    // „still“: nichts Sprechbares außerhalb der übersprungenen Stellen (z. B. reine Seitenzahl, Kopfzeile, Fußnote)
+    let silent = false;
+    if (skips.length) {
+      silent = true;
+      for (let k = s.start; k < s.end; k++) {
+        const sk = skips.find(r => k >= r.start && k < r.end);
+        if (sk) { k = sk.end - 1; continue; }
+        if (/[\p{L}\d]/u.test(src[k])) { silent = false; break; }
+      }
+    }
+    // Sprech-Teile erst berechnen, wenn sie gebraucht werden (schneller Start bei langen PDFs)
+    let parts = null;
+    const o = { i, start: s.start, end: s.end, paraEnd: s.paraEnd, head: s.head, text: src.slice(s.start, s.end), cits, skips, silent };
+    Object.defineProperty(o, 'parts', { enumerable: true, get() {
+      if (!parts) {
+        const ranges = asideRanges(s.start, s.end, skips);
+        parts = ranges.map(([a, b, aside], k) => Object.assign(speechVersion(src, a, b, { help: speechOpts.help, skips, cits, marks, isLast: k === ranges.length - 1 }), { aside }));
+      }
+      return parts;
+    } });
+    return o;
   });
 }
 
@@ -1323,6 +1467,315 @@ function speechVersion(src, a, b, opt) {
 }
 
 /* =====================================================================
+   v0.7 PDF-Import: Text aus Positionen und Schriftgrößen der Textstücke rekonstruieren
+   (pdf.js liefert je Seite Textstücke mit Position, Breite, Schriftgröße – aber keine Zeilen/Absätze).
+   Ergebnis: ein Lesetext (= „Original“ für die App) + Bereiche, die grau angezeigt und nicht gesprochen werden:
+   margin = Kopf-/Fußzeilen, Seitenzahlen, Randvermerke · fn = Fußnotentext · fnref = Fußnotenziffern im Text.
+   Nichts wird still verworfen: alles Erkannte steht im Lesetext.
+   ===================================================================== */
+const PDF_MARK = { fnrefA: '\uE010', fnrefB: '\uE011', marginA: '\uE020', marginB: '\uE021', fnA: '\uE030', fnB: '\uE031', pageA: '\uE040', pageB: '\uE041' };
+const PDF_SUP = { 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
+const PDF_LIG = { '\uFB00': 'ff', '\uFB01': 'fi', '\uFB02': 'fl', '\uFB03': 'ffi', '\uFB04': 'ffl', '\uFB05': 'st', '\uFB06': 'st' };
+const PDF_UML = { a: 'ä', o: 'ö', u: 'ü', A: 'Ä', O: 'Ö', U: 'Ü' };
+function pdfNorm(s) {
+  return s.replace(/[\uFB00-\uFB06]/g, c => PDF_LIG[c])
+    .replace(/[\u00A0\u2000-\u200A\u202F\u205F\u3000\t]/g, ' ')
+    .replace(/[\u200B-\u200D\u2060\uFEFF]/g, '');
+}
+// Zerlegte Umlaute („Einf\u00A8uhrung“, „u\u00A8“, „u + U+0308“) zusammensetzen
+function pdfUmlauts(s) {
+  return s.replace(/\u00A8\s?([aouAOU])/g, (m, v) => PDF_UML[v]).replace(/([aouAOU])\s?\u00A8/g, (m, v) => PDF_UML[v]).normalize('NFC');
+}
+// Seite → Zeilen. items: {s, x0, x1, y (Grundlinie, von unten), size, font}
+function pdfLines(items) {
+  const lines = [];
+  const sorted = items.slice().sort((a, b) => b.y - a.y || a.x0 - b.x0);
+  for (const it of sorted) {
+    let best = null, bd = Infinity;
+    for (let k = lines.length - 1; k >= 0 && k >= lines.length - 6; k--) {
+      const L = lines[k], d = Math.abs(it.y - L.y);
+      if (d <= 0.5 * Math.max(L.size, it.size) && d < bd) { best = L; bd = d; }
+    }
+    if (best) { best.items.push(it); if (it.size > best.size && it.s.trim()) { best.size = it.size; best.y = it.y; } }
+    else lines.push({ y: it.y, size: it.size, items: [it] });
+  }
+  for (const L of lines) {
+    L.items.sort((a, b) => a.x0 - b.x0);
+    // Hauptschriftgröße der Zeile = Größe mit den meisten Zeichen
+    const bySize = new Map();
+    for (const it of L.items) { const k = Math.round(it.size * 2) / 2; bySize.set(k, (bySize.get(k) || 0) + it.s.trim().length); }
+    L.size = [...bySize].sort((a, b) => b[1] - a[1])[0][0];
+    const base = L.items.filter(it => Math.abs(it.size - L.size) < 0.6).map(it => it.y);
+    L.y = base.length ? base.sort((a, b) => a - b)[base.length >> 1] : L.y;
+    // Text zusammensetzen; je Zeichen die geschätzte x-Position merken (für frei stehende Umlaut-Punkte „¨“)
+    let t = '', prev = null;
+    const fonts = new Map(), xs = [], accents = [], spans = [];
+    for (const it of L.items) {
+      let s = it.s;
+      if (/^[\u00A8\u0308]$/.test(s.trim())) { accents.push(it); continue; }
+      const sup = it.size < 0.85 * L.size && it.y > L.y + 0.15 * L.size && /^\s*\d{1,3}\s*$/.test(s);
+      if (sup) s = PDF_MARK.fnrefA + s.trim().replace(/\d/g, d => PDF_SUP[d]) + PDF_MARK.fnrefB;
+      if (prev && t && !/\s$/.test(t) && !/^\s/.test(s)) {
+        const gap = it.x0 - prev.x1;
+        if (gap > 0.22 * Math.min(prev.size, it.size) && !sup) { t += ' '; xs.push(prev.x1); }
+      }
+      const a = t.length;
+      for (let k = 0; k < s.length; k++) xs.push(it.x0 + (it.x1 - it.x0) * (k + 0.5) / Math.max(1, s.length));
+      t += s;
+      if (!sup) spans.push({ font: it.font, a, b: t.length });
+      if (!sup && it.s.trim()) fonts.set(it.font, (fonts.get(it.font) || 0) + it.s.trim().length);
+      if (it.s.trim()) prev = it;
+    }
+    // „¨“ vor den nächstgelegenen Vokal setzen (a/o/u), danach zu ä/ö/ü zusammenfügen
+    for (const ac of accents.sort((a, b) => b.x0 - a.x0)) {
+      const cx = (ac.x0 + ac.x1) / 2;
+      let bi = -1, bd = Infinity;
+      for (let k = 0; k < t.length; k++) if (/[aouAOU]/.test(t[k]) && Math.abs(xs[k] - cx) < bd) { bd = Math.abs(xs[k] - cx); bi = k; }
+      if (bi >= 0 && bd < L.size) { t = t.slice(0, bi) + '\u00A8' + t.slice(bi); xs.splice(bi, 0, cx); for (const sp of spans) { if (sp.a > bi) sp.a++; if (sp.b > bi) sp.b++; } }
+      else { t += ac.s; xs.push(cx); }
+    }
+    L.spans = spans;
+    L.text = pdfUmlauts(t.replace(/ {2,}/g, ' ').trim());
+    // Anfang der Zeile in anderer Schrift (z. B. fette Run-in-Überschrift „5.2.10.1 Armut“ + Fließtext)
+    if (spans.length > 1) {
+      let e = 0;
+      for (const sp of spans) { if (sp.font !== spans[0].font && t.slice(sp.a, sp.b).trim()) break; e = sp.b; }
+      if (e < t.length) L.lead = { font: spans[0].font, text: pdfUmlauts(t.slice(0, e).replace(/ {2,}/g, ' ')).trim() };
+    }
+    const vis = L.items.filter(it => it.s.trim());
+    L.x0 = Math.min(...vis.map(it => it.x0)); L.x1 = Math.max(...vis.map(it => it.x1));
+    L.font = fonts.size ? [...fonts].sort((a, b) => b[1] - a[1])[0][0] : '';
+    L.fonts = fonts.size;
+  }
+  return lines.filter(L => L.text);
+}
+// Zweispaltig? Senkrechte Lücke im mittleren Bereich, die (fast) kein Textstück überdeckt, mit Text links und rechts.
+function pdfGutter(items, W) {
+  const vis = items.filter(it => it.s.trim() && !it.rot);
+  if (vis.length < 20) return null;
+  const cov = new Float32Array(Math.ceil(W) + 1);
+  for (const it of vis) for (let x = Math.max(0, Math.floor(it.x0)); x <= Math.min(W, Math.ceil(it.x1)); x++) cov[x]++;
+  const thr = Math.max(1, vis.length * 0.015);
+  let best = null;
+  for (let x = Math.floor(W * 0.3); x < W * 0.7; x++) {
+    if (cov[x] > thr) continue;
+    let e = x; while (e < W * 0.75 && cov[e] <= thr) e++;
+    if (e - x >= 8 && (!best || e - x > best[1] - best[0])) best = [x, e];
+    x = e;
+  }
+  if (!best) return null;
+  const g = (best[0] + best[1]) / 2;
+  const left = vis.filter(it => it.x1 <= g).length, right = vis.filter(it => it.x0 >= g).length;
+  return left >= 10 && right >= 10 ? g : null;
+}
+// Lesereihenfolge einer Seite: seitenbreite Zeilen trennen Bänder; im Band erst linke, dann rechte Spalte.
+function pdfPageLines(pg) {
+  const rot = pg.items.filter(it => it.rot && it.s.trim());
+  const flat = pg.items.filter(it => !it.rot);
+  const g = pdfGutter(flat, pg.W);
+  let lines;
+  if (g == null) lines = pdfLines(flat).map(L => Object.assign(L, { col: 'F' }));
+  else {
+    const grp = { L: [], R: [], F: [] };
+    for (const it of flat) grp[it.x1 <= g + 1 ? 'L' : it.x0 >= g - 1 ? 'R' : 'F'].push(it);
+    lines = [];
+    for (const c of ['L', 'R', 'F']) for (const L of pdfLines(grp[c])) lines.push(Object.assign(L, { col: c }));
+  }
+  for (const L of lines) L.top = pg.H - L.y;
+  const F = lines.filter(L => L.col === 'F').sort((a, b) => a.top - b.top);
+  const cols = lines.filter(L => L.col !== 'F');
+  const out = [];
+  let lo = -Infinity;
+  for (const f of F.concat([{ top: Infinity, end: true }])) {
+    const band = cols.filter(L => L.top > lo && L.top <= f.top);
+    out.push(...band.filter(L => L.col === 'L').sort((a, b) => a.top - b.top), ...band.filter(L => L.col === 'R').sort((a, b) => a.top - b.top));
+    if (!f.end) out.push(f);
+    lo = f.top;
+  }
+  // gedrehte Textstücke (Randvermerke) als eigene Zeilen am Seitenende
+  for (const it of rot) out.push({ text: pdfUmlauts(it.s.trim()), size: it.size, top: pg.H, x0: 0, x1: 0, col: 'F', rot: true, items: [it] });
+  return out;
+}
+
+const PDF_PAGENUM = /^(?:[-–—]\s*)?(?:(?:S\.|Seite|Page|p\.)\s*)?\d{1,4}(?:\s*(?:\/|von|of)\s*\d{1,4})?(?:\s*[-–—])?$|^[ivxlc]{1,7}$/i;
+// Ganze PDF (ausgewählte Seiten) → { src, ranges, marks, scanPages }
+function pdfBuild(pages) {
+  const P = pages.map(pg => ({ num: pg.num, W: pg.W, H: pg.H, lines: pdfPageLines(pg), chars: pg.items.reduce((a, it) => a + it.s.replace(/\s/g, '').length, 0) }));
+  const scanPages = P.filter(p => p.chars < 8).map(p => p.num);
+  // Grundschriftgröße (meiste Zeichen) und Hauptschrift
+  const sz = new Map(), fn = new Map();
+  for (const p of P) for (const L of p.lines) { if (L.rot) continue; sz.set(L.size, (sz.get(L.size) || 0) + L.text.length); fn.set(L.font, (fn.get(L.font) || 0) + L.text.length); }
+  const body = sz.size ? [...sz].sort((a, b) => b[1] - a[1])[0][0] : 10;
+  const bodyFont = fn.size ? [...fn].sort((a, b) => b[1] - a[1])[0][0] : '';
+  // Wiederkehrende Kopf-/Fußzeilen (Ziffern ignoriert)
+  const key = (t) => t.replace(/[\d\s.,·|–—-]+/g, ' ').trim().toLowerCase();
+  const rep = new Map();
+  // Randzeilen oben/unten: Zeilen gleicher Höhe (auch über Spalten hinweg) bilden eine Reihe
+  const edgeLines = (p) => {
+    const ls = p.lines.filter(L => !L.rot).slice().sort((a, b) => a.top - b.top);
+    const rows = [];
+    for (const L of ls) { const r = rows[rows.length - 1]; if (r && Math.abs(r.top - L.top) < 2.5) r.lines.push(L); else rows.push({ top: L.top, lines: [L] }); }
+    for (const r of rows) r.text = r.lines.slice().sort((a, b) => a.x0 - b.x0).map(L => L.text).join(' ');
+    const sp = body * 1.25, res = [];
+    for (const [arr, dir] of [[rows, 1], [rows.slice().reverse(), -1]]) {
+      for (let k = 0; k < Math.min(2, arr.length - 1); k++) {
+        const R = arr[k], N = arr[k + 1], gap = Math.abs(N.top - R.top);
+        const edge = dir > 0 ? R.top < p.H * 0.08 : R.top > p.H * 0.94;
+        if (gap > sp * 1.6 || edge) { res.push([R, dir]); if (gap > sp * 1.6) break; } else break;
+      }
+    }
+    return res;
+  };
+  for (const p of P) { p.edges = edgeLines(p); for (const [R] of p.edges) { const k = key(R.text); if (k) rep.set(k, (rep.get(k) || 0) + 1); } }
+  const minRep = P.length >= 3 ? Math.max(2, Math.ceil(P.length * 0.25)) : 2;
+  for (const p of P) {
+    for (const [R, dir] of p.edges) {
+      const k = key(R.text), size = Math.max(...R.lines.map(L => L.size));
+      const num = PDF_PAGENUM.test(R.text);
+      const repeated = k && rep.get(k) >= minRep && P.length >= 2;
+      const numEdge = R.text.length <= 90 && (/^\d{1,4}\s/.test(R.text) || /\s\d{1,4}$/.test(R.text)) && size <= body * 1.08 &&
+        (dir > 0 ? R.top < p.H * 0.13 : R.top > p.H * 0.88);
+      if (num || repeated || numEdge) for (const L of R.lines) { L.margin = true; L.head = dir > 0; }
+    }
+    for (const L of p.lines) if (L.rot) L.margin = true;
+    // Fußnoten: kleinere Schrift unterhalb der letzten Zeile in Grundschrift, erste Zeile beginnt mit Ziffer/*
+    const normal = p.lines.filter(L => !L.margin && !L.rot && L.size > body * 0.88);
+    const bottom = normal.length ? Math.max(...normal.map(L => L.top)) : Infinity;
+    const cand = p.lines.filter(L => !L.margin && !L.rot && L.top > bottom && L.size <= body * 0.88).sort((a, b) => a.top - b.top);
+    if (cand.length && /^(?:\uE010)?[\d¹²³⁴⁵⁶⁷⁸⁹⁰*†]/.test(cand[0].text)) for (const L of cand) L.fn = true;
+  }
+  // Absätze bilden (über Seitengrenzen hinweg), Rand/Fußnoten nach dem laufenden Absatz einfügen
+  const blocks = [];          // {text, kind: 'p'|'h'|'margin'|'fn'}
+  let par = null, pending = [];
+  const flush = () => { if (par) { blocks.push(par); par = null; } for (const b of pending) blocks.push(b); pending = []; };
+  const sentEnd = (t) => /[.!?:…]["“”»«’)\]\uE011¹²³⁴⁵⁶⁷⁸⁹⁰]*$/.test(t);
+  const listStart = /^(?:[•▪◦·*–-]|\d{1,2}[.)]|[a-z][.)])\s/;
+  const joinLine = (a, b) => {
+    const bt = b.replace(/^\uE040[^\uE041]*\uE041/, '');      // Seitenmarke am Zeilenanfang für die Prüfung ignorieren
+    if (/\u00AD$/.test(a)) return a.slice(0, -1) + b;
+    if (/\p{L}-$/u.test(a)) {
+      const w = (/^(\p{L}+)/u.exec(bt) || [])[1] || '';
+      if (/^\p{Ll}/u.test(bt) && !HYPH_KEEP.has(w.toLowerCase())) return a.slice(0, -1) + b;   // „Einkom-“ + „men“
+      if (/^\p{Lu}/u.test(bt)) return a + b;                                                   // „Empowerment-“ + „Ansatz“
+    }
+    return a + ' ' + b;
+  };
+  let pageMark = '', lastLine = null, lastEdge = null;
+  for (const p of P) {
+    // Run-in-Überschriften („5.2.10.1 Armut im Alter Altersarmut betrifft …“) in Überschrift + Fließtext teilen
+    for (let k = 0; k < p.lines.length; k++) {
+      const L = p.lines[k];
+      if (!L.lead || L.margin || L.fn || L.lead.font === bodyFont || !L.text.startsWith(L.lead.text)) continue;
+      if (!/^\d+(?:\.\d+)*\.?\s+\p{Lu}/u.test(L.lead.text) || L.lead.text.length > 90 || /[.,;:!?]$/.test(L.lead.text)) continue;
+      const rest = L.text.slice(L.lead.text.length).trim();
+      if (!rest) continue;
+      const H = Object.assign({}, L, { text: L.lead.text, runIn: true, lead: null });
+      const B = Object.assign({}, L, { text: rest, lead: null, x0: L.x0 + body * 2 });
+      p.lines.splice(k, 1, H, B); k++;
+    }
+    pageMark = PDF_MARK.pageA + p.num + (p.chars < 8 ? '|scan' : '') + PDF_MARK.pageB;
+    const head = p.lines.filter(L => L.margin && L.head);
+    const foot = p.lines.filter(L => L.margin && !head.includes(L));
+    const fns = p.lines.filter(L => L.fn);
+    const bodyLines = p.lines.filter(L => !L.margin && !L.fn);
+    const marginBlock = (ls) => {
+      if (!ls.length) return [];
+      const rows = [];
+      for (const L of ls.slice().sort((a, b) => a.top - b.top || a.x0 - b.x0)) { const r = rows[rows.length - 1]; if (r && Math.abs(r.top - L.top) < 2.5) r.t += ' ' + L.text; else rows.push({ top: L.top, t: L.text }); }
+      return [{ kind: 'margin', text: rows.map(r => r.t).join('\n') }];
+    };
+    // Seitenmarke + Kopfzeile dieser Seite: nach dem laufenden Absatz (falls er von der Vorseite weiterläuft)
+    pending.push({ kind: 'mark', text: pageMark }, ...marginBlock(head));
+    // Zeilenabstand (Median) für Absatz-Erkennung
+    const ds = [];
+    for (let k = 1; k < bodyLines.length; k++) { const d = bodyLines[k].top - bodyLines[k - 1].top; if (d > 0 && d < body * 3 && bodyLines[k].col === bodyLines[k - 1].col) ds.push(d); }
+    const sp = ds.length ? ds.sort((a, b) => a - b)[ds.length >> 1] : body * 1.2;
+    const colEdge = {};
+    for (const c of ['L', 'R', 'F']) { const cl = bodyLines.filter(L => L.col === c && Math.abs(L.size - body) < 0.6); if (cl.length) colEdge[c] = [Math.min(...cl.map(L => L.x0)), Math.max(...cl.map(L => L.x1))]; }
+    let first = true;
+    for (let k = 0; k < bodyLines.length; k++) {
+      const L = bodyLines[k], prevL = k ? bodyLines[k - 1] : null, nextL = bodyLines[k + 1];
+      const gapB = prevL && prevL.col === L.col ? L.top - prevL.top : null;
+      const gapA = nextL && nextL.col === L.col ? nextL.top - L.top : null;
+      const shortNoPunct = L.text.length <= 100 && !/[.,;:!?]$/.test(L.text);
+      const isHead = L.runIn || (L.size >= body * 1.15 && L.text.length <= 150) ||
+        (shortNoPunct && /^\d{1,2}(?:\.\d{1,2})*\.?\s+\p{Lu}/u.test(L.text) && !/-$/.test(L.text) && L.x1 < (colEdge[L.col] || [0, Infinity])[1] - body * 2 &&
+          (!par || par.kind === 'h' || sentEnd(par.text)) && ((gapB != null && gapB > sp * 1.3) || (gapA != null && gapA > sp * 1.3) || !prevL)) ||
+        (shortNoPunct && L.font && L.font !== bodyFont && L.fonts === 1 && Math.abs(L.size - body) < 0.6 && L.text.length <= 80 &&
+          ((gapB != null && gapB > sp * 1.3) || !par || sentEnd(par.text)) && (gapA == null || gapA > sp * 1.15 || (nextL && nextL.font === bodyFont)));
+      const e = colEdge[L.col] || [L.x0, L.x1];
+      const indent = L.x0 > e[0] + body * 0.8;
+      const pl = prevL || lastLine;                                // vorige Zeile (auch von der Vorseite)
+      const pe = pl ? (colEdge[pl.col] || lastEdge || [pl.x0, pl.x1]) : null;
+      const prevShort = pl && pe && pl.x1 < pe[1] - body * 3;
+      let newPar = !par || isHead || par.kind === 'h';
+      if (!newPar) {
+        if (first) {
+          // Seitenwechsel: Absatz läuft weiter, außer der vorige endete mit Satzende UND (Einzug oder kurze Vorzeile)
+          newPar = sentEnd(par.text) && /^\P{Ll}/u.test(L.text) && (indent || prevShort);
+        } else if (gapB != null && gapB > sp * 1.5) newPar = true;
+        else if ((indent || prevShort) && sentEnd(par.text)) newPar = true;
+      }
+      if (newPar) {
+        if (par && par.kind === 'h' && isHead && Math.abs((par.size || 0) - L.size) < 0.6 && gapB != null && gapB < sp * 1.6) {
+          par.text += ' ' + L.text;                                  // mehrzeilige Überschrift
+        } else {
+          flush();
+          par = { kind: isHead ? 'h' : 'p', text: L.text, size: L.size };
+        }
+      } else {
+        const t = L.text;
+        par.text = listStart.test(L.text) ? par.text + '\n' + t : joinLine(par.text, t);
+      }
+      first = false;
+    }
+    if (bodyLines.length) { lastLine = bodyLines[bodyLines.length - 1]; lastEdge = colEdge[lastLine.col] || null; }
+    // Fußnoten + Fußzeile dieser Seite: nach dem laufenden Absatz
+    if (fns.length) {
+      let t = '';
+      for (const L of fns) t = !t ? L.text : /^(?:\uE010)?[\d¹²³⁴⁵⁶⁷⁸⁹⁰*†]/.test(L.text) ? t + '\n' + L.text : joinLine(t, L.text);
+      pending.push({ kind: 'fn', text: t });
+    }
+    pending.push(...marginBlock(foot));
+    if (par && sentEnd(par.text)) flush();
+  }
+  flush();
+  // Blöcke → Lesetext mit Markierungen → Markierungen in Bereiche umwandeln
+  let raw = '', hasText = false;
+  for (const b of blocks) {
+    if (b.kind === 'mark') { raw += b.text; continue; }
+    const t = b.kind === 'margin' ? PDF_MARK.marginA + b.text + PDF_MARK.marginB : b.kind === 'fn' ? PDF_MARK.fnA + b.text + PDF_MARK.fnB : b.text;
+    raw += (hasText ? '\n\n' : '') + t;
+    hasText = true;
+  }
+  let src = '';
+  const ranges = [], marks = [], open = {};
+  for (let i = 0; i < raw.length; i++) {
+    const c = raw[i];
+    if (c === PDF_MARK.pageA) { const j = raw.indexOf(PDF_MARK.pageB, i); const [n, scan] = raw.slice(i + 1, j).split('|'); marks.push({ pos: src.length, page: +n, scan: !!scan }); i = j; continue; }
+    if (c === PDF_MARK.fnrefA) { open.fnref = src.length; continue; }
+    if (c === PDF_MARK.fnrefB) { ranges.push({ start: open.fnref, end: src.length, kind: 'fnref' }); continue; }
+    if (c === PDF_MARK.marginA) { open.margin = src.length; continue; }
+    if (c === PDF_MARK.marginB) { ranges.push({ start: open.margin, end: src.length, kind: 'margin' }); continue; }
+    if (c === PDF_MARK.fnA) { open.fn = src.length; continue; }
+    if (c === PDF_MARK.fnB) { ranges.push({ start: open.fn, end: src.length, kind: 'fn' }); continue; }
+    src += c;
+  }
+  ranges.sort((a, b) => a.start - b.start);
+  return { src, ranges, marks, scanPages, body, pages: P.length };
+}
+// pdf.js-Textinhalt einer Seite → einfache Textstücke (Koordinaten relativ zur sichtbaren Seite)
+function pdfItems(tc, view) {
+  const ox = view[0], oy = view[1];
+  return tc.items.filter(it => typeof it.str === 'string').map(it => {
+    const t = it.transform;
+    const rot = Math.abs(t[1]) > 0.01 || Math.abs(t[2]) > 0.01;
+    const size = Math.hypot(t[2], t[3]) || Math.abs(t[0]) || 10;
+    return { s: pdfNorm(it.str), x0: t[4] - ox, x1: t[4] - ox + (it.width || 0), y: t[5] - oy, size, font: it.fontName || '', rot };
+  }).filter(it => it.s.length);
+}
+
+/* =====================================================================
    Anzeige
    ===================================================================== */
 const ui = { src: '', sentences: [], spans: [], curIdx: -1, wordSpan: -1 };
@@ -1337,6 +1790,7 @@ function showRead(on) {
 
 function applyText() {
   ui.src = $('src').value;
+  if (pdfInfo && pdfInfo.src !== ui.src) pdfInfo = null;
   ui.sentences = segment(ui.src);
   const view = $('view');
   view.textContent = '';
@@ -1353,8 +1807,11 @@ function applyText() {
     pos = s.end;
   }
   if (pos < ui.src.length) view.appendChild(document.createTextNode(ui.src.slice(pos)));
+  if (pdfInfo && pdfInfo.src !== ui.src) pdfInfo = null;            // Text wurde geändert → keine PDF-Zusatzinfos mehr
+  pdfPageMarks();
   const ok = view.textContent === ui.src;
-  $('integrity').textContent = ok ? `✓ Anzeige identisch mit Original · ${ui.sentences.length} Sätze` : '✗ Anzeige weicht vom Original ab!';
+  const pdfNote = pdfInfo ? ` · PDF-Text, Seiten ${pdfInfo.from}–${pdfInfo.to}, ${pdfInfo.ranges.filter(r => r.kind !== 'fnref').length} graue Stellen, ${ui.sentences.filter(x => x.silent).length} stille Einheiten` : '';
+  $('integrity').textContent = ok ? `✓ Anzeige identisch mit Original · ${ui.sentences.length} Sätze${pdfNote}` : '✗ Anzeige weicht vom Original ab!';
   $('integrity').className = ok ? 'hint' : 'hint warn';
   if (!ok) log('Textprüfung fehlgeschlagen: Anzeige ≠ Original', 'error');
   ui.curIdx = -1; ui.wordSpan = -1;
@@ -1378,7 +1835,8 @@ function renderSentence(i, markA, markB) {
     if (q <= p) continue;
     let node = document.createTextNode(ui.src.slice(p, q));
     if (markA != null && p >= markA && q <= markB) { const mk = document.createElement('mark'); mk.className = 'w'; mk.appendChild(node); node = mk; }
-    if (s.skips.some(r => p >= r.start && q <= r.end)) { const sk = document.createElement('span'); sk.className = 'skipcit'; sk.title = 'wird nicht vorgelesen'; sk.appendChild(node); node = sk; }
+    const skr = s.skips.find(r => p >= r.start && q <= r.end);
+    if (skr) { const sk = document.createElement('span'); sk.className = 'skipcit' + (skr.kind ? ' skip-' + skr.kind : ''); sk.title = 'wird nicht vorgelesen'; sk.appendChild(node); node = sk; }
     span.appendChild(node);
   }
 }
@@ -2236,10 +2694,13 @@ const ctl = {
     const met = this.metrics();
     while (i < ui.sentences.length) {
       if (g !== this.gen) return;
+      if (ui.sentences[i].silent) { i++; continue; }        // v0.7: Kopfzeile/Seitenzahl/Fußnote – nicht vorlesen
       this.cur = i;
       markSentence(i);
       const s = ui.sentences[i];
-      eng.prefetch(ui.sentences.slice(i + 1, i + 1 + CONFIG.prefetch));
+      const next = [];
+      for (let k = i + 1; k < ui.sentences.length && next.length < CONFIG.prefetch; k++) if (!ui.sentences[k].silent) next.push(ui.sentences[k]);
+      eng.prefetch(next);
       const first = this.firstInRun;
       try {
         await eng.speak(s, {
@@ -2417,11 +2878,14 @@ $('btnSample').onclick = () => { ctl.stop(); $('src').value = SAMPLE_TEXT; apply
 $('btnSamplePron').onclick = () => { ctl.stop(); $('src').value = SAMPLE_PRON; applyText(); };
 $('btnSampleSA').onclick = () => { ctl.stop(); $('src').value = SAMPLE_SA; applyText(); };
 $('btnSampleStart').onclick = () => { ctl.stop(); $('src').value = SAMPLE_START; applyText(); };
+// v0.7: 8 fiktive Fachtexte (Soziale Arbeit) zum Finden von Aussprachelücken
+TEST_TEXTS.forEach(([name], k) => { const o = document.createElement('option'); o.value = k; o.textContent = (k + 1) + '. ' + name; $('testSel').appendChild(o); });
+$('testSel').onchange = () => { const k = $('testSel').value; if (k === '') return; ctl.stop(); $('src').value = TEST_TEXTS[+k][1]; applyText(); setStatus('Testtext „' + TEST_TEXTS[+k][0] + '“ – ▶ drücken'); };
 $('btnEdit').onclick = () => { cmpRun++; cmpBanner(''); ctl.stop(); showRead(false); setStatus('Bereit'); };
 // „Eigenen Text einfügen“: liest die Zwischenablage (iPhone zeigt dazu kurz „Einsetzen“ an – einmal tippen).
 // Klappt das nicht (verweigert/leer), wird das Feld geleert und ausgewählt: dann ins Feld tippen → „Einsetzen“.
 function emptyAndFocus(msg) {
-  $('src').value = ''; ui.src = ''; ui.sentences = [];
+  $('src').value = ''; ui.src = ''; ui.sentences = []; pdfInfo = null;
   $('src').focus();
   setStatus(msg || 'Ins Feld tippen und „Einsetzen“ wählen, dann ▶');
 }
@@ -2435,6 +2899,134 @@ $('btnPaste').onclick = () => {
   }, () => emptyAndFocus());
 };
 $('btnClearText').onclick = () => { ctl.stop(); emptyAndFocus('Feld ist leer – ins Feld tippen → „Einsetzen“, dann ▶'); };
+/* =====================================================================
+   v0.7 PDF öffnen (Clara-Ansicht): Datei bleibt auf dem Gerät, nichts wird gespeichert.
+   pdf.js (Mozilla, Apache 2.0) wird erst beim ersten Öffnen einer PDF geladen.
+   ===================================================================== */
+const pdfState = { lib: null, doc: null, name: '', run: 0, all: true };
+async function pdfLib() {
+  if (pdfState.lib) return pdfState.lib;
+  const lib = await import(CONFIG.pdfBase + 'legacy/build/pdf.min.mjs');
+  lib.GlobalWorkerOptions.workerSrc = CONFIG.pdfBase + 'legacy/build/pdf.worker.min.mjs';
+  pdfState.lib = lib;
+  return lib;
+}
+function pdfMsg(t, warn) { $('pdfMsg').textContent = t || ''; $('pdfMsg').className = warn ? 'hint warn' : 'hint'; }
+function pdfShowRange() {
+  for (const b of $('segPages').children) b.classList.toggle('on', (b.dataset.v === 'all') === pdfState.all);
+  $('pdfRange').hidden = pdfState.all;
+}
+function pdfClose() {
+  pdfState.run++;
+  if (pdfState.doc) { try { pdfState.doc.destroy(); } catch (e) {} pdfState.doc = null; }
+  $('pdfModal').hidden = true;
+  $('pdfFile').value = '';
+}
+async function pdfOpenFile(file) {
+  const run = ++pdfState.run;
+  ctl.stop();
+  $('pdfModal').hidden = false;
+  $('pdfTitle').textContent = '📄 ' + file.name;
+  $('pdfInfoLine').textContent = 'Wird geöffnet …';
+  $('pdfRangeBox').hidden = true; $('pdfProg').hidden = true; pdfMsg('');
+  let lib;
+  try { lib = await pdfLib(); }
+  catch (e) { pdfMsg('Das PDF-Werkzeug konnte nicht geladen werden – bitte Internetverbindung prüfen, die Seite neu laden und es noch einmal versuchen.', true); log('pdf.js laden fehlgeschlagen: ' + (e.message || e), 'error'); return; }
+  if (run !== pdfState.run) return;
+  try {
+    const data = new Uint8Array(await file.arrayBuffer());
+    const task = lib.getDocument({ data, isEvalSupported: false, cMapUrl: CONFIG.pdfBase + 'cmaps/', cMapPacked: true,
+      standardFontDataUrl: CONFIG.pdfBase + 'standard_fonts/', verbosity: 0 });
+    const doc = await task.promise;
+    if (run !== pdfState.run) { doc.destroy(); return; }
+    pdfState.doc = doc; pdfState.name = file.name; pdfState.all = true;
+    $('pdfInfoLine').textContent = `${doc.numPages} ${doc.numPages === 1 ? 'Seite' : 'Seiten'} · ${(file.size / 1048576).toFixed(1).replace('.', ',')} MB`;
+    $('pdfFrom').value = 1; $('pdfTo').value = doc.numPages; $('pdfFrom').max = $('pdfTo').max = doc.numPages;
+    $('pdfRangeBox').hidden = false; pdfShowRange();
+    log(`PDF geöffnet: ${doc.numPages} Seiten`);
+  } catch (e) {
+    const n = (e && e.name) || '';
+    pdfMsg(n === 'PasswordException' ? 'Diese PDF ist mit einem Passwort geschützt und kann nicht geöffnet werden.'
+      : n === 'InvalidPDFException' ? 'Die Datei ist keine gültige PDF.'
+      : 'Die PDF konnte nicht geöffnet werden: ' + ((e && e.message) || e), true);
+    $('pdfInfoLine').textContent = '';
+    log('PDF öffnen fehlgeschlagen: ' + n + ' ' + ((e && e.message) || e), 'error');
+  }
+}
+const pageList = (ns) => {                                  // [2,3,4,7] → „2–4, 7“
+  const out = [];
+  for (let k = 0; k < ns.length; k++) { let e = k; while (e + 1 < ns.length && ns[e + 1] === ns[e] + 1) e++; out.push(e > k ? ns[k] + '–' + ns[e] : '' + ns[k]); k = e; }
+  return out.join(', ');
+};
+async function pdfTake() {
+  const doc = pdfState.doc, run = pdfState.run;
+  if (!doc) return;
+  let from = 1, to = doc.numPages;
+  if (!pdfState.all) {
+    from = Math.max(1, Math.min(doc.numPages, Math.floor(+$('pdfFrom').value || 1)));
+    to = Math.max(from, Math.min(doc.numPages, Math.floor(+$('pdfTo').value || doc.numPages)));
+    $('pdfFrom').value = from; $('pdfTo').value = to;
+  }
+  $('pdfGo').disabled = true; $('pdfProg').hidden = false; $('pdfProg').max = to - from + 1; $('pdfProg').value = 0;
+  const pages = [], t0 = now();
+  try {
+    for (let p = from; p <= to; p++) {
+      if (run !== pdfState.run) return;
+      const page = await doc.getPage(p);
+      const tc = await page.getTextContent();
+      const view = page.view;
+      pages.push({ num: p, W: view[2] - view[0], H: view[3] - view[1], items: pdfItems(tc, view) });
+      page.cleanup();
+      $('pdfProg').value = p - from + 1;
+      pdfMsg(`Text wird gelesen … Seite ${p} von ${to}`);
+    }
+    const res = pdfBuild(pages);
+    if (run !== pdfState.run) return;
+    if (res.scanPages.length === pages.length) {
+      pdfMsg('Diese PDF enthält keinen lesbaren Text – vermutlich eingescannt. Das kann die App noch nicht vorlesen.', true);
+      log('PDF ohne Text (Scan?)', 'warn');
+      $('pdfGo').disabled = false; $('pdfProg').hidden = true; $('pdfRangeBox').hidden = true;
+      return;
+    }
+    pdfInfo = Object.assign(res, { name: pdfState.name, from, to });
+    $('src').value = res.src;
+    pdfClose();
+    applyText();
+    ctl.cur = 0;
+    const grey = res.ranges.filter(r => r.kind !== 'fnref').length;
+    let msg = `PDF übernommen: ${to - from + 1} ${to > from ? 'Seiten' : 'Seite'} – ▶ drücken`;
+    if (res.scanPages.length) {
+      msg = `Achtung: Seite ${pageList(res.scanPages)} ohne lesbaren Text (vermutlich eingescannt) – wird übersprungen. ▶ drücken`;
+      toast(`Seite ${pageList(res.scanPages)} enthält keinen Text (Scan?) und wird übersprungen.`, 5000);
+    }
+    setStatus(msg);
+    log(`PDF „${pdfState.name || pdfInfo.name}“: Seiten ${from}–${to}, ${res.src.length} Zeichen, ${grey} graue Stellen, ${res.ranges.filter(r => r.kind === 'fnref').length} Fußnotenziffern, ${fmtMs(now() - t0)}` +
+      (res.scanPages.length ? `, ohne Text: ${pageList(res.scanPages)}` : ''));
+  } catch (e) {
+    pdfMsg('Beim Lesen der PDF ist ein Fehler aufgetreten: ' + ((e && e.message) || e), true);
+    log('PDF lesen fehlgeschlagen: ' + ((e && e.message) || e), 'error');
+  } finally { $('pdfGo').disabled = false; }
+}
+$('btnPdf').onclick = () => $('pdfFile').click();
+$('pdfFile').onchange = () => { const f = $('pdfFile').files && $('pdfFile').files[0]; if (f) pdfOpenFile(f); };
+for (const b of $('segPages').children) b.onclick = () => { pdfState.all = b.dataset.v === 'all'; pdfShowRange(); };
+$('pdfGo').onclick = () => pdfTake();
+$('pdfClose').onclick = () => pdfClose();
+$('pdfModal').onclick = (e) => { if (e.target.id === 'pdfModal') pdfClose(); };
+// Seitenmarken „Seite 13“ (nur Anzeige: CSS-Inhalt, gehört nicht zum Text) vor dem ersten Satz der Seite
+function pdfPageMarks() {
+  if (!pdfInfo || pdfInfo.src !== ui.src) return;
+  const S = ui.sentences;
+  for (const m of pdfInfo.marks) {
+    let lo = 0, hi = S.length;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (S[mid].start < m.pos) lo = mid + 1; else hi = mid; }
+    const el = document.createElement('span');
+    el.className = 'pgmark' + (m.scan ? ' scan' : '');
+    el.dataset.p = 'Seite ' + m.page + (m.scan ? ' · kein lesbarer Text (vermutlich eingescannt)' : '');
+    if (lo < S.length) ui.spans[lo].before(el); else $('view').appendChild(el);
+  }
+}
+
 $('optHelp').onchange = () => { ctl.stop(); speechOpts.help = $('optHelp').checked; applyText(); log('Aussprache-Hilfe ' + (speechOpts.help ? 'an' : 'aus')); };
 $('optSkip').onchange = () => { setSkip($('optSkip').checked); };
 // v0.6.1 Vorlese-Optionen: gespeichert, gelten sofort (Text wird neu aufbereitet)
@@ -2445,6 +3037,7 @@ function setSkip(on) {
 }
 function showReadOpts() {
   $('optSkip2').checked = readOpts.skip;
+  $('optMargins').checked = !!readOpts.margins; $('optFn').checked = !!readOpts.footnotes;
   for (const b of $('segLaws').children) b.classList.toggle('on', b.dataset.v === readOpts.laws);
   for (const b of $('segGender').children) b.classList.toggle('on', b.dataset.v === readOpts.gender);
 }
@@ -2453,6 +3046,8 @@ function setReadOpt(key, v) {
   ctl.stop(); readOpts[key] = v; showReadOpts(); applyText(); saveSound(); log('Vorlese-Option ' + key + ': ' + v);
 }
 $('optSkip2').onchange = () => setSkip($('optSkip2').checked);
+$('optMargins').onchange = () => setReadOpt('margins', $('optMargins').checked);
+$('optFn').onchange = () => setReadOpt('footnotes', $('optFn').checked);
 for (const b of $('segLaws').children) b.onclick = () => setReadOpt('laws', b.dataset.v);
 for (const b of $('segGender').children) b.onclick = () => setReadOpt('gender', b.dataset.v);
 $('btnOpts').onclick = () => { showReadOpts(); $('optModal').hidden = false; };
@@ -2730,6 +3325,7 @@ updateFlagCount();
 $('ver').textContent = CONFIG.version;
 speechOpts.help = $('optHelp').checked;
 $('optSkip').checked = !!readOpts.skip;
+showReadOpts();
 speechOpts.skipCitations = $('optSkip').checked;
 /* =====================================================================
    v0.6 – Stimme & Klang: Voreinstellungen, Regler, Klang-Feinschliff, Vorher/Nachher
