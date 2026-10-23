@@ -45,10 +45,6 @@
   #status { font-size: 1rem; font-weight: 600; min-height: 1.5em; }
   .ctrls button .ico { display: block; font-size: 1.5rem; line-height: 1.1; }
   .ctrls button .cap { display: block; font-size: .7rem; line-height: 1.1; }
-  .foot { align-items: center; flex-wrap: wrap; }
-  .foot label.opt { margin: 0; min-height: 44px; font-size: .9rem; gap: 8px; }
-  .foot label.opt input { width: 22px; height: 22px; }
-  .foot button.link { border: none; background: none; color: var(--accent); font-size: .9rem; padding: 8px 0 8px 8px; margin: 0; min-height: 44px; }
   .verrow { display: flex; justify-content: space-between; align-items: center; line-height: 1; }
   .verrow button.link { border: none; background: none; color: var(--accent); font-size: .85rem; padding: 0; margin: 0; min-height: 26px; }
   button.chip { font-size: .85rem; padding: 6px 12px; min-height: 36px; margin: 0; border-radius: 18px; background: #fff; color: var(--accent); border-color: #c9d4f3; font-weight: 600; }
@@ -58,9 +54,6 @@
   .seg button small, .og .seg button small { display: block; font-size: .78rem; font-weight: 400; opacity: .85; color: inherit; }
   #optModal .tg { border-bottom: 1px solid #f0ede7; }
   #optModal .primary { margin-top: 14px; }
-  .foot { flex-wrap: nowrap; gap: 8px; }
-  .foot label.opt { font-size: .85rem; gap: 6px; flex: 1 1 auto; min-width: 0; }
-  .foot button.chip { flex: none; font-size: .8rem; padding: 6px 10px; }
   .modal { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 50; display: flex; align-items: flex-end; justify-content: center; }
   .sheet { background: #fff; width: 100%; max-width: 760px; max-height: 88vh; overflow: auto; border-radius: 18px 18px 0 0; padding: 14px 16px calc(16px + env(safe-area-inset-bottom)); }
   .sheet-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 1.05rem; }
@@ -86,7 +79,6 @@
   .ctrls { display: flex; gap: 10px; margin-top: 8px; }
   .ctrls button { flex: 1; min-height: 60px; font-size: 1.6rem; border-radius: 14px; margin: 0; }
   .ctrls button#btnPlay { flex: 2; background: var(--accent); color: #fff; border-color: var(--accent); }
-  .foot { display: flex; justify-content: space-between; margin-top: 4px; }
   .ver { font-size: .75rem; color: var(--muted); }
   progress { width: 100%; height: 8px; accent-color: var(--accent); }
   table { border-collapse: collapse; font-size: .85rem; width: 100%; display: block; overflow-x: auto; }
@@ -120,7 +112,6 @@
   input.sw:checked { background: #34c759; }
   input.sw:checked::after { transform: translateX(20px); }
   input.sw:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .foot label.opt input.sw, label.opt input.sw { width: 51px; height: 31px; }
   .sl { grid-template-columns: 7.6em 1fr 3.8em; margin: 8px 0; }
   .sl input[type=range] { accent-color: var(--accent); height: 28px; }
   #soundBox { background: #faf9f6; border: 1px solid #eeebe4; border-radius: 12px; padding: 6px 12px; }
@@ -141,8 +132,8 @@
   /* v0.8 Leiste, Tempo, Weiterhören */
   .tools { display: flex; gap: 8px; margin-top: 8px; }
   .tools .chip { flex: 1 1 auto; min-height: 44px; font-size: .9rem; padding: 6px 8px; white-space: nowrap; }
+  .sheet button.link.wide { display: block; width: 100%; border: none; background: none; color: var(--accent); font-size: .95rem; min-height: 44px; margin-top: 6px; }
   .tools #btnTempo { flex: 0 0 auto; min-width: 64px; font-variant-numeric: tabular-nums; }
-  .foot { margin-top: 2px; }
   h1 .ver { font-size: .7rem; font-weight: 400; color: var(--muted); margin-left: 6px; vertical-align: middle; }
   .tval { font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); }
   #tempoRange { width: 100%; height: 36px; accent-color: var(--accent); margin-top: 8px; }
@@ -271,10 +262,6 @@
     <button id="btnFlag" class="chip" aria-label="Wort melden">⚑ Wort melden</button>
     <button id="btnOpts" class="chip">Vorlese-Optionen</button>
   </div>
-  <div class="foot">
-    <label class="opt"><input type="checkbox" class="sw" id="optSkip"> Quellen überspringen</label>
-    <button id="btnList" class="link">Gemeldete Wörter (0)</button>
-  </div>
 </div></div>
 
 <!-- v0.8 Tempo -->
@@ -321,7 +308,7 @@
 <div id="optModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="optTitle">
   <div class="sheet">
     <div class="sheet-h"><b id="optTitle">Vorlese-Optionen</b><button id="optClose" class="x" aria-label="Schließen">✕</button></div>
-    <label class="tg"><span class="tx"><b>Quellenangaben überspringen</b><small>„(Müller 2019, S. 12)“ wird nicht vorgelesen und im Text grau angezeigt.</small></span><input type="checkbox" class="sw" id="optSkip2"></label>
+    <label class="tg"><span class="tx"><b>Quellenangaben überspringen</b><small>„(Müller 2019, S. 12)“ wird nicht vorgelesen und im Text grau angezeigt.</small></span><input type="checkbox" class="sw" id="optSkip"></label>
     <label class="tg"><span class="tx"><b>Kopfzeilen &amp; Seitenzahlen vorlesen</b><small>Nur bei PDFs: wiederkehrende Kopf- und Fußzeilen, Seitenzahlen (grau). Normalerweise aus.</small></span><input type="checkbox" class="sw" id="optMargins"></label>
     <div class="og"><b>Gesetzesangaben</b><small>Wie Kürzel wie „SGB“, „GG“ oder „BGB“ gesprochen werden.</small>
       <div class="seg" id="segLaws"><button data-v="abbr">Kürzel<small>„S G B acht“</small></button><button data-v="full">Ausgeschrieben<small>„Sozialgesetzbuch acht“</small></button></div></div>
@@ -342,6 +329,7 @@
       <button data-t="Betonung">Betonung</button><button data-t="falscher Laut">falscher Laut</button><button data-t="abgehackt">abgehackt</button><button data-t="anderes">anderes</button>
     </div>
     <button id="flagSend" class="primary" disabled>Wort antippen</button>
+    <button id="btnList" class="link wide">Gemeldete Wörter (0) – ansehen &amp; teilen</button>
   </div>
 </div>
 
@@ -369,12 +357,15 @@
    Konfiguration (alle externen Quellen, Versionen fest angepinnt)
    ===================================================================== */
 const CONFIG = {
-  version: 'v0.8 · Komfort',
+  version: 'v0.8.1 · Aussprache',
   ortBase:  'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/',
   phonBase: 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/',
   // v0.7 PDF: pdf.js 4.10.38 (Mozilla, Apache 2.0), „legacy“-Fassung = mit Ausweichcode für ältere Safari-Versionen
   pdfBase:  'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/',
   hfBase:   'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/de/de_DE/',
+  // v0.8.1 Deutsche Wortliste für die Zerlegung zusammengesetzter Wörter: igerman98 (Björn Jacke) als Hunspell-Wörterbuch,
+  // npm-Paket dictionary-de 3.0.0 (Wortliste/Regeln GPL-2.0 oder GPL-3.0); ≈ 1,1 MB, wird wie die Stimme gecacht
+  lexBase:  'https://cdn.jsdelivr.net/npm/dictionary-de@3.0.0/',
   cacheName: 'hoerlabor-piper-v1',
   maxPartChars: 220,       // längere Sätze werden intern für die Sprachausgabe geteilt
   pauseSentence: 0.30,     // Sekunden Stille nach Satz (Piper)
@@ -823,8 +814,31 @@ function segment(src) {
   // Übersprungene Quellen bleiben im normalen Teil (sie werden ohnehin nicht gesprochen).
   const trimR = (a, b) => { while (a < b && isWs(src[a])) a++; while (b > a && isWs(src[b - 1])) b--; return [a, b]; };
   const hasWord = (a, b) => /[\p{L}\d]/u.test(src.slice(a, b));
+  // v0.8.1: Gesetzesangaben werden eigene, langsamere Teile (kind 'law'); nicht in übersprungenen Quellen
+  const lawSplit = (x, y, skips) => {
+    if (!speechOpts.help) return [[x, y, null]];
+    const ls = lawSpans(src, x, y).filter(l => !skips.some(r => r.start < l.end && r.end > l.start));
+    if (!ls.length) return [[x, y, null]];
+    const out = [];
+    let pos = x;
+    for (const l of ls) {
+      if (hasWord(pos, l.start)) out.push([pos, l.start, null]);
+      else if (out.length) out[out.length - 1][1] = l.start;
+      out.push([l.start, l.end, 'law']);
+      pos = l.end;
+    }
+    if (pos < y) { if (hasWord(pos, y)) out.push([pos, y, null]); else out[out.length - 1][1] = trimR(pos, y)[1]; }
+    return out;
+  };
   const asideRanges = (a, b, skips) => {
-    const plain = (x, y, aside) => splitParts(...trimR(x, y)).map(r => [r[0], r[1], aside]);
+    const plain = (x, y, aside) => {
+      const out = [];
+      for (const [p, q, kind] of lawSplit(...trimR(x, y), skips)) {
+        if (kind === 'law') out.push([...trimR(p, q), 'law']);
+        else out.push(...splitParts(...trimR(p, q)).map(r => [r[0], r[1], aside]));
+      }
+      return out;
+    };
     if (!polish.aside || !speechOpts.help) return plain(a, b, false);
     const out = [];
     let pos = a;
@@ -868,7 +882,12 @@ function segment(src) {
     Object.defineProperty(o, 'parts', { enumerable: true, get() {
       if (!parts) {
         const ranges = asideRanges(s.start, s.end, skips);
-        parts = ranges.map(([a, b, aside], k) => Object.assign(speechVersion(src, a, b, { help: speechOpts.help, skips, cits, marks, isLast: k === ranges.length - 1 }), { aside }));
+        parts = ranges.map(([a, b, kind], k) => {
+          const isLast = k === ranges.length - 1;
+          const p = Object.assign(speechVersion(src, a, b, { help: speechOpts.help, skips, cits, marks, isLast, head: s.head }), { aside: kind === true, law: kind === 'law' });
+          if (p.law) p.piper = lawPiper(src.slice(a, b), isLast);
+          return p;
+        });
       }
       return parts;
     } });
@@ -1023,13 +1042,13 @@ function lawSay(m, c) {
 
 /* ---------- v0.6.1: Gender-Aussprache – „Knacklaut“ (Standard) oder „Deutliche Pause“ (wie bis v0.6) ----------
    Thorstens Lautinventar kennt kein eigenes Knacklaut-Zeichen (espeak-Deutsch erzeugt es nie). „Knacklaut“ heißt hier:
-   ein Wort mit EINER Betonung, vor „innen“ nur eine Wortgrenze ohne Pause und ohne neue Betonung → harter Einsatz
-   wie im Radio („ɛkspˈɛɾt ɪnən“). „Deutliche Pause“ = bisheriges Verhalten (zwei betonte Wörter). */
+   ein Wort mit EINER Hauptbetonung; v0.8.1: vor „innen“ keine Wortgrenze mehr (die erzeugte eine hörbare Lücke), sondern
+   ein Nebenakzent direkt vor dem i = Einsatz („ɛkspˈɛɾtˌɪnən“). „Deutliche Pause“ = bisheriges Verhalten (zwei betonte Wörter). */
 const GENDER_IPA = { in: 'ɪn', innen: 'ɪnən', inne: 'ɪnə' };
 function genderSay(word, base, suf) {
   if (readOpts.gender === 'pause') return null;
   const p = pronounceWord(base);
-  return { piper: word + '=' + (p ? p.slice(p.indexOf('=') + 1) : base) + '|/ ' + GENDER_IPA[suf] };
+  return { piper: word + '=' + (p ? p.slice(p.indexOf('=') + 1) : base) + '|/' + GENDER_IPA[suf] };
 }
 
 /* ---------- v0.6.1: „zu“-Infinitive trennbarer Verben (einzuschätzen, anzubieten, festzuschreiben …) ----------
@@ -1139,7 +1158,7 @@ const PRON_DICT = [
   ['Devianz',                  'deːvjˈants',                   '',                 'W'],
   ['Sucht',                    'zˈʊxt',                        '',                 'WH'],
   ['Menschenrechtsprofession', 'mˈɛnʃənrɛçtspɾoːfɛsjˌoːn',     '',                 'W'],
-  ['Inobhutnahme',             'ɪn ˈɔphuːtnˌɑːmə',             'n:n',              'W'],   // v0.6.1: Wortgrenze vor „ob“ = harter Einsatz
+  ['Inobhutnahme',             'ɪnˈɔphuːtnˌɑːmə',             'n:n',              'W'],   // v0.8.1: ohne Wortgrenze (keine Lücke); Akzent vor „ob“ = Einsatz
   ['Schulsozialarbeit',        'ʃˈuːlzoːtsjɑːlˌaɾbaɪt',        '',                 'W'],
   ['Akzeptanz',                'aktsɛptˈants',                 '',                 'W'],
   ['Signifikanz',              'zɪɡniːfiːkˈants',              '',                 'W'],
@@ -1169,27 +1188,27 @@ const PRON_DICT = [
   ['Expert',                   'ɛkspˈɛɾt',                     'e:ə en:ən in:ɪn innen:ɪnən', 'WT'],
   ['Tripelmandat',             'tɾˌiːpəlmandˈɑːt',             'e:ə s:s',          'W'],
   ['Doppelmandat',             'dˌɔpəlmandˈɑːt',               'e:ə s:s',          'W'],
-  // v0.6.1: Zweitglieder mit Vokal-Anfang (Ganztags|angebote, Beratungs|ansatz …): Wortgrenze vor dem Zweitglied →
-  // Fugen-s bleibt stimmlos, harter Einsatz; nur großgeschriebene Wörter, erster Teil ≥ 4 Buchstaben (Kennung S)
-  ['Angebot',                  ' ˈanɡəboːt',                   'e:ə en:ən s:s es:əs', 'TS'],
-  ['Ansatz',                   ' ˈanzats',                     'es:əs',            'TS'],
-  ['Ansätze',                  ' ˈanzɛtsə',                    'n:n',              'TS'],
-  ['Anspruch',                 ' ˈanʃpɾʊx',                    's:s es:əs',        'TS'],
-  ['Ansprüche',                ' ˈanʃpɾyçə',                   'n:n',              'TS'],
-  ['Aufgabe',                  ' ˈaʊfɡɑːbə',                   'n:n',              'TS'],
-  ['Auftrag',                  ' ˈaʊftɾɑːk',                   's:s es:əs',        'TS'],
-  ['Aufträge',                 ' ˈaʊftɾɛːɡə',                  'n:n',              'TS'],
-  ['Ausbildung',               ' ˈaʊsbɪldʊŋ',                  'en:ən',            'TS'],
-  ['Alltag',                   ' ˈaltɑːk',                     's:s e:ə es:əs',    'TS'],
-  ['Einrichtung',              ' ˈaɪnrɪçtʊŋ',                  'en:ən',            'TS'],
-  ['Entwicklung',              ' ɛntvˈɪklʊŋ',                  'en:ən',            'TS'],
-  ['Ergebnis',                 ' ɛɾɡˈeːpnɪs',                  'se:sə sen:sən ses:səs', 'TS'],
-  ['Erfahrung',                ' ɛɾfˈɑːrʊŋ',                   'en:ən',            'TS'],
-  ['Umfeld',                   ' ˈʊmfɛlt',                     's:s es:əs',        'TS'],
-  ['Ebene',                    ' ˈeːbənə',                     'n:n',              'TS'],
-  ['Interesse',                ' ɪntəɾˈɛsə',                   'n:n',              'TS'],
-  ['Analyse',                  ' analˈyːzə',                   'n:n',              'TS'],
-  ['Einkommen',                ' ˈaɪnkɔmən',                   's:s',              'TS'],
+  // v0.6.1: Zweitglieder mit Vokal-Anfang (Ganztags|angebote, Beratungs|ansatz …); nur großgeschriebene Wörter,
+  // erster Teil ≥ 4 Buchstaben (Kennung S). v0.8.1: ohne Wortgrenze – Fugen-s stimmlos und Einsatz macht jetzt itemPhonemes.
+  ['Angebot',                  'ˈanɡəboːt',                   'e:ə en:ən s:s es:əs', 'TS'],
+  ['Ansatz',                   'ˈanzats',                     'es:əs',            'TS'],
+  ['Ansätze',                  'ˈanzɛtsə',                    'n:n',              'TS'],
+  ['Anspruch',                 'ˈanʃpɾʊx',                    's:s es:əs',        'TS'],
+  ['Ansprüche',                'ˈanʃpɾyçə',                   'n:n',              'TS'],
+  ['Aufgabe',                  'ˈaʊfɡɑːbə',                   'n:n',              'TS'],
+  ['Auftrag',                  'ˈaʊftɾɑːk',                   's:s es:əs',        'TS'],
+  ['Aufträge',                 'ˈaʊftɾɛːɡə',                  'n:n',              'TS'],
+  ['Ausbildung',               'ˈaʊsbɪldʊŋ',                  'en:ən',            'TS'],
+  ['Alltag',                   'ˈaltɑːk',                     's:s e:ə es:əs',    'TS'],
+  ['Einrichtung',              'ˈaɪnrɪçtʊŋ',                  'en:ən',            'TS'],
+  ['Entwicklung',              'ɛntvˈɪklʊŋ',                  'en:ən',            'TS'],
+  ['Ergebnis',                 'ɛɾɡˈeːpnɪs',                  'se:sə sen:sən ses:səs', 'TS'],
+  ['Erfahrung',                'ɛɾfˈɑːrʊŋ',                   'en:ən',            'TS'],
+  ['Umfeld',                   'ˈʊmfɛlt',                     's:s es:əs',        'TS'],
+  ['Ebene',                    'ˈeːbənə',                     'n:n',              'TS'],
+  ['Interesse',                'ɪntəɾˈɛsə',                   'n:n',              'TS'],
+  ['Analyse',                  'analˈyːzə',                   'n:n',              'TS'],
+  ['Einkommen',                'ˈaɪnkɔmən',                   's:s',              'TS'],
   // v0.5: aus Claras Test
   ['Transfer',                 'tɾansfˈeːɾ',                   's:s',              'WT'],
   // v0.5: Zweitglieder mit st/sp – espeak liest an der Wortfuge oft „s-t“/„s-p“ statt „scht“/„schp“
@@ -1204,7 +1223,7 @@ const PRON_DICT = [
   ['Sprache',                  'ʃpɾˈɑːxə',                     'n:n',              'TS'],
   ['Studie',                   'ʃtˈuːdɪə',                     'n:n',              'TS'],
   ['Struktur',                 'ʃtɾʊktˈuːɾ',                   'en:ən',            'TS'],
-  ['Strategie',                'ʃtɾateːɡˈiː',                  'n:n',              'TS'],
+  ['Strategie',                'ʃtɾateːɡˈiː',                  'n:ən',              'TS'],
   ['Stunde',                   'ʃtˈʊndə',                      'n:n',              'TS'],
   ['Stufe',                    'ʃtˈuːfə',                      'n:n',              'TS'],
   ['Stil',                     'ʃtˈiːl',                       's:s e:ə en:ən',    'TS'],
@@ -1213,7 +1232,7 @@ const PRON_DICT = [
   ['Statt',                    'ʃtˈat',                        '',                 'TS'],
   ['Stätte',                   'ʃtˈɛtə',                       'n:n',              'TS'],
   // Englische Fachbegriffe
-  ['Management',               'mˈɛnɪdʒmənt',                  's:s',              'WT'],
+  ['Management',               'mˈɛnɪtʃmənt',                  's:s',              'WT'],
   ['Empowerment',              'ɪmpˈaʊɜmənt',                  '',                 'W'],
   ['Coaching',                 'kˈoːtʃɪŋ',                     's:s',              'W'],
   ['Gender',                   'dʒˈɛndɜ',                      '',                 'WH'],
@@ -1224,18 +1243,238 @@ const PRON_DICT = [
   ['Self-Care',                'sˈɛlfkɛːɾ',                    '',                 'W'],
   ['Peer-Group',               'pˈiːɾɡɾuːp',                   's:s',              'W'],
   ['Labeling-Ansatz',          'lˈeːbəlɪŋanzˌats',             '',                 'W'],
-  ['Case Management',          'kˈeɪs mˈɛnɪdʒmənt',            '',                 'W'],
-  ['Social Work',              'sˈoːʃəl wˈɜːk',                '',                 'W'],
-  ['Capability Approach',      'kˌeɪpəbˈɪlɪti əpɾˈoʊtʃ',       '',                 'W'],
-  ['Community Organizing',     'kəmjˈuːnɪti ˈɔːɡənaɪzɪŋ',      '',                 'W']
+  ['Case Management',          'kˈeːs mˌɛnɪtʃmənt',            '',                 'W'],
+  ['Social Work',              'sˈoːʃəl vˌœːɾk',                '',                 'W'],
+  ['Capability Approach',      'keːpəbˈɪlɪtiː əpɾˈoːtʃ',       '',                 'W'],
+  ['Community Organizing',     'kɔmjˈuːnɪtiː ˈɔɾɡənaɪzɪŋ',      '',                 'W'],
+  // v0.8.1: aus Benjamins Meldungen (8 Fachtexte) und der Prüfung der Wortteile – nur, was espeak falsch liest
+  ['sozial',                   'zoːtsjˈɑːl',                   'ADJ',              'W'],
+  ['Planung',                  'plˈɑːnʊŋ',                     'en:ən s:s',        'WT'],
+  ['Wert',                     'vˈeːɾt',                       'e:ə en:ən es:əs s:s', 'WT'],
+  ['Unterschied',              'ˈʊntɜʃiːt',                    'e:ə en:ən s:s es:əs', 'W'],
+  ['Unterricht',               'ˈʊntɜrɪçt',                    's:s es:əs',        'W'],
+  ['Unterkunft',               'ˈʊntɜkʊnft',                   '',                 'WT'],
+  ['Resilienz',                'reːziːljˈɛnts',                '',                 'WH'],
+  ['Abstinenz',                'apstiːnˈɛnts',                 '',                 'WH'],
+  ['Genogramm',                'ɡeːnoːɡɾˈam',                  'e:ə en:ən s:s',    'WH'],
+  ['Trauma',                   'tɾˈaʊma',                      's:s',              'WH'],
+  ['Basis',                    'bˈɑːzɪs',                      '',                 'WH'],
+  ['Variable',                 'vaɾiːˈɑːblə',                  'n:n',              'WT'],
+  ['Toleranz',                 'toːleːrˈants',                 'en:ən',            'WH'],
+  ['Methadon',                 'meːtadˈoːn',                   's:s',              'W'],
+  ['Buprenorphin',             'buːpreːnɔɾfˈiːn',              's:s',              'W'],
+  ['Benzodiazepin',            'bɛntsoːdjatseːpˈiːn',          'e:ə en:ən s:s',    'W'],
+  ['Determinante',             'deːtɛɾmiːnˈantə',              'n:n',              'W'],
+  ['Autopoiesis',              'aʊtoːpɔøˈeːzɪs',               '',                 'W'],
+  ['Skala',                    'skˈɑːla',                      '',                 'WH'],
+  ['Skalen',                   'skˈɑːlən',                     '',                 'WH'],
+  ['Niveau',                   'niːvˈoː',                      's:s',              'WT'],
+  ['Analgetika',               'analɡˈeːtiːka',                '',                 'W'],
+  ['Analgetikum',              'analɡˈeːtiːkʊm',               's:s',              'W'],
+  ['Repertoire',               'reːpɛɾtoːˈɑːɾ',                's:s',              'WT'],
+  ['Soziotherapie',            'zˌoːtsjoːteːrapˈiː',           'n:ən',             'W'],
+  ['Therapie',                 'teːrapˈiː',                    'n:ən',             'T'],
+  ['Beruf',                    'bərˈuːf',                      'e:ə en:ən s:s es:əs', 'W'],
+  ['Berufs',                   'bərˈuːfs',                     '',                 'H'],
+  ['Asyl',                     'azˈyːl',                       's:s e:ə',          'WH'],
+  ['gelöst',                   'ɡəlˈøːst',                     'ADJ',              'W'],
+  ['Kriterien',                'kɾiːtˈeːrjən',                 '',                 'WH'],
+  ['Kriterium',                'kɾiːtˈeːrjʊm',                 's:s',              'W'],
+  ['psychiatrisch',            'psyçjˈɑːtɾɪʃ',                 'ADJ',              'W'],
+  ['professionell',            'pɾoːfɛsjoːnˈɛl',               'ADJ',              'W'],
+  ['konstruktivistisch',       'kɔnstɾʊktiːvˈɪstɪʃ',           'ADJ',              'W'],
+  ['Medikament',               'meːdiːkamˈɛnt',                'e:ə en:ən s:s es:əs', 'W'],
+  ['Jobcenter',                'dʒˈɔpsɛntɜ',                   'n:n s:s',          'W'],
+  ['Methodologie',             'meːtoːdoːloːɡˈiː',             'n:ən',             'WT'],
+  ['Unterhalt',                'ˈʊntɜhalt',                    's:s es:əs',        'W'],
+  ['Widerstand',               'vˈiːdɜʃtant',                  's:s es:əs',        'W'],
+  ['zuständig',                'tsˈuːʃtɛndɪç',                 'ADJ',              'W'],
+  ['Zuständigkeit',            'tsˈuːʃtɛndɪçkaɪt',             'en:ən',            'W'],
+  ['Befragung',                'bəfrˈɑːɡʊŋ',                   'en:ən s:s',        'WT'],
+  ['bio',                      'bˈiːoː',                       '',                 'W'],
+  ['psycho',                   'psˈyːçoː',                     '',                 'W']
+];
+/* =====================================================================
+   v0.8.1 Namen (Aussprache in der Originalsprache, nachgebildet mit den Lauten, die die Thorsten-Stimme kennt)
+   Spalten wie beim Wörterbuch: Name | Lautschrift | Endungen (Genitiv „Piagets“) | Verwendung (W = ganzes Wort,
+   H = auch als Anfang einer Zusammensetzung). Groß-/Kleinschreibung zählt („Weber“ ja, „weber“ nein).
+   Ergänzen = eine Zeile hinzufügen. Englisches „th“ wird als s, englisches w als v gesprochen (diese Laute hat Thorsten
+   kaum gelernt); Mehrwort-Namen („Schulz von Thun“) stehen als Ganzes in der Tabelle.
+   ===================================================================== */
+const NAME_DICT = [
+  // aus Benjamins Meldungen (Fachtexte v0.7)
+  ['Bourdieu',          'buɾdjˈøː',            's:s',  'WH'],
+  ['Pierre',            'pjˈɛːɾ',              '',     'W'],
+  ['Piaget',            'pjaʒˈeː',             's:s',  'WH'],
+  ['Ainsworth',         'ˈeːnsvœːɾs',          '',     'W'],
+  ['Erikson',           'ˈeːrɪksɔn',           's:s',  'WH'],
+  ['Rogers',            'rˈɔdʒɜs',             '',     'W'],
+  ['Mayring',           'mˈaɪrɪŋ',             's:s',  'W'],
+  ['Crenshaw',          'kɾˈɛnʃɔː',            's:s',  'W'],
+  ['Pearson',           'pˈiːɾsən',            's:s',  'WH'],
+  ['Spearman',          'spˈiːɾmən',           's:s',  'WH'],
+  ['Likert',            'lˈɪkɜt',              's:s',  'WH'],
+  ['Whitney',           'vˈɪtniː',             's:s',  'W'],
+  ['Mann-Whitney-U-Test', 'mˌanvˈɪtniːˌuːtɛst', 's:s', 'W'],
+  ['Silvia',            'zˈɪlvja',             's:s',  'W'],
+  ['Bernasconi',        'bɛɾnaskˈoːniː',       's:s',  'W'],
+  ['Staub-Bernasconi',  'ʃtˌaʊpbɛɾnaskˈoːniː', 's:s',  'W'],
+  ['Sen',               'sˈɛn',                's:s',  'W'],
+  ['Fonagy',            'fˈɔnaɡiː',            's:s',  'W'],
+  ['Thiersch',          'tˈiːɾʃ',              '',     'W'],
+  // Soziale Arbeit, Psychologie, Pädagogik, Soziologie
+  ['Bowlby',            'bˈoːlbiː',            's:s',  'W'],
+  ['John',              'dʒˈɔn',               's:s',  'W'],
+  ['Mary',              'mˈɛːriː',             's:s',  'W'],
+  ['Jean',              'ʒˈɑ̃',                 's:s',  'W'],
+  ['Freud',             'fɾˈɔøt',              's:s',  'W'],
+  ['Maslow',            'mˈɛsloː',             's:s',  'WH'],
+  ['Bandura',           'bandˈuːɾa',           's:s',  'W'],
+  ['Antonovsky',        'antoːnˈɔfskiː',       's:s',  'W'],
+  ['Lewin',             'leːvˈiːn',            's:s',  'W'],
+  ['Bronfenbrenner',    'bɾˈɔnfənbɾɛnɜ',       's:s',  'W'],
+  ['Vygotsky',          'vyɡˈɔtskiː',          's:s',  'W'],
+  ['Wygotski',          'vyɡˈɔtskiː',          's:s',  'W'],
+  ['Kohlberg',          'kˈoːlbɛɾk',           's:s',  'W'],
+  ['Montessori',        'mɔntɛsˈoːriː',        's:s',  'WH'],
+  ['Freire',            'fɾˈeːɾə',             's:s',  'W'],
+  ['Paulo',             'pˈaʊlo',              's:s',  'W'],
+  ['Watzlawick',        'vˈatslavɪk',          's:s',  'W'],
+  ['Schulz von Thun',   'ʃˈʊlts fɔn tˈuːn',    '',     'W'],
+  ['de Shazer',         'də ʃˈeːzɜ',           '',     'W'],
+  ['Shazer',            'ʃˈeːzɜ',              's:s',  'W'],
+  ['Satir',             'zatˈiːɾ',             's:s',  'W'],
+  ['Virginia',          'vɪɾdʒˈiːnja',         's:s',  'W'],
+  ['Minuchin',          'mɪnˈuːtʃɪn',          's:s',  'W'],
+  ['Rollnick',          'rˈɔlnɪk',             's:s',  'W'],
+  ['Grawe',             'ɡɾˈɑːvə',             's:s',  'W'],
+  ['Foucault',          'fuːkˈoː',             's:s',  'W'],
+  ['Habermas',          'hˈɑːbɜmaːs',          '',     'W'],
+  ['Goffman',           'ɡˈɔfmən',             's:s',  'W'],
+  ['Weber',             'vˈeːbɜ',              's:s',  'W'],
+  ['Durkheim',          'dyɾkˈɛm',             's:s',  'W'],
+  ['Simmel',            'zˈɪməl',              's:s',  'W'],
+  ['Elias',             'eːlˈiːas',            '',     'W'],
+  ['Honneth',           'hˈɔnət',              's:s',  'W'],
+  ['Butler',            'bˈatlɜ',              's:s',  'W'],
+  ['Nussbaum',          'nˈʊsbaʊm',            's:s',  'W'],
+  ['Amartya',           'amˈaɾtja',            '',     'W'],
+  ['Luhmann',           'lˈuːman',             's:s',  'W'],
+  ['Salomon',           'zˈɑːlomɔn',           's:s',  'W'],
+  ['Addams',            'ˈɛdəms',              '',     'W'],
+  ['Jane',              'dʒˈeːn',              's:s',  'W'],
+  ['Richmond',          'rˈɪtʃmənt',           's:s',  'W'],
+  ['Kuckartz',          'kˈʊkaɾts',            '',     'W'],
+  ['Lamnek',            'lˈamnɛk',             's:s',  'W'],
+  ['Cronbach',          'kɾˈɔnbax',            's:s',  'WH'],
+  ['Skinner',           'skˈɪnɜ',              's:s',  'W'],
+  ['Pawlow',            'pˈavlɔf',             's:s',  'W'],
+  ['Pavlov',            'pˈavlɔf',             's:s',  'W'],
+  ['Giddens',           'ɡˈɪdəns',             '',     'W'],
+  ['Parsons',           'pˈaɾsəns',            '',     'W'],
+  ['Mead',              'mˈiːt',               's:s',  'W'],
+  ['Dewey',             'djˈuːiː',             's:s',  'W'],
+  ['Seligman',          'sˈɛlɪɡmən',           's:s',  'W'],
+  ['Lazarus',           'lˈazarʊs',            '',     'W'],
+  ['Hurrelmann',        'hˈʊrəlman',           's:s',  'W'],
+  ['Bateson',           'bˈeːtsən',            's:s',  'W'],
+  ['Maturana',          'matuːrˈɑːna',         's:s',  'W'],
+  ['Varela',            'vaɾˈeːla',            's:s',  'W'],
+  ['Oevermann',         'ˈøːvɜman',            's:s',  'W'],
+  ['Bohnsack',          'bˈoːnzak',            's:s',  'W'],
+  ['Garfinkel',         'ɡˈaɾfɪŋkəl',          's:s',  'W'],
+  ['Rawls',             'rˈɔːls',              '',     'W'],
+  ['Fraser',            'fɾˈeːzɜ',             's:s',  'W'],
+  ['Sennett',           'sˈɛnɪt',              's:s',  'W'],
+  ['Castel',            'kastˈɛl',             's:s',  'W'],
+  ['Spivak',            'spˈiːvak',            's:s',  'W'],
+  ['Esping-Andersen',   'ˌɛspɪŋˈandɜsən',      's:s',  'W'],
+  ['Marshall',          'mˈaɾʃəl',             's:s',  'W'],
+  ['Gilligan',          'ɡˈɪlɪɡən',            's:s',  'W'],
+  ['Kimberlé',          'kˈɪmbɜleː',           '',     'W'],
+  ['Talcott',           'tˈɔːlkɔt',            '',     'W'],
+  // Forschungsmethoden
+  ['Wilcoxon',          'vɪlkˈɔksən',          's:s',  'WH'],
+  ['Kruskal-Wallis',    'kɾˌʊskəlvˈɔlɪs',      '',     'W'],
+  ['Bonferroni',        'bɔnfɛɾˈoːniː',        's:s',  'WH'],
+  ['Tukey',             'tˈuːkiː',             's:s',  'W'],
+  ['Levene',            'ləvˈiːn',             's:s',  'W'],
+  ['Shapiro-Wilk',      'ʃapˌiːɾovˈɪlk',       '',     'W'],
+  ['Kolmogorov-Smirnov', 'kɔlmoɡˌoːɾɔfsmiɾnˈɔf', '',   'W'],
+  ['Fisher',            'fˈɪʃɜ',               's:s',  'W'],
+  ['Corbin',            'kˈɔɾbɪn',             's:s',  'W'],
+  ['Charmaz',           'ʃˈaɾməs',             '',     'W'],
+  ['Denzin',            'dˈɛnzɪn',             's:s',  'W'],
+  ['Creswell',          'kɾˈɛsvɛl',            's:s',  'W'],
+  ['Przyborski',        'pʃɪbˈɔɾskiː',         's:s',  'W'],
+  ['Cohen',             'kˈoːən',              's:s',  'W']
+];
+
+/* ---------- v0.8.1 Englische Fachbegriffe (so, wie man sie im Deutschen ausspricht) ----------
+   Gleiches Format wie das Wörterbuch (kleingeschrieben verglichen). Mehrwort-Begriffe als Ganzes eintragen,
+   wenn der erste Teil den Hauptton trägt („Change Talk“), sonst genügen die Einzelwörter. */
+const EN_DICT = [
+  ['Reframing',            'riːfɾˈeːmɪŋ',          '',          'W'],
+  ['Framing',              'fɾˈeːmɪŋ',             '',          'W'],
+  ['Motivational',         'moːtiːvˈeːʃənəl',      '',          'W'],
+  ['Interviewing',         'ˈɪntɜvjuːɪŋ',          '',          'W'],
+  ['Sustain Talk',         'səstˈeːn tˌɔːk',       '',          'W'],
+  ['Change Talk',          'tʃˈeːntʃ tˌɔːk',       '',          'W'],
+  ['Sustain',              'səstˈeːn',             '',          'W'],
+  ['Talk',                 'tˈɔːk',                's:s',       'W'],
+  ['Change',               'tʃˈeːntʃ',             '',          'W'],
+  ['Craving',              'kɾˈeːvɪŋ',             '',          'W'],
+  ['Peer',                 'pˈiːɾ',                's:s',       'WH'],
+  ['Support',              'səpˈɔɾt',              's:s',       'WT'],
+  ['Grounded',             'ɡɾˈaʊndɪt',            '',          'W'],
+  ['Theory',               'sˈiːəriː',             '',          'W'],
+  ['Check',                'tʃˈɛk',                's:s',       'WH'],
+  ['Panel',                'pˈɛnəl',               's:s',       'WH'],
+  ['Recovery',             'rɪkˈavəriː',           '',          'WH'],
+  ['Harm',                 'hˈaɾm',                '',          'W'],
+  ['Reduction',            'rɪdˈakʃən',            '',          'W'],
+  ['Housing First',        'hˈaʊzɪŋ fˈœːɾst',      '',          'W'],
+  ['Housing',              'hˈaʊzɪŋ',              '',          'W'],
+  ['Mixed',                'mˈɪkst',               '',          'W'],
+  ['Methods',              'mˈɛsəts',              '',          'W'],
+  ['Design',               'dɪzˈaɪn',              's:s',       'WH'],
+  ['Survey',               'sˈœːɾveː',             's:s',       'W'],
+  ['Item',                 'ˈaɪtəm',               's:s',       'WH'],
+  ['Score',                'skˈoːɾ',               's:s',       'WH'],
+  ['Cluster',              'klˈastɜ',              'n:n s:s',   'WH'],
+  ['Outcome',              'ˈaʊtkam',              's:s',       'W'],
+  ['Impact',               'ˈɪmpɛkt',              's:s',       'W'],
+  ['Bias',                 'bˈaɪəs',               '',          'W'],
+  ['Labeling',             'lˈeːbəlɪŋ',            '',          'W'],
+  ['Mainstreaming',        'mˈeːnstɾiːmɪŋ',        '',          'W'],
+  ['Workload',             'vˈœːɾkloːt',           's:s',       'W'],
+  ['Trigger',              'tɾˈɪɡɜ',               'n:n s:s',   'W'],
+  ['Coping',               'kˈoːpɪŋ',              '',          'WH'],
+  ['Setting',              'sˈɛtɪŋ',               's:s',       'W'],
+  ['Team',                 'tˈiːm',                's:s',       'WH'],
+  ['Online',               'ˈɔnlaɪn',              '',          'WH'],
+  ['Social Media',         'sˈoːʃəl mˈiːdiːa',     '',          'W'],
+  ['Social',               'sˈoːʃəl',              '',          'W'],
+  ['Media',                'mˈiːdiːa',             '',          'W'],
+  ['Gatekeeper',           'ɡˈeːtkiːpɜ',           'n:n s:s',   'W'],
+  ['Community',            'kɔmjˈuːnɪtiː',         's:s',       'WH'],
+  ['Care',                 'kˈɛːɾ',                '',          'WH'],
+  ['Diversity Management', 'daɪvˈœːɾsɪtiː mˌɛnɪtʃmənt', '',      'W'],
+  ['Diversity',            'daɪvˈœːɾsɪtiː',        '',          'W'],
+  ['Case',                 'kˈeːs',                '',          'W']
 ];
 // Ausnahmen: hier keinen Wortteil abtrennen (z. B. „Sozial|isation“ ist keine Zusammensetzung)
-const PRON_HEAD_EXCEPT = /^sozialis/i;
+const PRON_HEAD_EXCEPT = /^(?:sozialis|traumati|asylant|basisch)/i;
 const ADJ_ENDINGS = 'e:ə en:ən er:ɜ em:əm es:əs';
 
 const PRON = (() => {
-  const whole = new Map(), heads = [], tails = [], multi = [];
-  for (const [word, ipa, endSpec, use] of PRON_DICT) {
+  const whole = new Map(), heads = [], tails = [], multi = [], names = new Map();
+  for (const [word, ipa, endSpec, use] of NAME_DICT) {          // v0.8.1 Namen: Groß-/Kleinschreibung zählt
+    if (/\s/.test(word)) { multi.push({ word, ipa }); continue; }
+    for (const [e, ei] of [['', '']].concat(endSpec.split(/\s+/).filter(Boolean).map(x => x.split(':')))) names.set(word + e, ipa + ei);
+    if (use.includes('H')) heads.push({ key: word.toLowerCase(), ipa });
+  }
+  for (const [word, ipa, endSpec, use] of PRON_DICT.concat(EN_DICT)) {
     const ends = [['', '']].concat((endSpec === 'ADJ' ? ADJ_ENDINGS : endSpec).split(/\s+/).filter(Boolean).map(x => x.split(':')));
     const key = word.toLowerCase();
     if (/\s/.test(word)) { multi.push({ word, ipa }); continue; }
@@ -1244,8 +1483,18 @@ const PRON = (() => {
     if (use.includes('T')) tails.push({ key, ipa, ends, primary: use.includes('!'), noPrefix: use.includes('S') });
   }
   heads.sort((x, y) => y.key.length - x.key.length);
-  return { whole, heads, tails, multi };
+  multi.sort((x, y) => y.word.length - x.word.length);
+  return { whole, heads, tails, multi, names };
 })();
+// v0.8.1: Wörterbuch für den Worker – dort werden Teile zerlegter Wörter zuerst hier nachgeschlagen
+function workerDict() {
+  const out = [];
+  for (const [n, ipa] of PRON.names) if (n.length >= 4 && !/[\s-]/.test(n)) out.push([n.toLowerCase(), ipa]);
+  for (const h of PRON.heads) out.push([h.key, h.ipa]);
+  for (const t of PRON.tails) if (!t.primary) for (const [e, ei] of t.ends) out.push([t.key + e, t.ipa + ei]);
+  for (const [k, ipa] of PRON.whole) if (!/[\s-]/.test(k)) out.push([k, ipa]);
+  return out;
+}
 
 // Zusammengesetzte Wörter an sicheren Fugen trennen („Partizipations|möglichkeiten“).
 // Getestet: in allen Testwörtern gleich gut oder besser als espeak allein (siehe PROJECT_STATE.md 9.4).
@@ -1263,12 +1512,14 @@ function fugenSplit(w) {
 function pronounceWord(word) {
   const lw = word.toLowerCase();
   if (word === lw) { const zi = zuInfinitive(word); if (zi) return zi; }
+  if (PRON.names.has(word)) return word + '=/' + PRON.names.get(word);        // v0.8.1 Namen
   if (PRON.whole.has(lw)) return word + '=/' + PRON.whole.get(lw);
   if (word.includes('-')) {                                   // „Empowerment-Ansatz“, „Care-Arbeit“ (falls nicht als Ganzes eingetragen)
     const subs = word.split('-').filter(Boolean);
     let any = false;
     const parts = subs.map(w => {
       const lw2 = w.toLowerCase();
+      if (PRON.names.has(w)) { any = true; return '/' + PRON.names.get(w); }
       if (PRON.whole.has(lw2)) { any = true; return '/' + PRON.whole.get(lw2); }
       const sp = pronounceWord(w);
       if (sp) { any = true; return sp.slice(sp.indexOf('=') + 1).replace(/!/g, ''); }
@@ -1396,26 +1647,43 @@ const SPEECH_RULES = [
   { name: 'Auslassung', re: /…|\.\.\./uy, say: ', ' }
 ];
 
-/* ---------- Quellenangaben erkennen (immer), überspringen (nur mit Schalter) ---------- */
+/* ---------- Quellenangaben erkennen (immer), überspringen (nur mit Schalter) ----------
+   v0.8.1: Jede Angabe muss vollständig passen (sonst wird nichts übersprungen):
+   [vgl./siehe/zit. n. …] Namen/Institution [et al./u. a./(Hrsg.)] [,] Jahr (auch 2019a, 1992/2014, o. J., n. d., i. E., im Druck)
+   [, S. 12 / S. 12–15 / S. 12 f. / : 12 / p. 12 / pp. 3–5 / Rn. 4] – mehrere Angaben mit „;“,
+   „zit. n.“ auch mitten in der Angabe („Fonagy et al., zit. n. Hartwig 2021“, „Mikrozensus-Sonderauswertung, zit. n. …“),
+   sowie „ebd.“, „a. a. O.“, „ders.“/„dies.“ und reine Seitenangaben. */
 const CIT_STOP = new Set(('Stand Jahr Jahre Jahres Ende Anfang Mitte Beginn Herbst Frühjahr Frühling Sommer Winter Januar Februar ' +
   'März April Mai Juni Juli August September Oktober November Dezember Zeitraum Erhebung Befragung Daten Stichtag Gesetz ' +
   'Fassung Version Ausgabe Studie Welle Schuljahr Semester Wintersemester Sommersemester Zensus Basisjahr ' +
   'Kinder Jugendliche Frauen Männer Personen Menschen Studierende Erwachsene Familien Haushalte Zahlen Quelle Stichprobe ' +
-  'Ergebnis Ergebnisse Befragte Teilnehmende Schulen Kitas').split(' '));
-// Name oder Institution (bis 4 großgeschriebene Wörter: „Deutscher Bundestag“, „BMFSFJ“),
-// mehrere Namen getrennt durch & / und / / / ; / , („Hartmann; Özdemir; Keller 2019“), optional „et al.“/„u. a.“,
-// optional Komma, dann Jahr (auch „2019a“, „1992/2014“).
-const CIT_NAME = "\\p{Lu}[\\p{L}'’-]*(?:\\s+(?:für|der|des|von|zur|zum|\\p{Lu}[\\p{L}'’-]*)){0,4}";
+  'Ergebnis Ergebnisse Befragte Teilnehmende Schulen Kitas Seit Bis Ab Vor Nach Im In Um Bei Mit Ohne').split(' '));
+// Name oder Institution (bis 5 Wörter: „Deutscher Bundestag“, „Institut für Sozialforschung“, „Mikrozensus-Sonderauswertung“)
+const CIT_NAME = "\\p{Lu}[\\p{L}'’-]*\\.?(?:\\s+(?:für|der|des|von|van|de|zur|zum|und\\s+\\p{Lu}[\\p{L}'’-]*|\\p{Lu}[\\p{L}'’-]*\\.?)){0,4}";
 const CIT_YEAR = "(?:1[5-9]\\d\\d|20\\d\\d)[a-z]?(?:\\s?\\/\\s?(?:1[5-9]\\d\\d|20\\d\\d)[a-z]?)?(?!\\d)";
-const CIT_NAME_YEAR = new RegExp('^' + CIT_NAME + '(?:\\s*(?:&|und|\\/|;|,|u\\.\\s?a\\.|et\\s+al\\.)\\s*' + CIT_NAME + ')*' +
-  '(?:\\s+(?:et\\s+al\\.|u\\.\\s?a\\.))?,?\\s+' + CIT_YEAR, 'u');
+const CIT_YEARPART = "(?:" + CIT_YEAR + "|o\\.\\s?J\\.|n\\.\\s?d\\.|i\\.\\s?E\\.|im\\s+Druck|in\\s+Vorb(?:ereitung|\\.))";
+const CIT_LOC = "(?:(?:S\\.|p\\.|pp\\.|Rn\\.|Rz\\.|Kap\\.|Abschn\\.|Sp\\.|Bd\\.|Nr\\.)\\s?)?\\d+[a-z]?(?:\\s?[–-]\\s?\\d+[a-z]?)?(?:\\s?ff?\\.)?";
+const CIT_AUTH = CIT_NAME + "(?:\\s*(?:&|und|\\/|,|;)\\s*" + CIT_NAME + ")*(?:,?\\s+(?:et\\s+al\\.|u\\.\\s?a\\.))?(?:\\s*\\(?(?:Hrsg|Hg|Eds?|ed)\\.\\)?)?";
+const CIT_FULL = new RegExp('^' + CIT_AUTH + ',?\\s+' + CIT_YEARPART + '(?:\\s*[,:]\\s*' + CIT_LOC + ')*$', 'u');
+const CIT_SRC = new RegExp('^' + CIT_AUTH + '(?:,?\\s+' + CIT_YEARPART + ')?(?:\\s*[,:]\\s*' + CIT_LOC + ')*$', 'u');
+const CIT_PRE = /^(?:vgl\.(?:\s+auch)?|Vgl\.(?:\s+auch)?|cf\.|siehe|s\.|zit\.\s?n\.|zitiert nach|nach|auch|z\.\s?B\.|etwa|u\.\s?a\.)\s+/u;
+const CIT_OWN = /^(?:vgl\.|Vgl\.|cf\.|ebd\.|Ebd\.|ebenda|Ebenda|a\.\s?a\.\s?O\.|ders\.|dies\.)(?![\p{L}])/u;
+function citChunk(c) {
+  c = c.trim();
+  for (let k = 0; k < 2; k++) c = c.replace(CIT_PRE, '');
+  if (CIT_OWN.test(c)) return true;
+  const zit = /,?\s*(?:zit\.\s?n\.|zit\.\s?nach|zitiert nach)\s+/u.exec(c);
+  if (zit && zit.index > 0) return CIT_SRC.test(c.slice(0, zit.index).trim()) && citChunk(c.slice(zit.index + zit[0].length));
+  if (!CIT_FULL.test(c)) return false;
+  return !CIT_STOP.has(/^\p{Lu}[\p{L}'’-]*/u.exec(c)[0]);
+}
 function isCitation(inner) {
-  const t = inner.trim();
-  if (/^(?:vgl\.|Vgl\.|ebd\.|Ebd\.|ebenda|Ebenda)(?![\p{L}])/u.test(t)) return true;
-  if (/^S\.\s?\d/.test(t)) return true;                              // nur Seitenangabe: „(S. 12)“
-  const t2 = t.replace(/^(?:siehe|s\.|zit\.\s?n\.|zitiert nach|nach)\s+/, '');
-  if (CIT_NAME_YEAR.test(t2)) return !CIT_STOP.has(/^\p{Lu}[\p{L}'’-]+/u.exec(t2)[0]);
-  return false;                                                      // im Zweifel: keine Quellenangabe
+  const t = inner.replace(/\s+/g, ' ').trim();
+  if (CIT_OWN.test(t)) return true;
+  if (/^(?:S\.|p\.|pp\.)\s?\d/.test(t)) return true;                // nur Seitenangabe: „(S. 12)“
+  if (citChunk(t)) return true;                                      // „Allroggen; Fegert; Rau 2017“
+  const chunks = t.split(/\s*;\s*/);
+  return chunks.length > 1 && chunks.every(citChunk);                // „Müller 2019; Schmidt et al. 2020“
 }
 function findCitations(src, a, b) {
   const res = [];
@@ -1428,6 +1696,72 @@ function findCitations(src, a, b) {
     i = j;
   }
   return res;
+}
+
+/* ---------- v0.8.1 Gesetzesangaben deutlich und entzerrt ----------
+   „§ 8a SGB VIII“, „§§ 27 ff. SGB VIII“, „§ 36 Abs. 2 S. 1 SGB VIII“, „Art. 3 Abs. 1 GG“, „SGB IX“:
+   eigener Sprech-Teil, etwa 12 % langsamer, kurze Pausen zwischen den Bestandteilen, der Buchstabe nach der Zahl
+   mit eigenem Akzent („Paragraf – acht – a – S G B – acht“). Anzeige unverändert. */
+const LAW = { len: 1.12, gap: 0.1 };
+const LAW_K = Object.keys(LAW_FULL).join('|');
+const LAW_NUM = '\\d+[a-z]?';
+const LAW_REF = '(?:§§?|Art\\.|Artikel)\\s?' + LAW_NUM + '(?:\\s?(?:[–-]|bis|und|,)\\s?' + LAW_NUM + ')*' +
+  '(?:\\s?(?:Abs\\.|Absatz|S\\.|Satz|Nr\\.|Ziff\\.|Hs\\.|Halbs\\.|lit\\.|Buchst\\.)\\s?' + LAW_NUM + ')*(?:\\s?ff?\\.)?';
+const LAW_SPAN = new RegExp('(?<![\\p{L}\\d])(?:' + LAW_REF + '(?:\\si\\.\\s?V\\.\\s?m\\.\\s' + LAW_REF + ')*' +
+  '(?:\\s(?:(?:des|der|dem|im|nach|aus)\\s)?(?:' + LAW_K + ')(?:\\s[IVX]{1,4}(?![\\p{L}\\d]))?(?![\\p{L}\\d]))?' +
+  '|(?:' + LAW_K + ')\\s[IVX]{1,4}(?![\\p{L}\\d]))', 'gu');
+function lawSpans(src, a, b) {
+  const res = [];
+  LAW_SPAN.lastIndex = a;
+  let m;
+  while ((m = LAW_SPAN.exec(src)) && m.index < b) {
+    if (m.index + m[0].length <= b) res.push({ start: m.index, end: m.index + m[0].length });
+    if (!m[0].length) LAW_SPAN.lastIndex++;
+  }
+  return res;
+}
+// Sprechfassung für Piper: Bestandteile durch Kommas getrennt (= kurze Pausen)
+function lawPiper(t, isLast) {
+  const groups = [];
+  const re = /§§|§|Artikel|Art\.|Absatz|Abs\.|Satz|S\.|Nr\.|Ziff\.|Halbs\.|Hs\.|lit\.|Buchst\.|ff\.|f\.|i\.\s?V\.\s?m\.|bis|und|des|der|dem|im|nach|aus|[–-]|(\d+)([a-z])?|(\p{L}[\p{L}-]*)/gu;
+  let m, key = '', art = '';
+  const KEY = { 'Abs.': 'Absatz', 'Absatz': 'Absatz', 'S.': 'Satz', 'Satz': 'Satz', 'Nr.': 'Nummer', 'Ziff.': 'Ziffer',
+    'Hs.': 'Halbsatz', 'Halbs.': 'Halbsatz', 'lit.': 'Buchstabe', 'Buchst.': 'Buchstabe' };
+  let prevWasLaw = false;
+  while ((m = re.exec(t))) {
+    const w = m[0];
+    let g = null, isLaw = false;
+    if (w === '§') g = 'Paragraf';
+    else if (w === '§§') g = 'Paragrafen';
+    else if (w === 'Art.' || w === 'Artikel') g = 'Artikel';
+    else if (KEY[w]) { key = KEY[w]; continue; }
+    else if (w === 'ff.' || w === 'f.') g = 'folgende';
+    else if (/^i\.\s?V\.\s?m\.$/.test(w)) g = 'in Verbindung mit';
+    else if (w === '–' || w === '-' || w === 'bis') g = 'bis';
+    else if (w === 'und') g = 'und';
+    else if (/^(?:des|der|dem|im|nach|aus)$/.test(w)) { art = w + ' '; continue; }
+    else if (m[1]) {
+      g = (key ? key + ' ' : '') + (numPh(m[1]) || m[1]); key = '';
+      groups.push(art + g); art = '';
+      if (m[2]) groups.push('⟦' + m[2] + '=' + spellPh(m[2]) + '⟧');           // „8a“: das a mit eigenem Akzent
+      prevWasLaw = false;
+      continue;
+    } else if (LAW_FULL[w]) {
+      isLaw = true;
+      if (readOpts.laws === 'full') {
+        let full = LAW_FULL[w];
+        if (/^(?:des|dem|im|aus|nach)\s$/.test(art)) full = full.replace(/^Bürgerliches/, 'Bürgerlichen');
+        if (art === 'des ') full = full.replace(/gesetz$/, 'gesetzes').replace(/buch$/, 'buchs');
+        g = phWords(full);
+      } else g = '⟦' + w + '=' + spellPh(w) + '⟧';
+    } else if (prevWasLaw && /^[IVX]{1,4}$/.test(w) && roman(w)) g = cardinal(roman(w));
+    else g = w;
+    groups.push(art + g); art = '';
+    prevWasLaw = isLaw;
+  }
+  let out = groups.filter(Boolean).join(', ');
+  if (isLast && /[.!?…]["'“”»«)\]]*\s*$/.test(t)) out += '.';
+  return out;
 }
 
 // v0.6 Satzteilung: Komma vor Nebensatz/Relativsatz (gute Teilstelle) bzw. vor Bindewort (zweitbeste)
@@ -1509,10 +1843,12 @@ function speechVersion(src, a, b, opt) {
   if (opt.isLast && /[.!?…]["'“”»«)\]]*$/.test(src.slice(a, b)) && r.length && !/[.!?…]/.test(r[r.length - 1].c)) {
     r.push({ c: '.', s: b - 1, e: b });
   }
+  // v0.8.1 Überschrift ohne Punkt: intern wie ein Satz mit Punkt lesen (fallende Satzmelodie); Anzeige unverändert
+  if (opt.head && opt.isLast && r.length && !/[.!?…:]/.test(r[r.length - 1].c)) r.push({ c: '.', s: b, e: b, gen: true });
   const map = r.map(t => t.s), mapEnd = r.map(t => t.e);
   map.push(b); mapEnd.push(b);
-  const piper = r.map(t => t.ph !== undefined ? t.ph : t.c).join('');
-  return { start: a, end: b, speech: r.map(t => t.c).join(''), piper, map, mapEnd };
+  const pieces = r.map(t => t.ph !== undefined ? t.ph : t.c);       // v0.8.1: je Zeichen, was Piper bekommt (Wort melden)
+  return { start: a, end: b, speech: r.map(t => t.c).join(''), piper: pieces.join(''), pieces, map, mapEnd };
 }
 
 /* =====================================================================
@@ -2204,6 +2540,7 @@ function piperWorkerMain() {
     const phData = await cachedFetch(m.phonBase + 'piper_phonemize.data', 'Phonemizer-Daten (espeak-ng)');
     const cj = await cachedFetch(m.configUrl, 'Stimmen-Konfiguration');
     cfg = JSON.parse(new TextDecoder().decode(cj.buf));
+    await loadLexicon(m);
     const model = await cachedFetch(m.modelUrl, 'Stimmenmodell');
     phWasmBuf = phWasm.buf; phDataBuf = phData.buf;
     await newPhonemizer();
@@ -2257,62 +2594,381 @@ function piperWorkerMain() {
   }
   async function espeakPh(text) { return fixPh(await espeakRaw(text)); }
 
+  // ---------------------------------------------------------------------------------------------
+  // v0.8.1 Deutsche Wortliste (igerman98 von Björn Jacke, Hunspell de_DE, npm-Paket dictionary-de 3.0.0,
+  // Lizenz GPL-2.0 oder GPL-3.0) → Zerlegung zusammengesetzter Wörter.
+  // Die Wortliste kennt für jedes Wort, ob es Anfang (Flag j/x), Mittelteil (e/k/y) oder Ende (z) einer
+  // Zusammensetzung sein darf – inkl. Fugen („Lebens“, „Armuts“). Endungen (Plural, -ung …) werden über die
+  // Affix-Regeln auf den Stamm zurückgeführt (nicht ausgeschrieben → wenig Speicher, schnelles Laden).
+  // ---------------------------------------------------------------------------------------------
+  function makeLexicon(affText, dicText) {
+    const dic = new Map();
+    const lines = dicText.split('\n');
+    for (let i = 1; i < lines.length; i++) {
+      const l = lines[i];
+      if (!l || l.charCodeAt(0) === 9) continue;
+      const k = l.indexOf('/');
+      const w = (k < 0 ? l : l.slice(0, k)).trim(), f = k < 0 ? '' : l.slice(k + 1).trim();
+      if (!w) continue;
+      const e = dic.get(w);
+      if (e) e.push(f); else dic.set(w, [f]);
+    }
+    const sfx = new Map();                 // Endung → Regeln
+    let maxAdd = 0;
+    for (const l of affText.split('\n')) {
+      const p = l.trim().split(/\s+/);
+      if (p[0] !== 'SFX' || p.length < 5) continue;
+      const add0 = p[3].split('/')[0];
+      const add = add0 === '0' ? '' : add0, strip = p[2] === '0' ? '' : p[2];
+      let cond = null;
+      if (p[4] !== '.') { try { cond = new RegExp('(?:' + p[4] + ')$', 'u'); } catch (e) { continue; } }
+      if (!sfx.has(add)) sfx.set(add, []);
+      sfx.get(add).push({ flag: p[1], strip, add, cond });
+      if (add.length > maxAdd) maxAdd = add.length;
+    }
+    const has = (w, test) => { const e = dic.get(w); return !!e && e.some(test); };
+    // alle Stämme, aus denen w direkt oder über eine Endungsregel entsteht: [stamm, flags, regel]
+    function analyses(w) {
+      const res = [];
+      const e0 = dic.get(w);
+      if (e0) for (const f of e0) res.push([w, f, null]);
+      for (let L = 1; L <= Math.min(maxAdd, w.length - 2); L++) {
+        const rs = sfx.get(w.slice(-L));
+        if (!rs) continue;
+        for (const r of rs) {
+          const st = w.slice(0, -L) + r.strip;
+          if (r.cond && !r.cond.test(st)) continue;
+          const e = dic.get(st);
+          if (e) for (const f of e) if (f.includes(r.flag)) res.push([st, f, r]);
+        }
+      }
+      return res;
+    }
+    const cap = (w) => w.charAt(0).toUpperCase() + w.slice(1);
+    const isBegin = (p) => has(p, f => /[jx]/.test(f)) || has(cap(p), f => /[jx]/.test(f));
+    const isMiddle = (p) => has(p, f => /[eky]/.test(f));
+    // Ende einer Zusammensetzung: Nomen (Flag z) – bei kleingeschriebenen Wörtern auch Adjektiv/Partizip;
+    // bei Nomen auch nominalisierte Adjektive/Partizipien (… berechtigten, … erziehende)
+    function isNounEnd(p) { for (const [, f] of analyses(p)) if (f.includes('z') && !f.includes('h')) return true; return false; }
+    function isAdj(p) {
+      for (const [st, f, r] of analyses(p)) {
+        if (f.includes('h')) continue;
+        if (st === st.toLowerCase() && /A/.test(f)) return true;                    // Adjektiv
+        if (/[XY]/.test(f) && r && /^(?:t|te|ten|ter|tes|tem)$/.test(r.add)) return true;   // Partizip II ohne ge- (…berechtigt)
+      }
+      const m = /^(.{3,}?)(?:e|en|er|es|em)?$/.exec(p);
+      for (const base of [p, m && m[1]]) {
+        if (!base) continue;
+        let b2 = base.replace(/(?:e|en|er|es|em)$/, '');
+        for (const b of [base, b2]) {
+          if (/end$/.test(b) && has(b.slice(0, -1), f => /[DIXY]/.test(f))) return true;      // Partizip I: prüfend(e)
+          if (/t$/.test(b) && analyses(b).some(([, f, r]) => /X/.test(f) && r && r.add === 't')) return true;   // zentriert(e)
+        }
+      }
+      return false;
+    }
+    function isEnd(p, noun) {
+      if (isNounEnd(p)) return true;
+      if (!noun) return isAdj(p);
+      return /(?:e|en|er|es|em)$/.test(p) && isAdj(p);
+    }
+    const isVerbInf = (p) => /(?:en|ern|eln)$/.test(p) && has(p, f => /[DIXY]/.test(f));
+    return { dic, analyses, isBegin, isMiddle, isEnd, isNounEnd, isVerbInf, has, size: dic.size };
+  }
+
+  // Zerlegung eines Wortes in Teile (Text oder "/Lautschrift"), erster Teil trägt die Hauptbetonung; null = nicht zerlegen.
+  // Sicherheitsregeln: nur wenn ALLE Teile erkannt sind; möglichst wenige, lange Teile; Wörterbuch-Einträge haben Vorrang.
+  const PARTICLE_IPA = { un: 'ˈʊn', zu: 'tsˈuː', nach: 'nˈɑːx', vor: 'fˈoːɾ', über: 'ˈyːbɜ', unter: 'ˈʊntɜ', durch: 'dˈʊɾç',
+    hinter: 'hˈɪntɜ', um: 'ˈʊm', an: 'ˈan', auf: 'ˈaʊf', aus: 'ˈaʊs', ein: 'ˈaɪn', ab: 'ˈap', bei: 'bˈaɪ', mit: 'mˈɪt',
+    wider: 'vˈiːdɜ', wieder: 'vˈiːdɜ', gegen: 'ɡˈeːɡən' };
+  // Vorsilben mit Betonung auf der 2. Silbe – tragen in allen Formen den Hauptton (heraus|gelöst, Voraus|setzung)
+  const PARTICLE_IPA2 = { heraus: 'hɛrˈaʊs', hinaus: 'hɪnˈaʊs', herein: 'hɛrˈaɪn', hinein: 'hɪnˈaɪn', voraus: 'foːrˈaʊs',
+    vorbei: 'foːɾbˈaɪ', voran: 'foːrˈan', zurück: 'tsuːrˈʏk', zusammen: 'tsuːzˈamən', hinzu: 'hɪntsˈuː', herum: 'hɛrˈʊm',
+    hervor: 'hɛɾfˈoːɾ', herbei: 'hɛɾbˈaɪ', entgegen: 'ɛntɡˈeːɡən', heran: 'hɛrˈan', hinab: 'hɪnˈap', herab: 'hɛrˈap',
+    hinunter: 'hɪnˈʊntɜ', herunter: 'hɛrˈʊntɜ', hinüber: 'hɪnˈyːbɜ', herüber: 'hɛrˈyːbɜ' };
+  // Betonung hängt vom Wort ab („Unterschied“ vorn, „Unterstützung“ hinten) → nur in sicheren Fällen trennen
+  const PARTICLE_AMBIG = new Set(['über', 'unter', 'durch', 'hinter', 'um', 'wider', 'wieder']);
+  const UNSTRESSED_PREFIX = /^(?:be|ge|ver|er|ent|zer|emp)(?=[a-zäöüß]{3})/;
+  const ADJ_SUFFIX = /(?:lich|ig|isch|al|ell|iv|är|bar|los|sam|haft|mäßig)(?:e[nmrs]?)?$/;
+  // Wörter, die mit einer Vorsilbe beginnen, aber anders betont oder keine Zusammensetzung sind
+  const PARTICLE_EXCEPT = /^(?:abteilung|nachbar|beispiel|zufried|zuerst|zunächst|zuletzt|zumal|zumindest|zugleich|zuvor|zugunsten|zuliebe|zuweilen|zuzüglich|zuhause|zukunft|unendlich|unzählig|unser|unten|unter(?:ein|halb)|überein|überhaupt|aneinander|aufeinander|miteinander|auseinander|nacheinander|untereinander|einander|anstatt|anhand|anlässlich|aufgrund|außer|ausschließlich|einschließlich|mithilfe|umso|anschließend|eingangs|abseits|beieinander|wiederum|durchaus|umgekehrt|vorhanden|vorwiegend|ungefähr|unbedingt|ungemein|unweit|unmittelbar|unverzüglich|unterwegs|einig|einzel|einzig|anders|anderer|vorsicht|auster|ausgerechnet|einerseits|andererseits|vorerst|nachdem|vorher|nachher|abend|angst|ebenfalls|umgebung|umgehung|umarmung|unterhaltung)/;
+  // Vorsilben-artige Fremdwort-Anfänge: kleingeschriebene Adjektive damit sind hinten betont (multiprofessionell, interkulturell)
+  const PREFIXOID = /^(?:multi|inter|intra|trans|post|prä|pro|anti|ultra|super|psycho|bio|neo|pseudo|semi|hyper|mikro|makro|meta|para|poly|mono|auto|tele|extra|infra|sub|supra|hetero|homo|ethno|sozio|kontra|quasi)/;
+  const VOICELESS_END = new Set(['p', 'k', 'f', 's', 'ʃ', 'x', 'ç']);
+
+  // Wortlisten-Einträge, die eigentlich Endungen sind („Korrelat|ion“, „Substitut|ion“) – nie als eigener Teil
+  const NOT_PART = /^(?:ion|ionen|ions|ität|itäten|ismus|ist|isten|ung|ungen|ik|ie|ien|ier|iere|ieren|ern|eln|enz|anz|ant|ent|ent|ens)$/;
+  function makeSplitter(L) {
+    const cache = new Map();
+    const MIN = 3;
+    // Mittelteil: eingetragene Mittelform oder Nomen (auch mit Fuge -s/-es/-n/-en/-er/-e)
+    function middleOK(p) {
+      if (L.isMiddle(p)) return 2;
+      if (L.isNounEnd(p)) return 1;
+      for (const f of ['s', 'es', 'n', 'en', 'e', 'er']) if (p.length - f.length >= MIN && p.endsWith(f) && L.isNounEnd(p.slice(0, -f.length))) return 1;
+      return 0;
+    }
+    const PREFIXOID_WHOLE = new RegExp('^(?:' + PREFIXOID.source.slice(4, -1) + ')$');
+    function beginOK(p, noun) {
+      if (PREFIXOID_WHOLE.test(p) || (!noun && PREFIXOID.test(p))) return 0;      // nicht „Super|vision“, „Mikro|zensus“
+      if (L.isBegin(p)) return 2;
+      return middleOK(p);
+    }
+    // beste Zerlegung von lw (klein): Anfang + Mitte* + Ende; wenige Teile vor sicheren Formen vor langen Teilen
+    function bestSplit(lw, noun) {
+      const n = lw.length;
+      let best = null;
+      const rec = (pos, parts, score) => {
+        if (parts.length > 4) return;
+        for (let e = n; e >= pos + MIN; e--) {
+          const p = lw.slice(pos, e);
+          if (NOT_PART.test(p)) continue;
+          if (e === n) {
+            if (!parts.length || !L.isEnd(p, noun)) continue;
+            if (/^ende[nrs]?$/.test(p) && L.isVerbInf(lw.slice(0, pos) + 'en')) continue;   // „Lehr|ende“ ist ein Partizip
+            const cand = { parts: parts.concat(p), score: score + 2, n: parts.length + 1 };
+            if (!best || cand.n < best.n || (cand.n === best.n && cand.score > best.score)) best = cand;
+          } else {
+            if (n - e < MIN) continue;
+            if (best && parts.length + 2 > best.n) continue;
+            const ok = parts.length ? middleOK(p) : beginOK(p, noun);
+            if (ok) rec(e, parts.concat(p), score + ok);
+          }
+        }
+      };
+      rec(0, [], 0);
+      return best && best.parts;
+    }
+    // Ergebnis: Teile | null (keine Vorsilbe) | false (Vorsilbe erkannt, aber nicht sicher → gar nicht zerlegen)
+    function particleSplit(lw, noun) {
+      if (PARTICLE_EXCEPT.test(lw)) return false;
+      for (const [pa, ipa] of Object.entries(PARTICLE_IPA2)) {
+        if (lw.startsWith(pa) && lw.length - pa.length >= 3) return ['!/' + ipa, lw.slice(pa.length)];
+      }
+      for (const pa of Object.keys(PARTICLE_IPA).sort((a, b) => b.length - a.length)) {
+        if (!lw.startsWith(pa)) continue;
+        const rest = lw.slice(pa.length);
+        if (rest.length < 4) return null;
+        if (/^(?:aus|an|ein|bei|über|unter|ab|auf|um|zu|vor|nach|her|hin|dar)/.test(rest) && pa !== 'un' && pa !== 'zu') return false;
+        const known = L.isEnd(rest, noun) || L.isEnd(rest, false) || L.isNounEnd(rest) || !!bestSplit(rest, noun);
+        let ok;
+        if (pa === 'un') ok = known && !L.isVerbInf(rest) && !/^(?:ter|ser|sre)/.test(rest);             // un|einheitlich, Un|sicherheit
+        else if (pa === 'zu') ok = noun && (known || L.isVerbInf(rest));                                 // Zu|hören, Zu|wendung
+        else if (pa === 'durch') ok = noun && known && !L.isVerbInf(rest);                             // Durch|führung, Durch|schnitt
+        else if (PARTICLE_AMBIG.has(pa)) {
+          ok = known && (UNSTRESSED_PREFIX.test(rest)                                                     // Unter|versorgung
+            || (!noun && ADJ_SUFFIX.test(rest) && !/(?:t|en|end|ende[nmrs]?)$/.test(rest))                 // über|proportional
+            || (noun && !/ungs?(?:en)?$/.test(rest) && !L.isVerbInf(rest) && L.isNounEnd(rest)));           // Unter|schied, Über|blick
+        } else ok = noun && known && !L.isVerbInf(rest);                                                   // Nach|sorge, Vor|sorge
+        if (!ok) return PARTICLE_AMBIG.has(pa) || pa === 'un' || pa === 'zu' ? false : null;
+        return ['!/' + PARTICLE_IPA[pa], rest];
+      }
+      return null;
+    }
+    function split0(word, sub) {
+      if (word.length < 7 || !/^\p{L}+$/u.test(word) || /\p{Lu}/u.test(word.slice(1))) return null;
+      const lw = word.toLowerCase(), noun = /^\p{Lu}/u.test(word);
+      // Teil einer Zusammensetzung, der selbst ein bekanntes Wort ist („prüfende“) → nicht weiter zerlegen
+      if (sub && (L.analyses(lw).length || L.isEnd(lw, false) || L.has(word, () => true))) return null;
+      // Name oder reine Anfangsform aus der Wortliste („Albrecht“, „Alltags“) → nicht zerlegen
+      const exact = noun && L.dic.get(word);
+      if (exact && !exact.some(f => f.includes('m'))) return null;
+      const pt = particleSplit(lw, noun);
+      if (pt === false) return null;
+      if (pt) return pt;
+      // kleingeschriebene Wörter, die die Wortliste kennt (verbessern, frühzeitig, psychologisch …): espeak liest sie richtig
+      const known = !noun && L.analyses(lw).length > 0;
+      // Fremdwort-Vorsilbe vor Adjektiv: Hauptton auf dem Adjektiv (multi|professionell, inter|kulturell)
+      const px = !noun && PREFIXOID.exec(lw);
+      if (px) { const rest = lw.slice(px[0].length); return !known && rest.length >= 5 && L.isEnd(rest, false) ? [px[0], '!' + rest] : null; }
+      if (known) return null;
+      return bestSplit(lw, noun);
+    }
+    function split(word, sub) {
+      const key = (sub ? '1' : '0') + word;
+      if (cache.has(key)) return cache.get(key);
+      let r = null;
+      try { r = split0(word, sub); } catch (e) { r = null; }
+      if (cache.size > 5000) cache.clear();
+      cache.set(key, r);
+      return r;
+    }
+    return { split, bestSplit };
+  }
+
   // Wörterbuch-Einträge kommen als ⟦Wort=teil|teil⟧. Im ganzen Satz steht dort zunächst ein Platzhalterwort,
   // damit espeak Satzmelodie und Nachbarwörter normal behandelt; danach wird der Platzhalter ersetzt.
-  const PLACEHOLDER = 'Zwapf', PH_SEQ = ['t', 's', 'v', 'a', 'p', 'f'];
-  const SEP = /[\s.,;:!?]/;
-  const partCache = new Map();                         // v0.6.1: einzelne Wortteile/Zahlwörter nur einmal phonemisieren
-  async function partPh(p) {
-    if (!partCache.has(p)) { if (partCache.size > 2000) partCache.clear(); partCache.set(p, (await espeakPh(p)).filter(x => !SEP.test(x))); }
-    return partCache.get(p).slice();
-  }
-  async function itemPhonemes(spec) {
-    const parts = spec.split('|');
-    let primary = parts.findIndex(p => p.startsWith('!'));
-    if (primary < 0) primary = 0;
-    const res = [];
-    for (let k = 0; k < parts.length; k++) {
-      let p = parts[k].replace(/^!/, '');
-      const unstressed = p.startsWith('~');             // v0.6.1: „~“ = unbetont (z. B. „und“ in Zahlen, „zu“)
-      if (unstressed) p = p.slice(1);
-      let seq = p.startsWith('/') ? [...p.slice(1).normalize('NFD')] : await partPh(p);
-      if (unstressed) seq = seq.filter(x => x !== 'ˈ' && x !== 'ˌ');
-      else if (k !== primary) seq = seq.map(x => x === 'ˈ' ? 'ˌ' : x);
-      else if (!seq.includes('ˈ')) { const si = seq.indexOf('ˌ'); if (si >= 0) seq[si] = 'ˈ'; }
-      res.push(...seq);
+  // Teile: "/Lautschrift" oder ein Wort (liest espeak einzeln); Vorzeichen: "!" Hauptbetonung, "~" unbetont,
+  // "^" unbetont mit Vokaleinsatz (Mittelteil einer Zusammensetzung, v0.8.1).
+  // v0.8.1: Wörter, die nicht im Wörterbuch stehen, zerlegt die deutsche Wortliste (makeSplitter) – hier im Worker.
+  function makePhon(espeakPh, post) {
+    const PLACEHOLDER = 'Zwapf', PH_SEQ = ['t', 's', 'v', 'a', 'p', 'f'];
+    const SEP = /[\s.,;:!?]/;
+    const VOWEL = /[aeiouyøœɑɛɪɔʊəɜɐæʌɒ]/;
+    const ST = { dict: null, split: null };
+    const partCache = new Map();                         // v0.6.1: einzelne Wortteile/Zahlwörter nur einmal phonemisieren
+    async function partPh(p) {
+      if (!partCache.has(p)) { if (partCache.size > 2000) partCache.clear(); partCache.set(p, (await espeakPh(p)).filter(x => !SEP.test(x))); }
+      return partCache.get(p).slice();
     }
-    return res;
-  }
-  async function richPhonemes(text) {
-    const items = [];
-    const plain = text.replace(/⟦([^=⟧]*)=([^⟧]*)⟧/g, (m, w, spec) => { items.push(spec); return PLACEHOLDER; });
-    if (!items.length) return espeakPh(text);
-    const ph = await espeakPh(plain);
-    const spans = [];
-    for (let i = 0; i < ph.length; i++) {
-      if (ph[i] !== 't' || (i > 0 && !SEP.test(ph[i - 1]))) continue;
-      let j = i, k = 0;
-      while (j < ph.length && k < PH_SEQ.length) {
-        if (ph[j] === 'ˈ' || ph[j] === 'ˌ') { j++; continue; }
-        if (ph[j] !== PH_SEQ[k]) break;
-        j++; k++;
+    const dictIpa = (w) => ST.dict ? ST.dict.get(w.toLowerCase()) : undefined;
+    const cap = (w) => w.charAt(0).toUpperCase() + w.slice(1);
+    // Zerlegung eines Wortes (rekursiv für Teile, die selbst zusammengesetzt sind: „Unterschieds|hypothesen“)
+    // Anfang des Wortes steht im Wörterbuch (auch mit Endung/Fuge, z. B. „Unterschieds|hypothesen“), Rest ist bekannt
+    function dictPrefix(word) {
+      const L = ST.lex;
+      if (!ST.dict || !L) return null;
+      const lw = word.toLowerCase(), noun = /^\p{Lu}/u.test(word);
+      if (L.analyses(lw).length || L.dic.has(word)) return null;          // bekanntes Wort (psychologische) nicht zerlegen
+      for (let n = lw.length - 3; n >= 5; n--) {
+        const pre = lw.slice(0, n), rest = lw.slice(n);
+        if (!ST.dict.has(pre)) continue;
+        if (ST.dict.has(rest) || L.isEnd(rest, noun)) return [pre, rest];
+        const sub = ST.split.bestSplit(rest, noun);
+        if (sub) return [pre, ...sub];
       }
-      if (k === PH_SEQ.length && (j === ph.length || SEP.test(ph[j]))) { spans.push([i, j]); i = j - 1; }
+      return null;
     }
-    if (spans.length !== items.length) {
-      post({ type: 'log', level: 'warn', msg: 'Wörterbuch: Platzhalter nicht gefunden – Satz ohne Wörterbuch gelesen' });
-      return espeakPh(text.replace(/⟦([^=⟧]*)=[^⟧]*⟧/g, '$1'));
+    function wordParts(word, depth) {
+      const sp = ST.split ? (ST.split.split(word, depth > 0) || (depth === 0 && /^\p{L}{8,}$/u.test(word) ? dictPrefix(word) : null)) : null;
+      if (!sp) return null;
+      const noun = /^\p{Lu}/u.test(word);
+      const out = [];
+      sp.forEach((p, k) => {
+        if (p[0] === '!' || p[0] === '/') { out.push(p); return; }
+        const d = dictIpa(p);
+        if (d) { out.push('/' + d); return; }
+        const sub = depth < 2 && p.length >= 7 ? wordParts(noun ? cap(p) : p, depth + 1) : null;
+        if (sub) { sub.forEach((x, i) => out.push(k === 0 && i === 0 ? x : x.replace(/^!/, ''))); return; }
+        out.push(p);
+      });
+      return out.length > 1 ? out : null;
     }
-    const res = [];
-    let last = 0;
-    for (let n = 0; n < spans.length; n++) {
-      res.push(...ph.slice(last, spans[n][0]));
-      res.push(...await itemPhonemes(items[n]));
-      last = spans[n][1];
+    // Aussprache-Anweisung für ein Wort aus dem Fließtext (nicht im Wörterbuch) oder null
+    function wordSpec(word) {
+      if (word.includes('-')) {                             // v0.8.1 Bindestrich: eine Hauptbetonung (vorn), keine Pause
+        const subs = word.split('-');
+        if (subs.length < 2 || subs.some(s => !s) || subs.some(s => s.length >= 2 && s === s.toUpperCase())) return null;
+        const out = [];
+        subs.forEach((s, k) => {
+          const d = dictIpa(s);
+          const parts = d ? ['/' + d] : (wordParts(s, 0) || [s]);
+          // „Grounded-Theory“: t + s würde zu „ts“ verschmelzen → hier ausnahmsweise Wortgrenze
+          if (k > 0 && d && /[td]$/i.test(subs[k - 1]) && /^[sz]/.test(d.replace(/^[ˈˌ]/, ''))) parts[0] = '/ ' + d;
+          parts.forEach((x, i) => out.push(k === 0 && i === 0 ? x : x.replace(/^!/, '')));
+        });
+        return out.join('|');
+      }
+      const parts = wordParts(word, 0);
+      if (!parts) return null;
+      // Mittelteile ohne eigene Betonung (Hilfe|plan|verfahren: Haupt- vorn, Neben- auf dem letzten Teil)
+      // „-mann“ am Ende (Kaufmann, Hartmann) unbetont
+      return parts.map((x, k) => ((k > 0 && k < parts.length - 1) || (k > 0 && x === 'mann')) && x[0] !== '!' && x[0] !== '~' ? '^' + x : x).join('|');
     }
-    res.push(...ph.slice(last));
-    return res;
+    async function itemPhonemes(spec) {
+      let parts = spec.split('|');
+      // Wortteile, die selbst bekannt/zusammengesetzt sind, auflösen (Wörterbuch vor Wortliste)
+      const exp = [];
+      parts.forEach((p, k) => {
+        const m = /^([!~^]?)(.*)$/.exec(p), mark = m[1], body = m[2];
+        if (body[0] === '/' || !body) { exp.push(p); return; }
+        const d = dictIpa(body);
+        if (d) { exp.push(mark + '/' + d); return; }
+        const sub = body.length >= 7 && mark !== '~' ? wordParts(body, 1) : null;
+        if (sub) { sub.forEach((x, i) => exp.push(i === 0 ? mark + x.replace(/^!/, '') : '^' + x.replace(/^!/, ''))); return; }
+        exp.push(p);
+      });
+      parts = exp;
+      let primary = parts.findIndex(p => p.startsWith('!'));
+      if (primary < 0) primary = 0;
+      const res = [];
+      for (let k = 0; k < parts.length; k++) {
+        let p = parts[k].replace(/^!/, '');
+        let mode = '';
+        if (p[0] === '~' || p[0] === '^') { mode = p[0]; p = p.slice(1); }
+        let seq = p.startsWith('/') ? [...p.slice(1).normalize('NFD')] : await partPh(p);
+        // v0.8.1 Betonung je Teil: höchstens ein Hauptakzent (der letzte von espeak, z. B. „Sensibili|tät“);
+        // Nebenteile behalten nur ihren eigenen Hauptakzent als Nebenakzent (weniger „abgehackt“)
+        const lastP = seq.includes(' ') ? -2 : seq.lastIndexOf('ˈ');      // Mehrwort-Einträge („Capability Approach“): wie eingetragen
+        if (mode) seq = seq.filter(x => x !== 'ˈ' && x !== 'ˌ');
+        else if (lastP === -2) { if (k !== primary) seq = seq.map(x => x === 'ˈ' ? 'ˌ' : x); }
+        else if (k !== primary) {
+          const keep = lastP >= 0 ? lastP : seq.lastIndexOf('ˌ');
+          seq = seq.map((x, i) => (x === 'ˈ' || x === 'ˌ') ? (i === keep ? 'ˌ' : null) : x).filter(x => x !== null);
+        } else if (lastP >= 0) seq = seq.map((x, i) => x === 'ˈ' && i !== lastP ? 'ˌ' : x);
+        else { const si = seq.indexOf('ˌ'); if (si >= 0) seq[si] = 'ˈ'; }
+        if (k > 0 && res.length) {
+          // v0.8.1 Wortfuge: stimmhaftes s nach stimmlosem Laut stimmlos („Nach|sorge“); Vokal am Teilanfang mit
+          // Einsatz („Kern|elemente“, „un|einheitlich“) – Thorsten kennt kein Knacklaut-Zeichen, der Akzent davor
+          // erzeugt den harten Einsatz ohne Wortgrenze (keine Pause, kein Leerzeichen).
+          const fi = seq.findIndex(x => x !== 'ˈ' && x !== 'ˌ');
+          const prev = res[res.length - 1];
+          if (fi >= 0 && seq[fi] === 'z' && VOICELESS_END.has(prev)) seq[fi] = 's';
+          if (fi === 0 && mode !== '~' && VOWEL.test(seq[0])) seq.unshift('ˌ');
+        }
+        res.push(...seq);
+      }
+      return res;
+    }
+    async function richPhonemes(text) {
+      const items = [];
+      // Wörterbuch-Stellen ⟦…⟧ und (v0.8.1) unbekannte zusammengesetzte Wörter durch Platzhalter ersetzen
+      const plain = text.split(/(⟦[^⟧]*⟧)/).map(seg => {
+        const m = /^⟦([^=⟧]*)=([^⟧]*)⟧$/.exec(seg);
+        if (m) { items.push(m[2]); return PLACEHOLDER; }
+        if (!ST.split && !ST.dict) return seg;
+        return seg.replace(/\p{L}+(?:-\p{L}+)*/gu, (w) => {
+          const sp = (w.length >= 7 || w.includes('-')) ? wordSpec(w) : null;
+          if (!sp) return w;
+          ST.used = true;
+          items.push(sp); return PLACEHOLDER;
+        });
+      }).join('');
+      if (!items.length) return espeakPh(text);
+      const ph = await espeakPh(plain);
+      const spans = [];
+      for (let i = 0; i < ph.length; i++) {
+        if (ph[i] !== 't' || (i > 0 && !SEP.test(ph[i - 1]))) continue;
+        let j = i, k = 0;
+        while (j < ph.length && k < PH_SEQ.length) {
+          if (ph[j] === 'ˈ' || ph[j] === 'ˌ') { j++; continue; }
+          if (ph[j] !== PH_SEQ[k]) break;
+          j++; k++;
+        }
+        if (k === PH_SEQ.length && (j === ph.length || SEP.test(ph[j]))) { spans.push([i, j]); i = j - 1; }
+      }
+      if (spans.length !== items.length) {
+        post({ type: 'log', level: 'warn', msg: 'Wörterbuch: Platzhalter nicht gefunden – Satz ohne Wörterbuch gelesen' });
+        return espeakPh(text.replace(/⟦([^=⟧]*)=[^⟧]*⟧/g, '$1'));
+      }
+      const res = [];
+      let last = 0;
+      for (let n = 0; n < spans.length; n++) {
+        res.push(...ph.slice(last, spans[n][0]));
+        res.push(...await itemPhonemes(items[n]));
+        last = spans[n][1];
+      }
+      res.push(...ph.slice(last));
+      return res;
+    }
+    return { richPhonemes, itemPhonemes, wordSpec, wordParts, ST };
   }
+  const PH = makePhon(espeakPh, post);
+  const richPhonemes = PH.richPhonemes;
+  // v0.8.1: Wortliste laden (aus dem Cache, sonst ≈ 1,1 MB) – fehlt sie, liest espeak Zusammensetzungen wie bisher
+  async function loadLexicon(m) {
+    PH.ST.dict = new Map(m.dict || []);
+    if (!m.lexBase) return;
+    try {
+      const a = await cachedFetch(m.lexBase + 'index.aff', 'Wortliste (Regeln)');
+      const d = await cachedFetch(m.lexBase + 'index.dic', 'Wortliste');
+      const t0 = performance.now(), dec = new TextDecoder();
+      const lex = makeLexicon(dec.decode(a.buf), dec.decode(d.buf));
+      PH.ST.split = makeSplitter(lex); PH.ST.lex = lex;
+      post({ type: 'log', msg: 'Wortliste bereit: ' + lex.size + ' Einträge (' + Math.round(performance.now() - t0) + ' ms' + (d.cached ? ', aus dem Cache' : '') + ')' });
+    } catch (e) { post({ type: 'log', level: 'warn', msg: 'Wortliste nicht verfügbar – zusammengesetzte Wörter liest espeak allein (' + ((e && e.message) || e) + ')' }); }
+  }
+
   // Phoneme → IDs wie piper-phonemize: ^ _ p _ p _ … $  (nach . ! ? innerhalb: $ ^ _ = neuer Satz)
   function toIds(ph) {
     const M = cfg.phoneme_id_map || {};
@@ -2460,7 +3116,11 @@ function piperWorkerMain() {
     } else if (m.type === 'synth') { queue.push(m); pump(); }
     else if (m.type === 'drop') { queue.length = 0; }
     else if (m.type === 'phtest') {                         // nur für automatische Tests: Phoneme/IDs eines Textes
-      try { const ph = await richPhonemes(m.text); post({ type: 'phtest', id: m.id, ph: ph.join(''), ids: toIds(ph) }); }
+      try {
+        PH.ST.used = false;
+        const ph = await richPhonemes(m.text);
+        post({ type: 'phtest', id: m.id, ph: ph.join(''), ids: toIds(ph), lex: PH.ST.used });
+      }
       catch (err) { post({ type: 'phtest', id: m.id, error: String(err) }); }
     }
   };
@@ -2500,7 +3160,8 @@ class PiperEngine {
   initMsg(v) {
     const base = this.modelUrl(v);
     return { type: 'init', ortBase: CONFIG.ortBase, phonBase: CONFIG.phonBase, modelUrl: base, configUrl: base + '.json',
-      cacheName: CONFIG.cacheName, useCache: !!window.caches && window.isSecureContext };
+      cacheName: CONFIG.cacheName, useCache: !!window.caches && window.isSecureContext,
+      lexBase: CONFIG.lexBase, dict: workerDict() };
   }
   synthMsg(s, id) {
     const k0 = curSound();                    // Klangwerte (Tempo, Lebendigkeit, Rhythmus, Pausen)
@@ -2508,7 +3169,8 @@ class PiperEngine {
     const k = Object.assign({}, k0, { length: k0.length / tempo, gap: k0.gap / tempo, sent: k0.sent / tempo, para: k0.para / tempo });
     const parts = s.parts.filter(p => /[\p{L}\d]/u.test(p.speech));
     // v0.6 Pausenstaffel: Pause nach einem Satzteil je nach Satzzeichen, nach dem Satz je nach Satzende
-    const gaps = parts.slice(0, -1).map(p => polish.pause ? +(k.gap * gapFactor(s.text.slice(p.start - s.start, p.end - s.start))).toFixed(3) : k.gap);
+    const gaps = parts.slice(0, -1).map((p, n) => (p.law || parts[n + 1].law) ? +(LAW.gap / tempo).toFixed(3)     // v0.8.1 kurz vor/nach Gesetzesangabe
+      : polish.pause ? +(k.gap * gapFactor(s.text.slice(p.start - s.start, p.end - s.start))).toFixed(3) : k.gap);
     let pad = s.paraEnd ? k.para : k.sent;
     if (polish.pause) {
       const e = s.text.replace(/["'“”„»«›‹)\]\s]+$/u, '').slice(-1);
@@ -2517,7 +3179,7 @@ class PiperEngine {
     }
     // v0.6.1 Natürliche Betonung: Einschübe (Klammern) 7 % schneller und 2 dB leiser, Überschriften 8 % langsamer + Luft davor
     const nat = polish.aside;
-    const lens = parts.map(p => +(k.length * (nat && p.aside ? ASIDE.len : 1) * (nat && s.head ? HEAD.len : 1)).toFixed(4));
+    const lens = parts.map(p => +(k.length * (p.law ? LAW.len : nat && p.aside ? ASIDE.len : 1) * (nat && s.head ? HEAD.len : 1)).toFixed(4));
     const gains = parts.map(p => (nat && p.aside ? ASIDE.gain : 1));
     if (nat && s.head) pad = Math.max(pad, k.para + HEAD.after);
     return { type: 'synth', id, parts: parts.map(p => p.piper || p.speech), padSec: pad, gaps, gapSec: k.gap,
@@ -3308,15 +3970,14 @@ function pdfPageMarks() {
 }
 
 $('optHelp').onchange = () => { ctl.stop(); speechOpts.help = $('optHelp').checked; applyText(); log('Aussprache-Hilfe ' + (speechOpts.help ? 'an' : 'aus')); };
-$('optSkip').onchange = () => { setSkip($('optSkip').checked); };
 // v0.6.1 Vorlese-Optionen: gespeichert, gelten sofort (Text wird neu aufbereitet)
 function setSkip(on) {
   ctl.stop(); speechOpts.skipCitations = on; readOpts.skip = on;
-  $('optSkip').checked = on; $('optSkip2').checked = on;
+  $('optSkip').checked = on;
   applyText(); saveSound(); log('Quellenangaben überspringen ' + (on ? 'an' : 'aus'));
 }
 function showReadOpts() {
-  $('optSkip2').checked = readOpts.skip;
+  $('optSkip').checked = readOpts.skip;
   $('optMargins').checked = !!readOpts.margins; $('optFn').checked = !!readOpts.footnotes;
   for (const b of $('segLaws').children) b.classList.toggle('on', b.dataset.v === readOpts.laws);
   for (const b of $('segGender').children) b.classList.toggle('on', b.dataset.v === readOpts.gender);
@@ -3325,7 +3986,7 @@ function setReadOpt(key, v) {
   if (readOpts[key] === v) return;
   ctl.stop(); readOpts[key] = v; showReadOpts(); applyText(); saveSound(); log('Vorlese-Option ' + key + ': ' + v);
 }
-$('optSkip2').onchange = () => setSkip($('optSkip2').checked);
+$('optSkip').onchange = () => setSkip($('optSkip').checked);
 $('optMargins').onchange = () => setReadOpt('margins', $('optMargins').checked);
 $('optFn').onchange = () => setReadOpt('footnotes', $('optFn').checked);
 for (const b of $('segLaws').children) b.onclick = () => setReadOpt('laws', b.dataset.v);
@@ -3415,7 +4076,10 @@ function saveFlags() {
   catch (e) { log('Gemeldete Wörter konnten nicht gespeichert werden: ' + e.message, 'warn'); }
   updateFlagCount();
 }
-function updateFlagCount() { $('btnList').textContent = `Gemeldete Wörter (${flags.length})`; }
+function updateFlagCount() {
+  $('btnList').textContent = `Gemeldete Wörter (${flags.length}) – ansehen & teilen`;
+  $('btnFlag').textContent = '⚑ Wort melden' + (flags.length ? ' · ' + flags.length : '');
+}
 
 let toastTimer = null;
 function toast(t, ms) {
@@ -3446,6 +4110,24 @@ function sentenceTokens(i) {
   }
   return toks;
 }
+// v0.8.1: was Piper für dieses Wort bekommt (inkl. Wörterbuch-/Gender-Anweisung) – Grundlage der Lautschrift in „Wort melden“
+function wordPiper(i, a, b) {
+  const s = ui.sentences[i];
+  let out = '';
+  for (const p of s.parts) {
+    if (!p.pieces) continue;
+    if (p.law && p.start <= a && p.end >= b) return lawPiper(ui.src.slice(a, b), false);   // Gesetzesangabe
+    let first = -1;
+    for (let k = 0; k < p.pieces.length; k++) if (p.map[k] < b && p.mapEnd[k] > a) { if (first < 0) first = k; out += p.pieces[k]; }
+    // Wort mitten in einem mehrteiligen Wörterbuch-Eintrag („Diversity Management“): den ganzen Eintrag nehmen
+    if (first >= 0 && p.pieces[first] === '' && /\S/.test(p.speech[first])) {
+      let k0 = first; while (k0 > 0 && p.pieces[k0] === '') k0--;
+      if (p.pieces[k0].startsWith('⟦')) out = p.pieces[k0];
+    }
+    out += ' ';
+  }
+  return out.replace(/\s+/g, ' ').trim();
+}
 // Was die Stimme für dieses Wort tatsächlich bekommt (Klartext der Sprechfassung)
 function wordSpeech(i, a, b) {
   const s = ui.sentences[i];
@@ -3459,7 +4141,7 @@ function wordSpeech(i, a, b) {
 }
 
 function openFlag() {
-  if (!ui.sentences.length) { toast('Erst einen Text einfügen und ▶ drücken'); return; }
+  if (!ui.sentences.length) { if (flags.length) openList(); else toast('Erst einen Text einfügen und ▶ drücken'); return; }
   flagUi.cur = ui.curIdx >= 0 ? ui.curIdx : Math.min(ctl.cur, ui.sentences.length - 1);
   showFlagSentence(flagUi.cur);
   $('flagModal').hidden = false;
@@ -3497,7 +4179,7 @@ function sendFlag() {
   const key = t.text.toLowerCase().normalize('NFC');
   const nowIso = new Date().toISOString();
   const speech = wordSpeech(i, t.start, t.end);
-  const spec = speechOpts.help ? pronounceWord(t.text) : null;
+  const wp = speechOpts.help ? wordPiper(i, t.start, t.end) : '';
   let e = flags.find(f => f.key === key);
   if (!e) {
     e = { key, word: t.text, count: 1, types: [], sentences: [s.text], speech, ipa: '', ipaSource: '',
@@ -3516,9 +4198,9 @@ function sendFlag() {
   // Lautschrift, wie Piper sie bekommt (Wort einzeln phonemisiert bzw. Wörterbuch-Eintrag) – im Hintergrund
   const pe = engines.piper;
   if (!e.ipa && pe.loaded && pe.worker && speech && !speech.startsWith('(')) {
-    const txt = spec ? `⟦${spec}⟧` : speech;
+    const txt = wp || speech;
     pe.phTest(txt).then(r => {
-      if (r && r.ph) { e.ipa = r.ph.normalize('NFC'); e.ipaSource = spec ? 'Wörterbuch' : 'espeak'; saveFlags(); }
+      if (r && r.ph) { e.ipa = r.ph.normalize('NFC'); e.ipaSource = /⟦/.test(txt) ? 'Wörterbuch' : r.lex ? 'Wortliste' : 'espeak'; saveFlags(); }
     }).catch(() => {});
   }
 }
@@ -3545,7 +4227,7 @@ function renderFlagList() {
   $('clearConfirm').hidden = true; $('btnClearAll').hidden = false;
   $('shareFallback').hidden = true;
 }
-function openList() { renderFlagList(); $('listModal').hidden = false; }
+function openList() { closeFlag(); renderFlagList(); $('listModal').hidden = false; }
 
 // Teilen-Text: oben gut lesbar, unten maschinenlesbar (JSON) für die Auswertung im Bau-Chat
 function flagsText() {
