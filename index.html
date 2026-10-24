@@ -4,7 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="author" content="Benjamin Dormoros">
-<meta name="color-scheme" content="light">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#fbfaf7">
+<script>
+// v0.8.3 Darstellung vor dem ersten Anzeigen setzen (kein heller Blitz): „auto“ folgt der iPhone-Einstellung
+// (auch beim Umschalten während die App offen ist), „light“/„dark“ fest. Gespeichert in den Vorlese-Optionen.
+(function () {
+  var mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null, pref = 'auto';
+  try { pref = (JSON.parse(localStorage.getItem('hoerlabor-stimme-v1') || '{}').read || {}).theme || 'auto'; } catch (e) {}
+  function apply() {
+    var p = window.themePref || 'auto', dark = p === 'dark' || (p !== 'light' && !!mq && mq.matches);
+    var r = document.documentElement;
+    r.setAttribute('data-theme', dark ? 'dark' : 'light');
+    var tc = document.querySelector('meta[name="theme-color"]'); if (tc) tc.setAttribute('content', dark ? '#1b1c1f' : '#fbfaf7');
+    var cs = document.querySelector('meta[name="color-scheme"]'); if (cs) cs.setAttribute('content', dark ? 'dark' : 'light');
+  }
+  window.themePref = pref; window.applyTheme = apply;
+  apply();
+  if (mq) { if (mq.addEventListener) mq.addEventListener('change', apply); else if (mq.addListener) mq.addListener(apply); }
+})();
+</script>
 <title>Hörlabor</title>
 <style>
   :root { --cur:#ffe27a; --word:#ffb74d; --bar:#f6f5f2; --line:#d6d3cc; --ink:#1d1d1f; --muted:#6b6b6b; --accent:#2d5be3; }
@@ -159,6 +178,47 @@
   .wbar { display: block; height: 4px; border-radius: 2px; background: linear-gradient(90deg, var(--accent) var(--p), #e8e5de var(--p)); }
   .wdel { border: none; background: none; color: var(--muted); min-width: 44px; margin: 0; font-size: 1rem; }
   [hidden] { display: none !important; }
+  /* v0.8.3 Lizenzen */
+  .lic { font-size: .88rem; line-height: 1.45; margin: 6px 0 0; padding-left: 1.1em; }
+  .lic li { margin: 6px 0; }
+  .lic a, .grp a { color: var(--accent); }
+  /* v0.8.3 Darkmode: dunkles Grau mit gebrochenem Weiß (kein reines Schwarz/Weiß), dezente Satzmarkierung.
+     Gilt, wenn <html data-theme="dark"> gesetzt ist (siehe Skript im Kopf). */
+  html[data-theme="dark"] { color-scheme: dark; --cur:#574823; --word:#8c5e1a; --bar:#232427; --line:#3b3d42; --ink:#e7e3db; --muted:#a8a49c; --accent:#93acff; }
+  html[data-theme="dark"] body { background: #1b1c1f; }
+  html[data-theme="dark"] .warn { color: #ff8f85; }
+  /* Grundelemente mit niedriger Gewichtung (:where), damit spezielle Knöpfe (Links, Listen-Einträge) ihre eigene Farbe behalten */
+  :where(html[data-theme="dark"]) textarea, :where(html[data-theme="dark"]) select, :where(html[data-theme="dark"]) button { background: #2a2c30; color: var(--ink); }
+  html[data-theme="dark"] .pgrange input, html[data-theme="dark"] .secrow select { background: #2a2c30; color: var(--ink); }
+  html[data-theme="dark"] .pastebtn { background: #26282c; color: var(--accent); }
+  html[data-theme="dark"] .secrow select, html[data-theme="dark"] .pgrange input { border-color: var(--line); }
+  html[data-theme="dark"] #view, html[data-theme="dark"] .grp, html[data-theme="dark"] .resume { background: #232528; }
+  html[data-theme="dark"] .sheet, html[data-theme="dark"] #tech > summary, html[data-theme="dark"] button.primary.soft2,
+  html[data-theme="dark"] button.chip { background: #26282c; }
+  html[data-theme="dark"] button.primary.soft2, html[data-theme="dark"] button.chip { color: var(--accent); }
+  html[data-theme="dark"] button.chip { border-color: #3e4b78; }
+  html[data-theme="dark"] #view .skipcit { color: #85817a; }
+  html[data-theme="dark"] #view .s.cur .skipcit { color: #c4b690; }
+  html[data-theme="dark"] .cmpb, html[data-theme="dark"] .secsug { background: #3a321d; border-color: #6e5a26; }
+  html[data-theme="dark"] #nowText { background: #2e2a1c; border-left-color: #a58a2a; }
+  html[data-theme="dark"] #speechText { color: #cdc9c1; }
+  html[data-theme="dark"] .og, html[data-theme="dark"] #optModal .tg, html[data-theme="dark"] .tg, html[data-theme="dark"] .witem { border-color: #303236; }
+  html[data-theme="dark"] .grp .body { border-top-color: #303236; }
+  html[data-theme="dark"] .modal { background: rgba(0,0,0,.6); }
+  html[data-theme="dark"] .seg button.on, html[data-theme="dark"] button.primary, html[data-theme="dark"] .ctrls button#btnPlay { background: #4466d4; border-color: #4466d4; color: #fff; }
+  html[data-theme="dark"] button.primary:disabled { background: #3a4160; border-color: #3a4160; color: #a3abc6; }
+  html[data-theme="dark"] .chips button.on, html[data-theme="dark"] .types button.on { background: #5a4b22; border-color: #a3862e; color: var(--ink); }
+  html[data-theme="dark"] #toast { background: #e7e3db; color: #1b1c1f; }
+  html[data-theme="dark"] #log, html[data-theme="dark"] #soundBox { background: #1f2023; border-color: #303236; }
+  html[data-theme="dark"] button.soft { background: #2a3350; border-color: #3e4b78; color: #b8c8ff; }
+  html[data-theme="dark"] input.sw { background: #4a4c52; }
+  html[data-theme="dark"] input.sw::after { background: #f0ede6; }
+  html[data-theme="dark"] input.sw:checked { background: #2fb350; }
+  html[data-theme="dark"] .pgmark::before { border-top-color: #46484d; color: #918d85; }
+  html[data-theme="dark"] .pgmark.scan::before { color: #e2a35a; }
+  html[data-theme="dark"] .secrow span { color: var(--muted); }
+  html[data-theme="dark"] .wbar { background: linear-gradient(90deg, var(--accent) var(--p), #3b3d42 var(--p)); }
+  html[data-theme="dark"] .pdfnote { opacity: .9; }
 </style>
 </head>
 <body>
@@ -231,6 +291,20 @@
     <div class="btns"><button id="btnReport" class="soft">📋 Fehlerbericht kopieren</button></div>
     <p class="hint">Kopiert Version, Gerät, Einstellungen, Messwerte, die letzten Protokoll-Einträge und – bei einer PDF mit Texterkennung – die Liste der Reparaturen. Danach z. B. in WhatsApp oder eine Mail einfügen.</p>
     <textarea id="reportBox" readonly hidden></textarea>
+  </div></details>
+
+  <!-- v0.8.3 Quellen & Lizenzen -->
+  <details class="grp" id="gLic"><summary>📜 Quellen &amp; Lizenzen</summary><div class="body">
+    <p class="hint">Die App lädt diese Bausteine aus dem Internet und speichert sie im Browser. Alles läuft auf dem Gerät; Texte und PDFs verlassen es nie.</p>
+    <ul class="lic">
+      <li><b>Stimme „Thorsten“</b> (de_DE-thorsten-medium) – Sprachdaten von Thorsten Müller (Thorsten-Voice), Modell aus <a href="https://huggingface.co/rhasspy/piper-voices" target="_blank" rel="noopener">rhasspy/piper-voices</a> (Piper, Michael Hansen) · CC0</li>
+      <li><b>onnxruntime-web</b> 1.18.0 (Microsoft) – rechnet die Stimme im Browser · MIT</li>
+      <li><b>piper-wasm</b> 1.0.0 (@diffusionstudio) mit piper-phonemize (MIT) und <b>espeak-ng</b> (Aussprache in Laute) · Paket MIT, espeak-ng GPL-3.0</li>
+      <li><b>pdf.js</b> 4.10.38 (Mozilla) – PDFs öffnen · Apache-2.0</li>
+      <li><b>Wortliste igerman98</b> (Björn Jacke), npm-Paket dictionary-de 3.0.0 – Zerlegung langer Wörter, Reparatur von Scans · GPL-2.0 oder GPL-3.0 (unverändert genutzt)</li>
+      <li><b>Häufigkeitslisten</b> <a href="https://github.com/hermitdave/FrequencyWords" target="_blank" rel="noopener">hermitdave/FrequencyWords</a> (Hermit Dave; Daten aus OpenSubtitles 2018) – nur für gescannte PDFs · Inhalt CC-BY-SA-4.0, Code MIT</li>
+      <li>Ausliefern der Bausteine: jsDelivr, Hugging Face. Die App selbst: Benjamin Dormoros.</li>
+    </ul>
   </div></details>
 
   <!-- v0.8.2 nicht mehr sichtbar (läuft intern weiter: Protokoll, Messwerte; Diagnose-Elemente für den Fehlerbericht) -->
@@ -342,6 +416,8 @@
       <div class="seg" id="segLaws"><button data-v="abbr">Kürzel<small>„S G B acht“</small></button><button data-v="full">Ausgeschrieben<small>„Sozialgesetzbuch acht“</small></button></div></div>
     <div class="og"><b>Gender-Formen</b><small>Wie „Expert*innen“ oder „Klient:innen“ gesprochen werden.</small>
       <div class="seg" id="segGender"><button data-v="knack">Knacklaut<small>ein Wort, ohne Pause</small></button><button data-v="pause">Deutliche Pause<small>wie bisher</small></button></div></div>
+    <div class="og"><b>Darstellung</b><small>Dunkel schont abends die Augen. „Automatisch“ folgt der iPhone-Einstellung.</small>
+      <div class="seg" id="segTheme"><button data-v="auto">Automatisch</button><button data-v="light">Hell</button><button data-v="dark">Dunkel</button></div></div>
     <button id="optDone" class="primary">Fertig</button>
   </div>
 </div>
@@ -386,7 +462,7 @@
    Konfiguration (alle externen Quellen, Versionen fest angepinnt)
    ===================================================================== */
 const CONFIG = {
-  version: 'v0.8.2 · OCR-PDFs & Abschnitte',
+  version: 'v0.8.3 · Darkmode',
   ortBase:  'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/',
   phonBase: 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/',
   // v0.7 PDF: pdf.js 4.10.38 (Mozilla, Apache 2.0), „legacy“-Fassung = mit Ausweichcode für ältere Safari-Versionen
@@ -414,7 +490,7 @@ const POLISH_DEFAULT = { norm: true, fade: true, split: true, pause: true, warm:
 // v0.8.2: Klang-Feinschliff fest an (Schalter entfernt)
 const polish = Object.assign({}, POLISH_DEFAULT);
 // v0.6.1 Vorlese-Optionen (Clara-Ansicht): Quellen überspringen, Gesetzeskürzel, Gender-Aussprache
-const readOpts = Object.assign({ skip: false, laws: 'abbr', gender: 'knack', margins: false, footnotes: false }, SAVED.read || {});
+const readOpts = Object.assign({ skip: false, laws: 'abbr', gender: 'knack', margins: false, footnotes: false, theme: 'auto' }, SAVED.read || {});
 // v0.8.2 Hörvergleich (Technik): Länge der Satzteile bei langen Sätzen und Betonung langer Wörter – gespeichert
 const CHUNKS = [150, 220, 300];
 let chunkLen = CHUNKS.includes(+SAVED.chunk) ? +SAVED.chunk : 300;
@@ -4921,6 +4997,7 @@ function showReadOpts() {
   $('optMargins').checked = !!readOpts.margins; $('optFn').checked = !!readOpts.footnotes;
   for (const b of $('segLaws').children) b.classList.toggle('on', b.dataset.v === readOpts.laws);
   for (const b of $('segGender').children) b.classList.toggle('on', b.dataset.v === readOpts.gender);
+  for (const b of $('segTheme').children) b.classList.toggle('on', b.dataset.v === readOpts.theme);
 }
 function setReadOpt(key, v) {
   if (readOpts[key] === v) return;
@@ -4931,6 +5008,12 @@ $('optMargins').onchange = () => setReadOpt('margins', $('optMargins').checked);
 $('optFn').onchange = () => setReadOpt('footnotes', $('optFn').checked);
 for (const b of $('segLaws').children) b.onclick = () => setReadOpt('laws', b.dataset.v);
 for (const b of $('segGender').children) b.onclick = () => setReadOpt('gender', b.dataset.v);
+// v0.8.3 Darstellung: gilt sofort, ohne das Vorlesen zu unterbrechen
+for (const b of $('segTheme').children) b.onclick = () => {
+  readOpts.theme = b.dataset.v; window.themePref = b.dataset.v;
+  if (window.applyTheme) window.applyTheme();
+  showReadOpts(); saveSound(); log('Darstellung: ' + b.dataset.v);
+};
 $('btnOpts').onclick = () => { showReadOpts(); $('optModal').hidden = false; };
 $('optClose').onclick = $('optDone').onclick = () => { $('optModal').hidden = true; };
 $('optModal').onclick = (e) => { if (e.target.id === 'optModal') $('optModal').hidden = true; };
