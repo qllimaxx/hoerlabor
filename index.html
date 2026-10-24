@@ -125,6 +125,14 @@
   #view .skip-fnref { font-size: .9em; }
   .pgmark::before { content: attr(data-p); display: block; margin: 14px 0 6px; padding: 2px 0; border-top: 1px dashed #d6d3cc; color: #9a968c; font-size: .75rem; letter-spacing: .03em; }
   .pgmark.scan::before { color: #b06b00; }
+  /* v0.8.2 Notiz aus der PDF (nur Anzeige, wird nicht vorgelesen) */
+  .pdfnote { cursor: help; font-size: .85em; margin: 0 .2em; opacity: .75; }
+  .pdfnote::before { content: '🗒'; }
+  .secrow { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .secrow span { width: 2.2em; color: #6b675f; }
+  .secrow select { flex: 1; min-width: 0; font-size: 1rem; padding: 8px; border-radius: 10px; border: 1px solid #d6d3cc; background: #fff; }
+  .secsug { margin: 10px 0; padding: 10px 12px; border-radius: 12px; background: #fff6e0; border: 1px solid #f0d9a0; font-size: .92rem; }
+  .secsug button { display: block; margin-top: 8px; }
   #pdfProg { width: 100%; height: 10px; margin: 10px 0 4px; }
   .pgrange { display: flex; gap: 16px; margin-top: 10px; }
   .pgrange input { width: 5.5em; font: inherit; padding: 8px; border: 1px solid var(--line); border-radius: 10px; margin-left: 6px; }
@@ -175,16 +183,11 @@
 
 <details id="tech"><summary>⚙︎ Technik &amp; Einstellungen</summary>
 
-  <details class="grp" id="gVoice" open><summary>🔊 Stimme &amp; Klang</summary><div class="body">
+  <details class="grp" id="gVoice" open><summary>🔊 Stimme</summary><div class="body">
     <div class="fld"><label for="profileSel">Stimme</label><select id="profileSel"></select></div>
     <div class="fld" id="voiceRow" hidden><label for="voiceSel">Systemstimme</label><select id="voiceSel" aria-label="Systemstimme"></select></div>
     <p class="hint">Wird gespeichert und gilt auch beim normalen Vorlesen.</p>
-    <div class="btns">
-      <button id="btnBeforeAfter" class="soft">▶ Vorher / Nachher</button>
-      <button id="btnCompare" class="soft">▶ Voreinstellungen vergleichen</button>
-    </div>
-    <p class="hint">Beide Knöpfe ersetzen den Text im Feld durch einen kurzen Probeabsatz. Über dem Text steht, was gerade läuft. ■ bricht ab.</p>
-    <h3>Feinregler</h3>
+    <details id="gAdv"><summary>Erweitert: Feinregler</summary>
     <div id="soundBox">
       <div class="sl"><label for="sTempo">Grundtempo</label><input type="range" id="sTempo" min="70" max="130" step="1"><span id="sTempoV"></span></div>
       <div class="sl"><label for="sNoise">Lebendigkeit</label><input type="range" id="sNoise" min="0.2" max="1" step="0.01"><span id="sNoiseV"></span></div>
@@ -195,23 +198,7 @@
     </div>
     <div class="btns"><button id="btnSoundReset" class="soft">↺ Zurücksetzen auf Standard</button></div>
     <p id="soundHint" class="hint"></p>
-  </div></details>
-
-  <details class="grp" id="gPolish" open><summary>✨ Klang-Feinschliff</summary><div class="body">
-    <label class="tg"><span class="tx"><b>Lautstärke angleichen</b><small>Jeder Satz gleich laut – kein Lauter-Leiser-Springen, nichts übersteuert.</small></span><input type="checkbox" class="sw" id="fxNorm"></label>
-    <label class="tg"><span class="tx"><b>Weiche Übergänge</b><small>Kurzes Ein- und Ausblenden an Satzgrenzen – gegen Knacken und harte Schnitte.</small></span><input type="checkbox" class="sw" id="fxFade"></label>
-    <label class="tg"><span class="tx"><b>Natürlichere Satzteilung</b><small>Lange Sätze werden nur an Nebensatz-Grenzen geteilt (vor „dass“, „weil“, „die“ …) und seltener.</small></span><input type="checkbox" class="sw" id="fxSplit"></label>
-    <label class="tg"><span class="tx"><b>Pausen nach Satzzeichen</b><small>Komma kurz, Semikolon mittel, Frage und Absatz länger – ohne doppelte Pausen.</small></span><input type="checkbox" class="sw" id="fxPause"></label>
-    <label class="tg"><span class="tx"><b>Wärmer</b><small>Scharfe Zischlaute etwas leiser, Stimme etwas voller – nicht dumpf.</small></span><input type="checkbox" class="sw" id="fxWarm"></label>
-    <label class="tg"><span class="tx"><b>Natürliche Betonung von Einschüben</b><small>Klammern und Quellen etwas schneller und leiser („beiseite“), Überschriften etwas langsamer mit mehr Luft.</small></span><input type="checkbox" class="sw" id="fxAside"></label>
-    <div class="btns"><button id="btnPolishReset" class="soft">↺ Feinschliff auf Standard</button></div>
-  </div></details>
-
-  <details class="grp" id="gPron"><summary>🗣 Aussprache</summary><div class="body">
-    <label class="tg"><span class="tx"><b>Fußnoten vorlesen (PDF)</b><small>Sicherheitsnetz: nur einschalten, falls echter Text fälschlich als Fußnote grau markiert wurde.</small></span><input type="checkbox" class="sw" id="optFn"></label>
-    <label class="tg"><span class="tx"><b>Aussprache-Hilfe</b><small>Wörterbuch für Fachbegriffe, Abkürzungen, Zahlen, Paragrafen, Aufzählungen.</small></span><input type="checkbox" class="sw" id="optHelp" checked></label>
-    <div id="nowText" class="hint">–</div>
-    <details id="speechBox"><summary>So wird der aktuelle Satz gesprochen</summary><div id="speechText">–</div></details>
+    </details>
   </div></details>
 
   <details class="grp" id="gTexts"><summary>📄 Testtexte</summary><div class="body">
@@ -227,7 +214,38 @@
     <p class="hint">Ersetzt den Text im Feld. <span id="integrity"></span></p>
   </div></details>
 
-  <details class="grp" id="gDiag"><summary>🔧 Diagnose</summary><div class="body">
+  <!-- v0.8.2 Hörvergleich: einmal hören, besser klingende Variante wählen (gilt sofort, wird gespeichert) -->
+  <details class="grp" id="gCmp"><summary>🎧 Hörvergleich</summary><div class="body">
+    <p class="hint">Ersetzt den Text im Feld durch einen kurzen Probetext und spielt die Varianten nacheinander. Danach die besser klingende antippen – sie gilt sofort und wird gespeichert. ■ bricht ab.</p>
+    <h3>1 · Satzteile bei langen Sätzen</h3>
+    <div class="seg" id="segChunk"><button data-v="150">kurz<small>≈ 150 Zeichen</small></button><button data-v="220">mittel<small>≈ 220 Zeichen</small></button><button data-v="300">lang<small>300 Zeichen</small></button></div>
+    <div class="btns"><button id="btnCmpChunk" class="soft">▶ Alle drei nacheinander hören</button></div>
+    <h3>2 · Betonung langer Wörter</h3>
+    <div class="seg" id="segStress"><button data-v="sanft">sanft<small>eine Hauptbetonung</small></button><button data-v="deutlich">deutlich<small>mit Nebenbetonungen</small></button></div>
+    <div class="btns"><button id="btnCmpStress" class="soft">▶ Beide nacheinander hören</button></div>
+    <p id="cmpNow" class="hint"></p>
+  </div></details>
+
+  <!-- v0.8.2 Fehlerbericht -->
+  <details class="grp" id="gReport"><summary>🛟 Fehlerbericht</summary><div class="body">
+    <div class="btns"><button id="btnReport" class="soft">📋 Fehlerbericht kopieren</button></div>
+    <p class="hint">Kopiert Version, Gerät, Einstellungen, Messwerte, die letzten Protokoll-Einträge und – bei einer PDF mit Texterkennung – die Liste der Reparaturen. Danach z. B. in WhatsApp oder eine Mail einfügen.</p>
+    <textarea id="reportBox" readonly hidden></textarea>
+  </div></details>
+
+  <!-- v0.8.2 nicht mehr sichtbar (läuft intern weiter: Protokoll, Messwerte; Diagnose-Elemente für den Fehlerbericht) -->
+  <div id="diagHidden" hidden>
+    <label class="tg"><span class="tx"><b>Lautstärke angleichen</b><small>Jeder Satz gleich laut – kein Lauter-Leiser-Springen, nichts übersteuert.</small></span><input type="checkbox" class="sw" id="fxNorm"></label>
+    <label class="tg"><span class="tx"><b>Weiche Übergänge</b><small>Kurzes Ein- und Ausblenden an Satzgrenzen – gegen Knacken und harte Schnitte.</small></span><input type="checkbox" class="sw" id="fxFade"></label>
+    <label class="tg"><span class="tx"><b>Natürlichere Satzteilung</b><small>Lange Sätze werden nur an Nebensatz-Grenzen geteilt (vor „dass“, „weil“, „die“ …) und seltener.</small></span><input type="checkbox" class="sw" id="fxSplit"></label>
+    <label class="tg"><span class="tx"><b>Pausen nach Satzzeichen</b><small>Komma kurz, Semikolon mittel, Frage und Absatz länger – ohne doppelte Pausen.</small></span><input type="checkbox" class="sw" id="fxPause"></label>
+    <label class="tg"><span class="tx"><b>Wärmer</b><small>Scharfe Zischlaute etwas leiser, Stimme etwas voller – nicht dumpf.</small></span><input type="checkbox" class="sw" id="fxWarm"></label>
+    <label class="tg"><span class="tx"><b>Natürliche Betonung von Einschüben</b><small>Klammern und Quellen etwas schneller und leiser („beiseite“), Überschriften etwas langsamer mit mehr Luft.</small></span><input type="checkbox" class="sw" id="fxAside"></label>
+    <div class="btns"><button id="btnPolishReset" class="soft">↺ Feinschliff auf Standard</button></div>
+    <label class="tg"><input type="checkbox" class="sw" id="optHelp" checked></label>
+    <div id="nowText" class="hint">–</div>
+    <details id="speechBox"><summary>So wird der aktuelle Satz gesprochen</summary><div id="speechText">–</div></details>
+    <button id="btnBeforeAfter" class="soft">Vorher / Nachher</button><button id="btnCompare" class="soft">Voreinstellungen vergleichen</button>
     <h3>Engine (Labor)</h3>
     <div class="fld"><label for="engineSel">Engine</label><select id="engineSel" aria-label="Engine"></select></div>
     <div class="btns">
@@ -245,7 +263,7 @@
     <div id="env" class="hint"></div>
     <h3>Protokoll</h3>
     <div id="log"></div>
-  </div></details>
+  </div>
 </details>
 
 <div id="bar"><div class="inner">
@@ -298,6 +316,15 @@
       </div>
       <button id="pdfGo" class="primary">Text übernehmen</button>
     </div>
+    <!-- v0.8.2 Abschnitt wählen -->
+    <div id="pdfSecBox" hidden>
+      <div class="og"><b>Welcher Abschnitt?</b><small>Aus Inhaltsverzeichnis, Überschriften, Markierungen und Notizen der PDF.</small>
+        <label class="secrow"><span>Von</span><select id="secFrom"></select></label>
+        <label class="secrow"><span>Bis</span><select id="secTo"></select></label>
+      </div>
+      <div id="secSuggest" class="secsug" hidden><span id="secSuggestText"></span><button id="secSuggestYes" class="primary soft2">Ja, so lesen</button></div>
+      <button id="secGo" class="primary">Vorlesen</button>
+    </div>
     <progress id="pdfProg" max="1" value="0" hidden></progress>
     <div id="pdfMsg" class="hint"></div>
     <p class="hint">Die PDF bleibt auf diesem Gerät und wird nicht gespeichert. Kopfzeilen, Seitenzahlen und Fußnoten werden grau angezeigt und nicht vorgelesen.</p>
@@ -310,6 +337,7 @@
     <div class="sheet-h"><b id="optTitle">Vorlese-Optionen</b><button id="optClose" class="x" aria-label="Schließen">✕</button></div>
     <label class="tg"><span class="tx"><b>Quellenangaben überspringen</b><small>„(Müller 2019, S. 12)“ wird nicht vorgelesen und im Text grau angezeigt.</small></span><input type="checkbox" class="sw" id="optSkip"></label>
     <label class="tg"><span class="tx"><b>Kopfzeilen &amp; Seitenzahlen vorlesen</b><small>Nur bei PDFs: wiederkehrende Kopf- und Fußzeilen, Seitenzahlen (grau). Normalerweise aus.</small></span><input type="checkbox" class="sw" id="optMargins"></label>
+    <label class="tg"><span class="tx"><b>Fußnoten vorlesen</b><small>Nur bei PDFs, normalerweise aus. Einschalten, falls echter Text fälschlich als Fußnote grau markiert wurde.</small></span><input type="checkbox" class="sw" id="optFn"></label>
     <div class="og"><b>Gesetzesangaben</b><small>Wie Kürzel wie „SGB“, „GG“ oder „BGB“ gesprochen werden.</small>
       <div class="seg" id="segLaws"><button data-v="abbr">Kürzel<small>„S G B acht“</small></button><button data-v="full">Ausgeschrieben<small>„Sozialgesetzbuch acht“</small></button></div></div>
     <div class="og"><b>Gender-Formen</b><small>Wie „Expert*innen“ oder „Klient:innen“ gesprochen werden.</small>
@@ -339,6 +367,7 @@
     <div class="sheet-h"><b id="listTitle">Gemeldete Wörter</b><button id="listClose" class="x" aria-label="Schließen">✕</button></div>
     <div id="listItems"></div>
     <button id="btnShare" class="primary">Liste teilen</button>
+    <button id="btnListCopy" class="primary soft2">In Zwischenablage kopieren</button>
     <div class="row">
       <button id="btnClearAll">Alle löschen</button>
       <span id="clearConfirm" hidden>Wirklich alle löschen? <button id="btnClearYes">Ja</button><button id="btnClearNo">Nein</button></span>
@@ -357,7 +386,7 @@
    Konfiguration (alle externen Quellen, Versionen fest angepinnt)
    ===================================================================== */
 const CONFIG = {
-  version: 'v0.8.1 · Aussprache',
+  version: 'v0.8.2 · OCR-PDFs & Abschnitte',
   ortBase:  'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/',
   phonBase: 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/',
   // v0.7 PDF: pdf.js 4.10.38 (Mozilla, Apache 2.0), „legacy“-Fassung = mit Ausweichcode für ältere Safari-Versionen
@@ -366,6 +395,8 @@ const CONFIG = {
   // v0.8.1 Deutsche Wortliste für die Zerlegung zusammengesetzter Wörter: igerman98 (Björn Jacke) als Hunspell-Wörterbuch,
   // npm-Paket dictionary-de 3.0.0 (Wortliste/Regeln GPL-2.0 oder GPL-3.0); ≈ 1,1 MB, wird wie die Stimme gecacht
   lexBase:  'https://cdn.jsdelivr.net/npm/dictionary-de@3.0.0/',
+  // v0.8.2 Häufigkeitslisten (hermitdave/FrequencyWords, OpenSubtitles 2018, CC-BY-SA-4.0) – nur für OCR-PDFs
+  freqBase: 'https://cdn.jsdelivr.net/gh/hermitdave/FrequencyWords@525f9b560de45753a5ea01069454e72e9aa541c6/content/2018/',
   cacheName: 'hoerlabor-piper-v1',
   maxPartChars: 220,       // längere Sätze werden intern für die Sprachausgabe geteilt
   pauseSentence: 0.30,     // Sekunden Stille nach Satz (Piper)
@@ -380,10 +411,15 @@ const SAVED = (() => { try { return JSON.parse(localStorage.getItem(SOUND_KEY) |
 // Klang-Feinschliff (PROJECT_STATE.md 8f/8g): 1 Lautstärke, 2 Übergänge, 3 Satzteilung, 4 Pausenstaffel, 5 wärmer,
 // 6 natürliche Betonung von Einschüben (v0.6.1; ersetzt die zufällige Tempo-Variation)
 const POLISH_DEFAULT = { norm: true, fade: true, split: true, pause: true, warm: true, aside: true };
-const polish = Object.assign({}, POLISH_DEFAULT, SAVED.polish || {});
-delete polish.vary;
+// v0.8.2: Klang-Feinschliff fest an (Schalter entfernt)
+const polish = Object.assign({}, POLISH_DEFAULT);
 // v0.6.1 Vorlese-Optionen (Clara-Ansicht): Quellen überspringen, Gesetzeskürzel, Gender-Aussprache
 const readOpts = Object.assign({ skip: false, laws: 'abbr', gender: 'knack', margins: false, footnotes: false }, SAVED.read || {});
+// v0.8.2 Hörvergleich (Technik): Länge der Satzteile bei langen Sätzen und Betonung langer Wörter – gespeichert
+const CHUNKS = [150, 220, 300];
+let chunkLen = CHUNKS.includes(+SAVED.chunk) ? +SAVED.chunk : 300;
+let longStress = SAVED.stress === 'sanft' ? 'sanft' : 'deutlich';
+CONFIG.maxPartCharsFine = chunkLen;
 // v0.8: Tempo aus der Clara-Ansicht (0,8–1,5×), wirkt zusätzlich zur Klang-Voreinstellung
 let tempo = Math.min(1.5, Math.max(0.8, +SAVED.tempo || 1));
 // v0.7: Zusatzinfos zum PDF-Text (graue Bereiche, Seitenmarken) – gilt nur, solange der Text im Feld unverändert ist
@@ -1030,9 +1066,38 @@ function phWords(text) {
   return text.split(' ').map(w => { if (w === 'UN-Behindertenrechtskonvention') return '⟦UN=' + spellPh('UN') + '⟧ Behindertenrechtskonvention';
     const p = pronounceWord(w); return p ? '⟦' + p + '⟧' : w; }).join(' ');
 }
+// v0.8.2 Kürzel Buchstabe für Buchstabe, jeder mit eigenem Akzent und Wortgrenze dazwischen (kleine Pause ≈ 40–60 ms):
+// „S · G · B“ statt „ɛsɡeːbˈeː“ in einem Zug
+function spellSpaced(abbr) {
+  return [...abbr].filter(ch => LETTER_IPA[ch.toLowerCase()]).map(ch => {
+    const l = LETTER_IPA[ch.toLowerCase()], v = l.search(/[aeiouyɑɛɪɔʊəɜøœɐ]/);
+    return '⟦' + ch + '=/' + (v < 0 ? l : l.slice(0, v) + 'ˈ' + l.slice(v)) + '⟧';
+  }).join(' ');
+}
+// Namen in Großbuchstaben (Kapitälchen) erkennen: Namensliste, oder das Wort steht im selben Text normal geschrieben
+const CAPS_SPELL = new Set('ICD ICF DSM WHO EU UN USA DDR BRD BMFSFJ BMAS BMI BAMF ADHS PTBS ASD KJH HzE IQ PC TV CDU SPD FDP CSU ARD ZDF ÖPNV PDF NS GmbH LGBT LGBTQ'.split(' '));
+const CAPS_WORDEND = /(?:CH|CK|SCH|ST|ND|NG|NK|NT|RT|LT|LD|RD|RN|RM|LL|SS|TT|FF|MM|NN|PF|TZ|CHT|RG|RK|LK|LM|NZ|RZ|LS|NS|RS|TS|CHS|FT|PT|KT|MT|MP|SP)$/;
+const capsDocCache = { src: null, m: new Map() };
+function capsName(w, src) {
+  const cap = w.charAt(0) + w.slice(1).toLowerCase();
+  if (NAME_SET.has(cap) || NAME_SET.has(cap.replace(/s$/, ''))) return cap;
+  if (capsDocCache.src !== src) { capsDocCache.src = src; capsDocCache.m = new Map(); }
+  if (!capsDocCache.m.has(cap)) capsDocCache.m.set(cap, new RegExp('(?<![\\p{L}])' + cap.replace(/s$/, '') + 's?(?![\\p{L}])', 'u').test(src));
+  return capsDocCache.m.get(cap) ? cap : null;
+}
+function capsSay(m, c) {
+  const w = m[0];
+  if (LAW_FULL[w]) return null;
+  const name = capsName(w, c.src);
+  if (name) { const p = pronounceWord(name); return p ? { piper: p } : null; }     // nicht im Wörterbuch: espeak liest es als Wort
+  const vowels = (w.match(/[AEIOUÄÖÜY]/g) || []).length;
+  if (CAPS_SPELL.has(w) || !vowels || (w.length <= 4 && vowels === 1 && /[^AEIOUÄÖÜY]{2,}$/.test(w) && !CAPS_WORDEND.test(w)) ||
+      (w.length <= 5 && /^[^AEIOUÄÖÜY]{3}/.test(w))) return { raw: spellSpaced(w) };
+  return null;
+}
 function lawSay(m, c) {
   const k = m[1];
-  if (readOpts.laws !== 'full') return { piper: k + '=' + spellPh(k) };
+  if (readOpts.laws !== 'full') return { raw: spellSpaced(k) };            // v0.8.2 „(KJSG)“: K · J · S · G
   let full = LAW_FULL[k];
   const prev = (/(\p{L}+)\s*$/u.exec(c.src.slice(Math.max(0, c.pos - 12), c.pos)) || [])[1] || '';
   if (/^(?:des|dem|im|vom|zum|beim|den)$/i.test(prev)) full = full.replace(/^Bürgerliches/, 'Bürgerlichen');
@@ -1123,6 +1188,12 @@ const escRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
    Ergänzen = eine Zeile hinzufügen. Groß-/Kleinschreibung des ersten Buchstabens egal.
    ===================================================================== */
 const PRON_DICT = [
+  // v0.8.2 Erster Teil langer Wörter behält seine eigene Betonung (espeak betont diese Wörter allein falsch)
+  ['Labor',                    'labˈoːɾ',                      'e:ə en:ən s:s',    'WHT'],
+  ['formal',                   'fɔɾmˈɑːl',                     'ADJ',              'WH'],
+  ['Kritik',                   'kɾiːtˈiːk',                    'en:ən',            'WHT'],
+  ['Hotel',                    'hoːtˈɛl',                      's:s',              'WHT'],
+  ['Büro',                     'byːrˈoː',                      's:s',              'WHT'],
   // Gemeldete Wörter (Benjamin, v0.2)
   ['Semester',                 'zeːmˈɛstɜ',                    'n:n s:s',          'WHT'],
   ['Psychologie',              'psyçoloɡˈiː',                  'n:ən',             'WHT'],
@@ -1158,7 +1229,7 @@ const PRON_DICT = [
   ['Devianz',                  'deːvjˈants',                   '',                 'W'],
   ['Sucht',                    'zˈʊxt',                        '',                 'WH'],
   ['Menschenrechtsprofession', 'mˈɛnʃənrɛçtspɾoːfɛsjˌoːn',     '',                 'W'],
-  ['Inobhutnahme',             'ɪnˈɔphuːtnˌɑːmə',             'n:n',              'W'],   // v0.8.1: ohne Wortgrenze (keine Lücke); Akzent vor „ob“ = Einsatz
+  ['Inobhutnahme',             'ɪnʔˈɔphuːtnˌɑːmə',            'n:n',              'W'],   // v0.8.2: Knacklaut ʔ vor „ob“ (In|obhut), keine Wortgrenze
   ['Schulsozialarbeit',        'ʃˈuːlzoːtsjɑːlˌaɾbaɪt',        '',                 'W'],
   ['Akzeptanz',                'aktsɛptˈants',                 '',                 'W'],
   ['Signifikanz',              'zɪɡniːfiːkˈants',              '',                 'W'],
@@ -1302,6 +1373,11 @@ const PRON_DICT = [
    kaum gelernt); Mehrwort-Namen („Schulz von Thun“) stehen als Ganzes in der Tabelle.
    ===================================================================== */
 const NAME_DICT = [
+  // v0.8.2 Soziologie (Kapitälchen-Namen in Lehrbüchern)
+  ['Anthony',           'ˈɛntəniː',            '',     'W'],
+  ['George',            'dʒˈɔːɾdʒ',            '',     'W'],
+  ['Homans',            'hˈoːməns',            '',     'W'],
+  ['Frederick',         'fɾˈɛdəɾɪk',           '',     'W'],
   // aus Benjamins Meldungen (Fachtexte v0.7)
   ['Bourdieu',          'buɾdjˈøː',            's:s',  'WH'],
   ['Pierre',            'pjˈɛːɾ',              '',     'W'],
@@ -1634,12 +1710,17 @@ const SPEECH_RULES = [
   { name: 'Gender-Zeichen', re: /(?<=\p{L})[:*_](?=in(?:nen|ne)?(?![\p{L}]))/uy, say: () => ({ raw: ' ' }) },
   // v0.6.1 Gesetzeskürzel: „Kürzel“ = ein Wort, Betonung am Ende (ɛsɡeːbˈeː); „Ausgeschrieben“ = Sozialgesetzbuch …
   { name: 'Gesetzeskürzel', re: LAW_RE, say: lawSay },
+  // v0.8.2 Wörter in Großbuchstaben: Namen in Kapitälchen („GIDDENS“, „MAX WEBERS“) wie Namen; echte Kürzel
+  // („ICD“, „DSGVO“) Buchstabe für Buchstabe mit kleinen Pausen
+  { name: 'Großbuchstaben', re: /(?<![\p{L}\d-])\p{Lu}{2,}(?![\p{L}\d-])/uy, say: capsSay },
   // Wörterbuch: mehrteilige Fachbegriffe („Case Management“) und einzelne Wörter (inkl. Zusammensetzungen)
   ...PRON.multi.map(({ word, ipa }) => ({ name: 'Wörterbuch: ' + word,
     re: new RegExp('(?<![\\p{L}])' + word.split(' ').map(escRe).join('\\s+') + '(?![\\p{L}])', 'uy'),
     say: () => ({ piper: word + '=/' + ipa }) })),
   { name: 'Wörterbuch/Zusammensetzung', re: /(?<![\p{L}])\p{L}+(?:-\p{L}+)*(?![\p{L}])/uy,
     say: (m) => { const p = pronounceWord(m[0]); return p ? { piper: p } : null; } },
+  // v0.8.2 Auslassung im Zitat „(...)“, „(..)“, „[…]“: nur eine kurze Pause
+  { name: 'Auslassung in Klammern', re: /[([]\s?(?:\.{2,3}|…)\s?[)\]]/uy, say: ', ' },
   // Klammern und Anführungszeichen: nicht sprechen, kurze Pause
   { name: 'Klammer', re: /[()[\]]/uy, say: ', ' },
   { name: 'Anführungszeichen', re: /[„“”"»«›‹‚‘]/uy, say: ', ' },
@@ -1677,10 +1758,12 @@ function citChunk(c) {
   if (!CIT_FULL.test(c)) return false;
   return !CIT_STOP.has(/^\p{Lu}[\p{L}'’-]*/u.exec(c)[0]);
 }
+const CIT_YEARLOC = new RegExp('^(?:vgl\\.\\s+)?' + CIT_YEAR + '\\s*[,:]\\s*' + CIT_LOC + '$', 'u');
 function isCitation(inner) {
   const t = inner.replace(/\s+/g, ' ').trim();
   if (CIT_OWN.test(t)) return true;
   if (/^(?:S\.|p\.|pp\.)\s?\d/.test(t)) return true;                // nur Seitenangabe: „(S. 12)“
+  if (CIT_YEARLOC.test(t)) return true;                              // v0.8.2 nur Jahr + Seite: „(1920b, S. 675)“
   if (citChunk(t)) return true;                                      // „Allroggen; Fegert; Rau 2017“
   const chunks = t.split(/\s*;\s*/);
   return chunks.length > 1 && chunks.every(citChunk);                // „Müller 2019; Schmidt et al. 2020“
@@ -1702,7 +1785,10 @@ function findCitations(src, a, b) {
    „§ 8a SGB VIII“, „§§ 27 ff. SGB VIII“, „§ 36 Abs. 2 S. 1 SGB VIII“, „Art. 3 Abs. 1 GG“, „SGB IX“:
    eigener Sprech-Teil, etwa 12 % langsamer, kurze Pausen zwischen den Bestandteilen, der Buchstabe nach der Zahl
    mit eigenem Akzent („Paragraf – acht – a – S G B – acht“). Anzeige unverändert. */
-const LAW = { len: 1.12, gap: 0.1 };
+// v0.8.2 kürzere Pausen (Benjamin: „Paragraf acht · kurz · a · minimal länger · S · kurz · G · kurz · B · kurz · acht“):
+//   kurz = Wortgrenze in einem Sprech-Teil (gemessen ≈ 40–60 ms), „acht¦a“ = eigener Teil ohne Zusatzpause (≈ 45–60 ms),
+//   minimal länger = eigener Teil + 60 ms (≈ 100 ms), vor/nach der Gesetzesangabe 60 ms; Ränder je Teil 15 ms vorn, 30 ms hinten.
+const LAW = { len: 1.05, gap: 0.06, short: 0, mid: 0.06, trim: [0.015, 0.03] };
 const LAW_K = Object.keys(LAW_FULL).join('|');
 const LAW_NUM = '\\d+[a-z]?';
 const LAW_REF = '(?:§§?|Art\\.|Artikel)\\s?' + LAW_NUM + '(?:\\s?(?:[–-]|bis|und|,)\\s?' + LAW_NUM + ')*' +
@@ -1720,46 +1806,45 @@ function lawSpans(src, a, b) {
   }
   return res;
 }
-// Sprechfassung für Piper: Bestandteile durch Kommas getrennt (= kurze Pausen)
+// Sprechfassung für Piper (v0.8.2): Bestandteile mit Wortgrenzen (kurze Pausen); „¦“ und „‖“ trennen eigene Sprech-Teile
+// mit festen kurzen Pausen (siehe LAW): „Paragraf acht¦a‖S G B acht“
 function lawPiper(t, isLast) {
-  const groups = [];
   const re = /§§|§|Artikel|Art\.|Absatz|Abs\.|Satz|S\.|Nr\.|Ziff\.|Halbs\.|Hs\.|lit\.|Buchst\.|ff\.|f\.|i\.\s?V\.\s?m\.|bis|und|des|der|dem|im|nach|aus|[–-]|(\d+)([a-z])?|(\p{L}[\p{L}-]*)/gu;
-  let m, key = '', art = '';
+  let m, key = '', art = '', out = '', sep = null, prevWasLaw = false;
   const KEY = { 'Abs.': 'Absatz', 'Absatz': 'Absatz', 'S.': 'Satz', 'Satz': 'Satz', 'Nr.': 'Nummer', 'Ziff.': 'Ziffer',
     'Hs.': 'Halbsatz', 'Halbs.': 'Halbsatz', 'lit.': 'Buchstabe', 'Buchst.': 'Buchstabe' };
-  let prevWasLaw = false;
+  const add = (g, before) => { if (!g) return; out += out ? (before || sep || ' ') : ''; out += g; sep = null; };
   while ((m = re.exec(t))) {
     const w = m[0];
-    let g = null, isLaw = false;
-    if (w === '§') g = 'Paragraf';
-    else if (w === '§§') g = 'Paragrafen';
-    else if (w === 'Art.' || w === 'Artikel') g = 'Artikel';
+    let isLaw = false;
+    if (w === '§') add('Paragraf');
+    else if (w === '§§') add('Paragrafen');
+    else if (w === 'Art.' || w === 'Artikel') add('Artikel');
     else if (KEY[w]) { key = KEY[w]; continue; }
-    else if (w === 'ff.' || w === 'f.') g = 'folgende';
-    else if (/^i\.\s?V\.\s?m\.$/.test(w)) g = 'in Verbindung mit';
-    else if (w === '–' || w === '-' || w === 'bis') g = 'bis';
-    else if (w === 'und') g = 'und';
+    else if (w === 'ff.' || w === 'f.') add('folgende');
+    else if (/^i\.\s?V\.\s?m\.$/.test(w)) { add('in Verbindung mit', '‖'); sep = '‖'; }
+    else if (w === '–' || w === '-' || w === 'bis') add('bis');
+    else if (w === 'und') add('und');
     else if (/^(?:des|der|dem|im|nach|aus)$/.test(w)) { art = w + ' '; continue; }
     else if (m[1]) {
-      g = (key ? key + ' ' : '') + (numPh(m[1]) || m[1]); key = '';
-      groups.push(art + g); art = '';
-      if (m[2]) groups.push('⟦' + m[2] + '=' + spellPh(m[2]) + '⟧');           // „8a“: das a mit eigenem Akzent
+      add(art + (key ? key + ' ' : '') + (numPh(m[1]) || m[1])); key = ''; art = '';
+      if (m[2]) { add('⟦' + m[2] + '=' + spellPh(m[2]) + '⟧', '¦'); sep = '‖'; }      // „8a“: a als eigener kurzer Teil
       prevWasLaw = false;
       continue;
     } else if (LAW_FULL[w]) {
       isLaw = true;
+      let g;
       if (readOpts.laws === 'full') {
         let full = LAW_FULL[w];
         if (/^(?:des|dem|im|aus|nach)\s$/.test(art)) full = full.replace(/^Bürgerliches/, 'Bürgerlichen');
         if (art === 'des ') full = full.replace(/gesetz$/, 'gesetzes').replace(/buch$/, 'buchs');
         g = phWords(full);
-      } else g = '⟦' + w + '=' + spellPh(w) + '⟧';
-    } else if (prevWasLaw && /^[IVX]{1,4}$/.test(w) && roman(w)) g = cardinal(roman(w));
-    else g = w;
-    groups.push(art + g); art = '';
+      } else g = spellSpaced(w);                                   // „S · G · B“
+      add(art + g, '‖'); art = '';
+    } else if (prevWasLaw && /^[IVX]{1,4}$/.test(w) && roman(w)) add(cardinal(roman(w)));
+    else { add(art + w); art = ''; }
     prevWasLaw = isLaw;
   }
-  let out = groups.filter(Boolean).join(', ');
   if (isLast && /[.!?…]["'“”»«)\]]*\s*$/.test(t)) out += '.';
   return out;
 }
@@ -1983,8 +2068,20 @@ function pdfPageLines(pg) {
 }
 
 const PDF_PAGENUM = /^(?:[-–—]\s*)?(?:(?:S\.|Seite|Page|p\.)\s*)?\d{1,4}(?:\s*(?:\/|von|of)\s*\d{1,4})?(?:\s*[-–—])?$|^[ivxlc]{1,7}$/i;
-// Ganze PDF (ausgewählte Seiten) → { src, ranges, marks, scanPages }
-function pdfBuild(pages) {
+const PDF_ANCH = { a: '', b: '' };
+// v0.8.2 Fußnotenziffern, die die Texterkennung als Buchstaben/Satzzeichen gelesen hat („Wort.t“, „Wort !“)
+const OCR_FNREF = [
+  /(?<=\p{L})([.,;:!?])([tIl1z2])(?=\s)/gu,       // „Wort.t Nächstes“ (Ziffer als t/z gelesen)
+  /([.!?]) ([tIl1])(?= \p{Lu})/gu,                // „Wort. t Nächstes“
+  /( )(!)(?= \p{Ll})/gu,                          // „Wort ! weiter“
+  /(\p{Ll}{3})(!)(?= \p{Ll})/gu,                  // „Wort! weiter“
+  /(\p{Ll}{4})([1ä])(?=[\s,.;:])/gu               // Ziffer als ä/1 an ein Wort geklebt
+];
+const pdfSup = (n) => String(n).replace(/\d/g, d => PDF_SUP[d]);
+// Ganze PDF (ausgewählte Seiten) → Blöcke (Absätze, Überschriften, Rand, Fußnoten); opt: { ocr, outline, targets }
+function pdfBlocks(pages, opt) {
+  opt = opt || {};
+  const OCR = !!opt.ocr;
   const P = pages.map(pg => ({ num: pg.num, W: pg.W, H: pg.H, lines: pdfPageLines(pg), chars: pg.items.reduce((a, it) => a + it.s.replace(/\s/g, '').length, 0) }));
   const scanPages = P.filter(p => p.chars < 8).map(p => p.num);
   // Grundschriftgröße (meiste Zeichen) und Hauptschrift
@@ -1992,6 +2089,14 @@ function pdfBuild(pages) {
   for (const p of P) for (const L of p.lines) { if (L.rot) continue; sz.set(L.size, (sz.get(L.size) || 0) + L.text.length); fn.set(L.font, (fn.get(L.font) || 0) + L.text.length); }
   const body = sz.size ? [...sz].sort((a, b) => b[1] - a[1])[0][0] : 10;
   const bodyFont = fn.size ? [...fn].sort((a, b) => b[1] - a[1])[0][0] : '';
+  if (OCR) {
+    // v0.8.2 Texterkennung: Trennstrich mit Leerzeichen am Zeilenende („Hypo -“), Pfeil-Aufzählung („)-“, „>-“ = ➢)
+    for (const p of P) for (const L of p.lines) {
+      if (L.rot) continue;
+      L.text = L.text.replace(/(\p{L}) -$/u, '$1-');
+      if (/^[)>]-\s/.test(L.text)) { L.text = '➢ ' + L.text.slice(3); L.arrow = true; }
+    }
+  }
   // Wiederkehrende Kopf-/Fußzeilen (Ziffern ignoriert)
   const key = (t) => t.replace(/[\d\s.,·|–—-]+/g, ' ').trim().toLowerCase();
   const rep = new Map();
@@ -2027,17 +2132,92 @@ function pdfBuild(pages) {
     const normal = p.lines.filter(L => !L.margin && !L.rot && L.size > body * 0.88);
     const bottom = normal.length ? Math.max(...normal.map(L => L.top)) : Infinity;
     const cand = p.lines.filter(L => !L.margin && !L.rot && L.top > bottom && L.size <= body * 0.88).sort((a, b) => a.top - b.top);
-    if (cand.length && /^(?:\uE010)?[\d¹²³⁴⁵⁶⁷⁸⁹⁰*†]/.test(cand[0].text)) for (const L of cand) L.fn = true;
+    if (cand.length && /^(?:)?[\d¹²³⁴⁵⁶⁷⁸⁹⁰*†]/.test(cand[0].text)) for (const L of cand) L.fn = true;
+    else if (OCR) {
+      // v0.8.2 Texterkennung: Schriftgrößen schwanken, Fußnotenziffer oft als „I“ gelesen oder ganz verloren →
+      // unterster Block in kleinerer Schrift (als die Seite), deutlich abgesetzt, im unteren Seitendrittel
+      const ls = p.lines.filter(L => !L.margin && !L.rot).sort((a, b) => a.top - b.top);
+      const szs = new Map();
+      for (const L of ls) { const k = Math.round(L.size * 2) / 2; szs.set(k, (szs.get(k) || 0) + L.text.length); }
+      const pb = szs.size ? [...szs].sort((a, b) => b[1] - a[1])[0][0] : body;
+      const ds = [];
+      for (let k = 1; k < ls.length; k++) { const d = ls[k].top - ls[k - 1].top; if (d > 0 && d < pb * 3) ds.push(d); }
+      const sp = ds.length ? ds.sort((a, b) => a - b)[ds.length >> 1] : pb * 1.2;
+      // unterster zusammenhängender Block (Zeilenabstand normal), darüber eine deutliche Lücke
+      let k = ls.length - 1;
+      while (k > 0 && ls[k].top - ls[k - 1].top < sp * 1.6) k--;
+      const blk = ls.slice(k);
+      if (k > 0 && blk.length < ls.length / 2 && blk[0].top > p.H * 0.6 && blk.every(L => L.size <= pb * 0.96)) {
+        for (const L of blk) L.fn = true;
+        blk[0].text = blk[0].text.replace(/^[Il!|]\s+(?=\p{Lu})/u, '1 ');
+      }
+    }
   }
+  // v0.8.2 Texterkennung: Fußnotenziffern im Text finden (so viele, wie die Seite Fußnoten hat)
+  if (OCR) for (const p of P) {
+    const fns = p.lines.filter(L => L.fn).sort((a, b) => a.top - b.top);
+    if (!fns.length || fns.some(L => //.test(L.text))) continue;
+    const nums = [];
+    fns.forEach((L, i) => { const m = /^(\d{1,2})\s+\p{Lu}/u.exec(L.text); if (m) nums.push(+m[1]); else if (i === 0) nums.push(1); });
+    if (!nums.length) continue;
+    const bodyL = p.lines.filter(L => !L.margin && !L.fn && !L.rot);
+    const found = [];
+    bodyL.forEach((L, li) => {
+      for (const re of OCR_FNREF) { re.lastIndex = 0; let m; while ((m = re.exec(L.text))) found.push({ li, at: m.index + m[1].length, len: m[2].length, keep: m[1] === ' ' ? 1 : 0 }); }
+    });
+    found.sort((a, b) => a.li - b.li || a.at - b.at);
+    const use = found.filter((f, i) => !found.slice(0, i).some(g => g.li === f.li && Math.abs(g.at - f.at) < 2)).slice(0, nums.length);
+    for (let i = use.length - 1; i >= 0; i--) {
+      const f = use[i], L = bodyL[f.li];
+      const at = f.keep ? f.at - 1 : f.at;                  // „Wort ! weiter“: Leerzeichen vor dem Zeichen entfernen
+      L.text = L.text.slice(0, at) + PDF_MARK.fnrefA + pdfSup(nums[i]) + PDF_MARK.fnrefB + L.text.slice(f.at + f.len);
+    }
+  }
+  // v0.8.2 Überschriften aus dem Inhaltsverzeichnis der PDF (Lesezeichen): Zeile mit passendem Text auf der Seite
+  const flat = (t) => t.toLowerCase().replace(/[^\p{L}\d]/gu, '');
+  if (opt.outline) opt.outline.forEach((o, oi) => {
+    const p = P.find(x => x.num === o.page);
+    if (!p || !o.title) return;
+    const ft = flat(o.title);
+    const ls = p.lines.filter(L => !L.margin && !L.fn && !L.rot);
+    let best = null, bd = Infinity;
+    for (let k = 0; k < ls.length; k++) {
+      const fl = flat(ls[k].text).slice(0, Math.min(24, ft.length)), fo = ft.slice(0, fl.length);
+      if (fl.length < Math.min(8, ft.length)) continue;
+      let d = 0; for (let i = 0; i < fl.length; i++) if (fl[i] !== fo[i]) d++;
+      if (d < bd) { bd = d; best = k; }
+    }
+    if (best == null || bd > Math.max(4, Math.round(Math.min(24, ft.length) * 0.25))) return;
+    (ls[best].anchors = ls[best].anchors || []).push('o' + oi);
+    if (!OCR) return;                                     // Text-PDFs: nur Sprungziel, Absätze bleiben wie bisher
+    let acc = flat(ls[best].text).length, k = best;
+    ls[k].outline = o.title;
+    while (acc < ft.length - 3 && k + 1 < ls.length && flat(ls[k + 1].text).length + acc <= ft.length + 4) { k++; ls[k].outlineCont = true; acc += flat(ls[k].text).length; }
+  });
+  // v0.8.2 Sprungziele (Markierungen, Notizen, Lesezeichen): Zeile auf der Seite merken → Anker im Text
+  if (opt.targets) for (const t of opt.targets) {
+    const p = P.find(x => x.num === t.page);
+    if (!p) continue;
+    const ls = p.lines.filter(L => !L.margin && !L.fn && !L.rot).sort((a, b) => a.top - b.top);
+    let L = null;
+    if (t.kind === 'after') L = ls.find(x => x.top - x.size * 0.7 >= t.top - 2);                  // Notiz: erste Zeile darunter
+    else L = ls.find(x => x.top - x.size * 0.35 >= t.top - 2 && x.top - x.size * 0.35 <= t.bottom + 2) || ls.find(x => x.top >= t.top);
+    if (!L && t.kind === 'after') {                      // Notiz unter der letzten Zeile → erste Zeile der nächsten Seite
+      const q = P.find(x => x.num === t.page + 1);
+      if (q) L = q.lines.filter(x => !x.margin && !x.fn && !x.rot).sort((a, b) => a.top - b.top)[0];
+    }
+    if (L) (L.anchors = L.anchors || []).push(t.id);
+  }
+  const anchorText = (L) => (L.anchors ? L.anchors.map(id => PDF_ANCH.a + id + PDF_ANCH.b).join('') : '');
   // Absätze bilden (über Seitengrenzen hinweg), Rand/Fußnoten nach dem laufenden Absatz einfügen
-  const blocks = [];          // {text, kind: 'p'|'h'|'margin'|'fn'}
+  const blocks = [];          // {text, kind: 'p'|'h'|'margin'|'fn'|'mark'}
   let par = null, pending = [];
   const flush = () => { if (par) { blocks.push(par); par = null; } for (const b of pending) blocks.push(b); pending = []; };
-  const sentEnd = (t) => /[.!?:…]["“”»«’)\]\uE011¹²³⁴⁵⁶⁷⁸⁹⁰]*$/.test(t);
-  const listStart = /^(?:[•▪◦·*–-]|\d{1,2}[.)]|[a-z][.)])\s/;
+  const sentEnd = (t) => /[.!?:…]["“”»«’)\]¹²³⁴⁵⁶⁷⁸⁹⁰]*$/.test(t);
+  const listStart = /^(?:[•▪◦·*–➢-]|\d{1,2}[.)]|[a-z][.)])\s/;
   const joinLine = (a, b) => {
-    const bt = b.replace(/^\uE040[^\uE041]*\uE041/, '');      // Seitenmarke am Zeilenanfang für die Prüfung ignorieren
-    if (/\u00AD$/.test(a)) return a.slice(0, -1) + b;
+    const bt = b.replace(/^(?:[^]*|[^]*)+/, '');   // Seitenmarke/Anker am Zeilenanfang für die Prüfung ignorieren
+    if (/­$/.test(a)) return a.slice(0, -1) + b;
     if (/\p{L}-$/u.test(a)) {
       const w = (/^(\p{L}+)/u.exec(bt) || [])[1] || '';
       if (/^\p{Ll}/u.test(bt) && !HYPH_KEEP.has(w.toLowerCase())) return a.slice(0, -1) + b;   // „Einkom-“ + „men“
@@ -2055,7 +2235,7 @@ function pdfBuild(pages) {
       const rest = L.text.slice(L.lead.text.length).trim();
       if (!rest) continue;
       const H = Object.assign({}, L, { text: L.lead.text, runIn: true, lead: null });
-      const B = Object.assign({}, L, { text: rest, lead: null, x0: L.x0 + body * 2 });
+      const B = Object.assign({}, L, { text: rest, lead: null, x0: L.x0 + body * 2, anchors: null });
       p.lines.splice(k, 1, H, B); k++;
     }
     pageMark = PDF_MARK.pageA + p.num + (p.chars < 8 ? '|scan' : '') + PDF_MARK.pageB;
@@ -2076,40 +2256,45 @@ function pdfBuild(pages) {
     for (let k = 1; k < bodyLines.length; k++) { const d = bodyLines[k].top - bodyLines[k - 1].top; if (d > 0 && d < body * 3 && bodyLines[k].col === bodyLines[k - 1].col) ds.push(d); }
     const sp = ds.length ? ds.sort((a, b) => a - b)[ds.length >> 1] : body * 1.2;
     const colEdge = {};
-    for (const c of ['L', 'R', 'F']) { const cl = bodyLines.filter(L => L.col === c && Math.abs(L.size - body) < 0.6); if (cl.length) colEdge[c] = [Math.min(...cl.map(L => L.x0)), Math.max(...cl.map(L => L.x1))]; }
+    for (const c of ['L', 'R', 'F']) { const cl = bodyLines.filter(L => L.col === c && Math.abs(L.size - body) < (OCR ? 1.2 : 0.6)); if (cl.length) colEdge[c] = [Math.min(...cl.map(L => L.x0)), Math.max(...cl.map(L => L.x1))]; }
     let first = true;
     for (let k = 0; k < bodyLines.length; k++) {
       const L = bodyLines[k], prevL = k ? bodyLines[k - 1] : null, nextL = bodyLines[k + 1];
       const gapB = prevL && prevL.col === L.col ? L.top - prevL.top : null;
       const gapA = nextL && nextL.col === L.col ? nextL.top - L.top : null;
       const shortNoPunct = L.text.length <= 100 && !/[.,;:!?]$/.test(L.text);
-      const isHead = L.runIn || (L.size >= body * 1.15 && L.text.length <= 150) ||
+      const e = colEdge[L.col] || [L.x0, L.x1];
+      // v0.8.2 Texterkennung: Titel eines Zitat-Kastens steht mittig („Name: Titel des Kastens“)
+      const boxTitle = OCR && shortNoPunct && L.text.length <= 90 && /^\p{L}/u.test(L.text) && !L.arrow && (gapB == null || gapB > sp * 1.3) &&
+        L.x0 > e[0] + body * 2.5 && L.x1 < e[1] - body * 2.5 && Math.abs((L.x0 + L.x1) / 2 - (e[0] + e[1]) / 2) < body * 1.5;
+      const isHead = L.runIn || L.outline || L.outlineCont || boxTitle || (L.size >= body * 1.15 && L.text.length <= 150) ||
         (shortNoPunct && /^\d{1,2}(?:\.\d{1,2})*\.?\s+\p{Lu}/u.test(L.text) && !/-$/.test(L.text) && L.x1 < (colEdge[L.col] || [0, Infinity])[1] - body * 2 &&
           (!par || par.kind === 'h' || sentEnd(par.text)) && ((gapB != null && gapB > sp * 1.3) || (gapA != null && gapA > sp * 1.3) || !prevL)) ||
         (shortNoPunct && L.font && L.font !== bodyFont && L.fonts === 1 && Math.abs(L.size - body) < 0.6 && L.text.length <= 80 &&
           ((gapB != null && gapB > sp * 1.3) || !par || sentEnd(par.text)) && (gapA == null || gapA > sp * 1.15 || (nextL && nextL.font === bodyFont)));
-      const e = colEdge[L.col] || [L.x0, L.x1];
       const indent = L.x0 > e[0] + body * 0.8;
       const pl = prevL || lastLine;                                // vorige Zeile (auch von der Vorseite)
       const pe = pl ? (colEdge[pl.col] || lastEdge || [pl.x0, pl.x1]) : null;
       const prevShort = pl && pe && pl.x1 < pe[1] - body * 3;
-      let newPar = !par || isHead || par.kind === 'h';
+      const lower = OCR && /^\p{Ll}/u.test(L.text);                 // v0.8.2: kleingeschrieben → kein neuer Absatz (Aufzählung „… 1.“ + „klein: …“)
+      let newPar = !par || (isHead && !L.outlineCont) || par.kind === 'h' || !!L.outline;
+      if (L.outlineCont && par && par.kind === 'h') newPar = false;
       if (!newPar) {
         if (first) {
           // Seitenwechsel: Absatz läuft weiter, außer der vorige endete mit Satzende UND (Einzug oder kurze Vorzeile)
           newPar = sentEnd(par.text) && /^\P{Ll}/u.test(L.text) && (indent || prevShort);
-        } else if (gapB != null && gapB > sp * 1.5) newPar = true;
-        else if ((indent || prevShort) && sentEnd(par.text)) newPar = true;
+        } else if (gapB != null && gapB > sp * 1.5 && !lower) newPar = true;
+        else if ((indent || prevShort) && sentEnd(par.text) && !lower) newPar = true;
       }
+      const t = anchorText(L) + L.text;
       if (newPar) {
-        if (par && par.kind === 'h' && isHead && Math.abs((par.size || 0) - L.size) < 0.6 && gapB != null && gapB < sp * 1.6) {
-          par.text += ' ' + L.text;                                  // mehrzeilige Überschrift
+        if (par && par.kind === 'h' && isHead && (L.outlineCont || (!L.outline && Math.abs((par.size || 0) - L.size) < 0.6 && gapB != null && gapB < sp * 1.6 && !boxTitle))) {
+          par.text = OCR ? joinLine(par.text, t) : par.text + ' ' + t;        // mehrzeilige Überschrift
         } else {
           flush();
-          par = { kind: isHead ? 'h' : 'p', text: L.text, size: L.size };
+          par = { kind: isHead ? 'h' : 'p', text: t, size: L.size, page: p.num, top: L.top };
         }
       } else {
-        const t = L.text;
         par.text = listStart.test(L.text) ? par.text + '\n' + t : joinLine(par.text, t);
       }
       first = false;
@@ -2118,26 +2303,36 @@ function pdfBuild(pages) {
     // Fußnoten + Fußzeile dieser Seite: nach dem laufenden Absatz
     if (fns.length) {
       let t = '';
-      for (const L of fns) t = !t ? L.text : /^(?:\uE010)?[\d¹²³⁴⁵⁶⁷⁸⁹⁰*†]/.test(L.text) ? t + '\n' + L.text : joinLine(t, L.text);
+      for (const L of fns) t = !t ? L.text : /^(?:)?[\d¹²³⁴⁵⁶⁷⁸⁹⁰*†]/.test(L.text) && (!OCR || /^\d{1,2}\s+\p{Lu}/u.test(L.text)) ? t + '\n' + L.text : joinLine(t, L.text);
       pending.push({ kind: 'fn', text: t });
     }
     pending.push(...marginBlock(foot));
     if (par && sentEnd(par.text)) flush();
   }
   flush();
-  // Blöcke → Lesetext mit Markierungen → Markierungen in Bereiche umwandeln
+  return { blocks, scanPages, body, pages: P.length, ocr: OCR };
+}
+// Blöcke → Lesetext mit Markierungen → Markierungen in Bereiche umwandeln
+function pdfAssemble(B) {
   let raw = '', hasText = false;
-  for (const b of blocks) {
+  const heads = [];
+  for (const b of B.blocks) {
     if (b.kind === 'mark') { raw += b.text; continue; }
     const t = b.kind === 'margin' ? PDF_MARK.marginA + b.text + PDF_MARK.marginB : b.kind === 'fn' ? PDF_MARK.fnA + b.text + PDF_MARK.fnB : b.text;
-    raw += (hasText ? '\n\n' : '') + t;
+    raw += (hasText ? '\n\n' : '');
+    if (b.kind === 'h') heads.push({ raw: raw.length });
+    raw += t;
     hasText = true;
   }
   let src = '';
-  const ranges = [], marks = [], open = {};
+  const ranges = [], marks = [], anchors = [], open = {};
+  const hpos = new Map(heads.map(h => [h.raw, true]));
+  const hs = [];
   for (let i = 0; i < raw.length; i++) {
+    if (hpos.has(i)) hs.push({ pos: src.length });
     const c = raw[i];
     if (c === PDF_MARK.pageA) { const j = raw.indexOf(PDF_MARK.pageB, i); const [n, scan] = raw.slice(i + 1, j).split('|'); marks.push({ pos: src.length, page: +n, scan: !!scan }); i = j; continue; }
+    if (c === PDF_ANCH.a) { const j = raw.indexOf(PDF_ANCH.b, i); anchors.push({ pos: src.length, id: raw.slice(i + 1, j) }); i = j; continue; }
     if (c === PDF_MARK.fnrefA) { open.fnref = src.length; continue; }
     if (c === PDF_MARK.fnrefB) { ranges.push({ start: open.fnref, end: src.length, kind: 'fnref' }); continue; }
     if (c === PDF_MARK.marginA) { open.margin = src.length; continue; }
@@ -2147,7 +2342,23 @@ function pdfBuild(pages) {
     src += c;
   }
   ranges.sort((a, b) => a.start - b.start);
-  return { src, ranges, marks, scanPages, body, pages: P.length };
+  for (const h of hs) { const e = src.indexOf('\n', h.pos); h.text = src.slice(h.pos, e < 0 ? src.length : e).trim(); }
+  return { src, ranges, marks, scanPages: B.scanPages, body: B.body, pages: B.pages, anchors, heads: hs, ocr: !!B.ocr };
+}
+function pdfBuild(pages, opt) { return pdfAssemble(pdfBlocks(pages, opt)); }
+// v0.8.2 Texterkennungs-Reparatur der Blöcke (im Worker der Stimme, dort liegt die Wortliste): Markierungen bleiben unberührt
+const PDF_SEG = /([^]*|[^]*|[^]*)/;
+async function pdfOcrRepair(B, fixer) {
+  const idx = [], texts = [];
+  B.blocks.forEach((b, i) => {
+    if (b.kind !== 'p' && b.kind !== 'h' && b.kind !== 'fn') return;
+    b.text.split(PDF_SEG).forEach((s, k) => { if (k % 2 === 0 && /\p{L}/u.test(s)) { idx.push([i, k]); texts.push(s); } });
+  });
+  const r = await fixer(texts);
+  const segs = new Map();
+  idx.forEach(([i, k], n) => { if (!segs.has(i)) segs.set(i, B.blocks[i].text.split(PDF_SEG)); segs.get(i)[k] = r.texts[n]; });
+  for (const [i, s] of segs) B.blocks[i].text = s.join('');
+  return r;
 }
 // pdf.js-Textinhalt einer Seite → einfache Textstücke (Koordinaten relativ zur sichtbaren Seite)
 function pdfItems(tc, view) {
@@ -2801,6 +3012,514 @@ function piperWorkerMain() {
   // Teile: "/Lautschrift" oder ein Wort (liest espeak einzeln); Vorzeichen: "!" Hauptbetonung, "~" unbetont,
   // "^" unbetont mit Vokaleinsatz (Mittelteil einer Zusammensetzung, v0.8.1).
   // v0.8.1: Wörter, die nicht im Wörterbuch stehen, zerlegt die deutsche Wortliste (makeSplitter) – hier im Worker.
+  // ---------------------------------------------------------------------------------------------
+  // v0.8.2 Reparatur von Texterkennungs-Fehlern (OCR-PDFs: unsichtbare Textschicht über einem Seitenbild)
+  // Grundlage: deutsche Wortliste (igerman98, s. o.) + Häufigkeitslisten (hermitdave/FrequencyWords,
+  // OpenSubtitles 2018, Inhalt CC-BY-SA-4.0; je 50 000 häufigste Wörter Deutsch und Englisch).
+  // Grundsätze: nur korrigieren, wenn das gelesene Wort unbekannt (oder sehr selten) ist und die Korrektur ein
+  // bekanntes Wort ergibt; Namen, Zahlen und Fremdwörter vorsichtig; nichts hinzudichten, nichts weglassen.
+  // Jede Änderung wird protokolliert (Fehlerbericht).
+  // ---------------------------------------------------------------------------------------------
+  function makeOcrFix(L, S, deF, enF, nameList) {
+    const N = 151705378;                                   // Summe aller Zählungen der deutschen Liste
+    const lc = (w) => w.toLowerCase();
+    const cap = (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    const SHORT = new Set('ab am an da du eh ei er es im in ja je ob oh so um wo zu'.split(' '));
+    const names = new Set();                                // Namen (Kleinschreibung): Liste + aus dem Dokument
+    for (const n of nameList || []) names.add(lc(n));
+    const fr = (w) => deF.get(lc(w)) || 0;
+    const fe = (w) => enF.get(lc(w)) || 0;
+    const LETTERS = /^\p{L}+$/u;
+    const BAD_ONSET = /^(?:kt|l[stbdkmn]|n[dgkts]|r[bdfgklmnst]|ck|ht|ft|ff|ss|tt|mm|nn|ll|rr|ßt)/;
+    const inDic = (w) => L.dic.has(w) || L.analyses(w).length > 0;
+    // Gültiges Wort (Groß-/Kleinschreibung beachtet: „schaft“ klein ist kein Wort, „Schaft“ schon)
+    const vmemo = new Map();
+    function valid(w) {
+      let r = vmemo.get(w);
+      if (r !== undefined) return r;
+      r = false;
+      if (LETTERS.test(w)) {
+        const l = lc(w);
+        if (w.length <= 2) r = SHORT.has(l) || fr(w) >= 5000 || fe(w) >= 1e6 || (w.length === 2 && w === w.toUpperCase() && inDic(w));
+        else if (w === l) {
+          if (inDic(w)) r = true;
+          else if (BAD_ONSET.test(w)) r = false;               // „nnen“, „lsbau“: so beginnt kein Wort
+          // Verbformen, die die Wortliste nicht ausschreibt („beobachte“, „beobachtest“)
+          else if (w.length >= 6 && /(?:e|st|t|et|est)$/.test(w) && inDic(w.replace(/(?:e|st|t|et|est)$/, '') + 'en')) r = true;
+          else if (inDic(cap(w))) r = false;                 // nur als Nomen bekannt
+          else r = (w.length >= 3 && fr(w) >= 20) || (w.length >= 4 && fe(w) >= 200);
+        } else if (w === cap(l)) {
+          r = inDic(w) || inDic(l) || (w.length >= 3 && fr(w) >= 20) || names.has(l) || (w.length >= 4 && fe(w) >= 200);
+        } else if (w === w.toUpperCase()) r = names.has(l) || inDic(w);
+      }
+      if (vmemo.size > 80000) vmemo.clear();
+      vmemo.set(w, r);
+      return r;
+    }
+    const cmemo = new Map();
+    function compound(w) {                                  // nur über die Zerlegung erkannt
+      if (w.length < 6 || !LETTERS.test(w)) return false;
+      let r = cmemo.get(w);
+      if (r === undefined) {
+        const l = lc(w), noun = /^\p{Lu}/u.test(w);
+        r = !!(w === l || w === cap(l)) && !!S.bestSplit(l, noun);
+        if (cmemo.size > 20000) cmemo.clear();
+        cmemo.set(w, r);
+      }
+      return r;
+    }
+    const score = (w) => Math.max(fr(w), inDic(w) || inDic(lc(w)) ? 30 : 0, names.has(lc(w)) ? 50 : 0, fe(w) / 20);
+    // eigenständiges Wort (zwei davon werden nicht zusammengezogen)
+    const FRAG = /^(?:ion|ionen|ions|ung|ungen|heit|keit|lich|isch|ische|ismus|ität|tion|tionen|ieren|iert|ell|elle|ent|enz|anz|ant|ik|ie|ien)$/;
+    function solid(w) {
+      if (w.length === 1 || FRAG.test(w)) return false;
+      if (w.length === 2) return SHORT.has(lc(w));
+      if (!valid(w)) return false;
+      // kleingeschriebene Wörter nur, wenn die Wortliste sie kennt („ten“, „ann“, „its“ sind Reste)
+      return w !== lc(w) || inDic(w) || (w.length >= 6 && /(?:e|st|t|et|est)$/.test(w) && inDic(w.replace(/(?:e|st|t|et|est)$/, '') + 'en'));
+    }
+    // Verwechslungen der Texterkennung: [gelesen, richtig, Kosten]
+    const RULES = [
+      ['rn', 'm', 1], ['m', 'rn', 1], ['nn', 'rm', 1], ['nn', 'm', 1.2], ['in', 'm', 1.2], ['ni', 'm', 1.2], ['iu', 'm', 1.2],
+      ['nu', 'm', 1.2], ['un', 'm', 1.5], ['n', 'rr', 1.5], ['ll', 'n', 1.5], ['c', 'e', 1], ['e', 'c', 1.5], ['I', 'l', 0.5],
+      ['l', 'I', 1], ['1', 'l', 0.5], ['i', 'l', 1], ['l', 'i', 1], ['!', 'l', 1], ['f', 't', 1], ['t', 'f', 1], ['r', 't', 1],
+      ['t', 'r', 1.2], ['ii', 'ü', 1], ['ti', 'ü', 1], ['il', 'ü', 1], ['li', 'ü', 1.2], ['U', 'ü', 0.6], ['u', 'ü', 0.8],
+      ['a', 'ä', 0.8], ['o', 'ö', 0.8], ['A', 'Ä', 0.8], ['O', 'Ö', 0.8], ['h', 'b', 1], ['b', 'h', 1], ['B', 'E', 1],
+      ['O', 'o', 0.6], ['l\'', 'x', 1], ['cl', 'd', 1.2], ['vv', 'w', 1], ['e', 'o', 1.5, 1], ['o', 'e', 1.5, 1]];   // (letzte zwei nur zusammen mit einer anderen)
+    const ABBR_DOT = /^(?:bzw|usw|vgl|ggf|etc|evtl|insb|bspw|zit|hrsg|ebd|ders|dies|inkl|exkl|mind|einschl|sog|bzgl|ugs|allg|insg|zzgl|abzgl|beispielsw|resp|sozialpäd|eigtl|jew|ggü|lt|mtl|jährl|tägl|wöch|monatl|ggfs|zB|dh|uä|ua|uvm)$/;
+    const confirmed = new Map();                            // Regel → Anzahl sicherer Korrekturen in diesem Dokument
+    const ruleCost = (a, b, c) => (confirmed.get(a + '→' + b) || 0) >= 3 ? Math.min(c, 0.5) : c;
+    const vcache = new Map();
+    // alle Schreibvarianten bis zu zwei Verwechslungen; der erste Buchstabe behält seine Größe (außer am Satzanfang)
+    function variants(w, depth, capOK) {
+      const key = w + '|' + depth + '|' + (capOK ? 1 : 0);
+      if (vcache.has(key)) return vcache.get(key);
+      const out = new Map();
+      const first = /^\p{Lu}/u.test(w);
+      // (die zweite Verwechslung darf nicht die Buchstaben der ersten betreffen: kein „nn→m→rn“)
+      const step = (s, c0, why0, d, lo, hi) => {
+        for (const [a, b, c, pair] of RULES) {
+          if (pair && lo < 0) continue;
+          let i = s.indexOf(a);
+          while (i >= 0) {
+            if (!(i < hi && i + a.length > lo)) {
+              const v = s.slice(0, i) + b + s.slice(i + a.length);
+              const okCase = i > 0 || /^\p{Lu}/u.test(v) === first || (capOK && a === 'l' && b === 'I');
+              if (okCase && v !== w) {
+                const cc = c0 + ruleCost(a, b, c), why = why0.concat(a + '→' + b);
+                if (!out.has(v) || out.get(v).c > cc) out.set(v, { c: cc, why });
+                if (d > 1) step(v, cc, why, d - 1, i, i + b.length);
+              }
+            }
+            i = s.indexOf(a, i + 1);
+          }
+        }
+      };
+      step(w, 0, [], w.length <= 3 ? 1 : depth, -1, -1);
+      // „e→o“/„o→e“ nur als zweite Verwechslung (auch vor der ersten): „Fenn“ → „Form“
+      if (depth > 1 && w.length > 3) for (const [a, b, c, pair] of RULES) {
+        if (!pair) continue;
+        let i = w.indexOf(a);
+        while (i >= 0) {
+          const v = w.slice(0, i) + b + w.slice(i + a.length);
+          const tmp = new Map();
+          const save = out;
+          for (const [a2, b2, c2, p2] of RULES) {
+            if (p2) continue;
+            let k = v.indexOf(a2);
+            while (k >= 0) {
+              if (!(k < i + b.length && k + a2.length > i) && (k > 0 || /^\p{Lu}/u.test(v) === first)) {
+                const v2 = v.slice(0, k) + b2 + v.slice(k + a2.length);
+                const cc = c + ruleCost(a2, b2, c2);
+                if (!save.has(v2) || save.get(v2).c > cc) save.set(v2, { c: cc, why: [a + '→' + b, a2 + '→' + b2] });
+              }
+              k = v.indexOf(a2, k + 1);
+            }
+          }
+          i = w.indexOf(a, i + 1);
+        }
+      }
+      if (vcache.size > 5000) vcache.clear();
+      vcache.set(key, out);
+      return out;
+    }
+    const ALPHA = 'abcdefghijklmnopqrstuvwxyzäöüß';
+    function generic(s, c0, why0, res) {
+      for (let i = 0; i < s.length; i++) {
+        res(s.slice(0, i) + s.slice(i + 1), c0 + 2, why0.concat('−' + s[i]));
+        for (const ch of ALPHA) if (ch !== s[i] && i > 0) res(s.slice(0, i) + ch + s.slice(i + 1), c0 + 2, why0.concat(s[i] + '→' + ch));
+      }
+      for (let i = 1; i < s.length; i++) for (const ch of ALPHA) res(s.slice(0, i) + ch + s.slice(i), c0 + 2, why0.concat('+' + ch));
+    }
+    const PATTERN = /^(?:\p{Lu}?\p{Ll}+|\p{Lu}+)$/u;
+    const val = (c, sc) => c - 0.35 * Math.log10(sc + 1);
+    const fmemo = new Map();
+    // bestes Ersatzwort für ein unbekanntes Wort oder null. lvl0: 0 = unbekannt, 1 = nur als Zusammensetzung bekannt
+    function fixWord(w, o) {
+      o = o || {};
+      const key = w + '|' + (o.depth || 2) + (o.capOK ? 'C' : '') + (o.generic ? 'G' : '');
+      if (fmemo.has(key)) return fmemo.get(key);
+      let best = null;
+      const lvl0 = valid(w) ? 2 : compound(w) ? 1 : 0;
+      if (lvl0 < 2 && w.length >= 2 && !/^[\d\p{Lu}]+$/u.test(w)) {
+        const vs = variants(w, o.depth || 2, o.capOK);
+        for (const [v, { c, why }] of vs) {
+          if (!PATTERN.test(v)) continue;
+          if (w.length <= 3 && !(SHORT.has(lc(v)) || fr(v) >= 10000)) continue;
+          if (why.length > 1 && w.length < 6 && !why.some(x => (confirmed.get(x) || 0) >= 3)) continue;
+          let lvl = valid(v) ? 2 : 0;
+          if (!lvl && lvl0 === 0 && c <= 1.5 && (/^\p{Lu}/u.test(v) || !why.every(x => /→[äöü]$/.test(x))) && compound(v)) lvl = 1;
+          if (!lvl) continue;
+          const sc = lvl === 2 ? score(v) : 5;
+          if (lvl0 === 1 && sc < 50) continue;               // bekannte Zusammensetzung nur durch häufiges Wort ersetzen
+          const vv = val(c, sc) + (lvl === 1 ? 0.5 : 0);
+          if (!best || vv < best.v) best = { to: v, c: c + (lvl === 1 ? 0.3 : 0), why, v: vv };
+        }
+        if (!best && o.generic && lvl0 === 0 && w.length >= 4 && LETTERS.test(w)) {
+          const seen = new Set();
+          const tryV = (v, c, why) => {
+            if (seen.has(v) || c > 3) return;
+            seen.add(v);
+            if (!(fr(v) >= 30 || L.dic.has(v)) || !PATTERN.test(v) || !valid(v)) return;
+            const sc = score(v);
+            if (c > 2 ? sc < 500 : sc < 30) return;
+            const vv = val(c, sc);
+            if (!best || vv < best.v) best = { to: v, c, why, v: vv };
+          };
+          generic(w, 0, [], tryV);
+          for (const [v, { c, why }] of vs) if (c <= 1) generic(v, c, why, tryV);
+        }
+      }
+      if (fmemo.size > 20000) fmemo.clear();
+      fmemo.set(key, best);
+      return best;
+    }
+    const keepCase = (orig, v) => (/^\p{Lu}/u.test(orig) && !/^\p{Lu}/u.test(v) ? v.charAt(0).toUpperCase() + v.slice(1) : v);
+    // Häufigkeit zweier Wörter nacheinander, wenn sie unabhängig wären (für „Ab er“ → „Aber“)
+    const indep = (a, b) => Math.max(1, fr(a)) * Math.max(1, fr(b)) / N;
+
+    // ---- Dokument vorab: Wortschatz, Namen ----
+    let docTok = new Map();
+    function prescan(texts) {
+      docTok = new Map();
+      for (const t of texts) for (const m of t.matchAll(/[\p{L}\d]+/gu)) docTok.set(m[0], (docTok.get(m[0]) || 0) + 1);
+      // Namen: großgeschriebene Wörter, die die Wortlisten nicht kennen und mindestens zweimal vorkommen (Giddens, Esser)
+      for (const [w, n] of docTok) {
+        if (n >= 2 && /^\p{Lu}\p{Ll}{2,}$/u.test(w) && !valid(w) && !compound(w) && !fixWord(w, { depth: 1 })) names.add(lc(w));
+      }
+      vmemo.clear(); fmemo.clear();
+    }
+
+    // ---- Namen in Großbuchstaben („ANTH ONY GID DENS“, „HAR· TMUT“, „Jü RG EN“, „Tf“ = „TT“) zusammenführen ----
+    function dl(a, b) {                                      // Damerau-Levenshtein
+      const d = [];
+      for (let i = 0; i <= a.length; i++) d[i] = [i];
+      for (let j = 1; j <= b.length; j++) d[0][j] = j;
+      for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) {
+        const c = a[i - 1] === b[j - 1] ? 0 : 1;
+        d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + c);
+        if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+      }
+      return d[a.length][b.length];
+    }
+    const CAPS_TOK = /^(?:\p{Lu}[\p{Lu}~:·'’]*[\p{Lu}f]?|\p{Lu}\p{Ll}|\p{Lu}\p{Lu}\p{Ll})$/u;
+    function capsName(j, pieces) {
+      const n = j.replace(/[·:'’]/g, '').replace(/~/g, 'N').replace(/(?<=\p{Lu})f/gu, 'T').toUpperCase();
+      if (!/^\p{Lu}{3,}$/u.test(n)) return null;
+      const l = lc(n);
+      if (names.has(l)) return n;
+      if (l.endsWith('s') && names.has(l.slice(0, -1))) return n;
+      if (pieces > 1 && n.length >= 5 && (fr(l) >= 50 || fe(l) >= 200) && !inDic(l)) return n;   // „ANTH ONY“ (Vorname)
+      if (n.length >= 6) {
+        let best = null, bd = 9;
+        for (const nm of names) { if (nm.length !== l.length || nm[0] !== l[0]) continue; const d = dl(l, nm); if (d < bd) { bd = d; best = nm; } }
+        if (best && bd <= 2 && bd < l.length / 3) return best.toUpperCase();
+      }
+      return null;
+    }
+    function fixCaps(text, log) {
+      // Folgen großgeschriebener Stücke (getrennt durch Leerzeichen, „-“ oder „·“)
+      const parts = text.split(/( +)/);
+      const isTok = (t) => t.replace(/^[(„"»]+|[),.;:„“"«]+$/g, '').split(/-(?=\p{Lu})/u).every(x => CAPS_TOK.test(x));
+      let out = '', i = 0;
+      while (i < parts.length) {
+        if (!isTok(parts[i])) { out += parts[i]; i++; continue; }
+        let j = i;
+        while (j + 2 < parts.length && isTok(parts[j + 2]) && !/[),.;:“"«]$/.test(parts[j])) j += 2;
+        const seg = parts.slice(i, j + 1).join('');
+        out += fixCapsRun(seg, log);
+        i = j + 1;
+      }
+      return out;
+    }
+    function fixCapsRun(seg, log) {
+      const m = /^([(„"»]*)(.*?)([),.;:„“"«]*)$/.exec(seg);
+      const run = m[2];
+      const sp = run.split(/( |-(?=\p{Lu})|·\s?)/u);
+      const toks = sp.filter((x, i) => i % 2 === 0);
+      if (!toks.every(t => CAPS_TOK.test(t)) || !toks.some(t => /^\p{Lu}{2}/u.test(t))) return seg;
+      if (toks.length < 2 && !/[~:·]|f$/.test(run)) return seg;
+      const out = [];
+      let i = 0, changed = false;
+      while (i < toks.length) {
+        let done = false;
+        for (let k = Math.min(toks.length, i + 4); k > i; k--) {
+          const j = toks.slice(i, k).join('');
+          if (k - i === 1 && !/[~:·'’]|\p{Ll}|f$/u.test(j)) continue;
+          const n = capsName(j, k - i);
+          if (n) { out.push(n); if (k - i > 1 || n !== toks[i]) changed = true; i = k; done = true; break; }
+        }
+        if (!done) { out.push(toks[i]); i++; }
+      }
+      if (!changed) return seg;
+      const res = out.join(' ');
+      log.push({ from: run, to: res, rule: 'Name in Großbuchstaben' });
+      return m[1] + res + m[3];
+    }
+
+    // ---- Wortfolge (durch einzelne Leerzeichen getrennt) neu zusammensetzen ----
+    // bekanntes, aber seltenes Wort: mit Umlaut viel häufiger („fallt“ → „fällt“) oder eine in diesem Dokument ständig
+    // vorkommende Verwechslung („nn“ als „rm“ gelesen, wenn „nn“ für „rm“ mehrfach sicher war)
+    function k2alt(w) {
+      const f = fr(w);
+      let best = null;
+      if (w.length >= 4 && f < 2000) for (const [v, { why }] of variants(w, 1, false)) {
+        if (!PATTERN.test(v) || !valid(v)) continue;
+        const fv = fr(v);
+        const umlaut = /→[äöü]$/.test(why[0]) && f <= 300 && fv >= 5000 && fv >= 50 * Math.max(f, 1);
+        const conf = (confirmed.get(why[0]) || 0) >= 3 && fv >= 0.1 * Math.max(f, 1) && fv >= 50 && w.length >= 5 && inDic(v);
+        if ((umlaut || conf) && (!best || fv > best.f)) best = { to: keepCase(w, v), f: fv, why };
+      }
+      return best;
+    }
+    function groupCost(toks, i, k, ctx) {
+      const g = toks.slice(i, k);
+      const capOK = i === 0 && ctx.sentStart;
+      if (g.length === 1) {
+        const w = g[0];
+        if (/\d/.test(w) && !/^\p{L}+\d\p{L}*$/u.test(w)) return { c: 0, to: w };
+        if (/^\p{Lu}{2,}$/u.test(w)) return { c: 0, to: w };                      // Abkürzungen, Namen in Großbuchstaben
+        if (w.length === 1) return { c: 1.5, to: w };                                // einzelner Buchstabe: eher Rest eines Wortes
+        if (valid(w)) {
+          const alt = k2alt(w);
+          if (alt) return { c: 0, to: alt.to, rule: alt.why.join(' ') };
+          return { c: 0, to: w };
+        }
+        const isC = compound(w);
+        const f = fixWord(w, { capOK });
+        if (f) return { c: isC ? 0.1 : f.c, to: f.to, rule: f.why.join(' ') };
+        return { c: isC ? 0.2 : 3, to: w };
+      }
+      // mehrere Stücke → ein Wort
+      if (g.some(t => /\d/.test(t) && !/^\p{L}+\d\p{L}*$/u.test(t))) return null;
+      for (let q = 1; q < g.length; q++) if (/^\p{Lu}\p{Ll}/u.test(g[q]) && !/^I/.test(g[q])) return null;   // neues großgeschriebenes Wort („Ins“ kann „lns“ sein)
+      if (g.some(t => /^\p{Lu}{2,}$/u.test(t))) return null;
+      const sol = g.map(solid);
+      const nSolid = sol.filter(Boolean).length;
+      const j = g.join('');
+      if (/^\p{Lu}$/u.test(g[0]) && g.length === 2 && nSolid >= 1) return null;                 // „A den“, „B ist“
+      if (g[g.length - 1].length === 1 && k === toks.length && ctx.nextCh === '.' && fr(j) < 1000 && sol[g.length - 2]) return null;   // „ich z. B.“
+      const vj = valid(j);
+      let strong = false;
+      if (g.length === 2 && nSolid === 2) {
+        // zwei echte Wörter: nur bei starkem Hinweis („Ab er“ → „Aber“, „wider sprechen“) oder wenn die zusammengezogene
+        // Fehlschreibung sonst im Dokument steht („Wort eins“ wie „Worteins“)
+        const fj = fr(j);
+        strong = (vj && inDic(j) && fj >= 200 && fj >= 100 * indep(g[0], g[1])) || (!vj && (docTok.get(j) || 0) >= 2);
+        if (!strong) return null;
+      } else if (g.length >= 3 && nSolid > g.length - 2 && !(!vj && (docTok.get(j) || 0) >= 2)) return null;
+      let to = j, rule = null, extra = 0;
+      // „P ar sonst A…“ → „Parsons: A…“ (Doppelpunkt nach Namen als „t“ gelesen)
+      if (!vj && /t$/.test(j) && names.has(lc(j.slice(0, -1))) && /^\p{Lu}/u.test(toks[k] || '')) return { c: 0.2, to: j.slice(0, -1) + ':', rule: 't→:' };
+      if (!vj) {
+        const isC = compound(j);
+        if (isC && nSolid >= 2 && nSolid >= g.length - nSolid) return null;       // „beobachte dieses“ ist keine Zusammensetzung
+        const f = fixWord(j, { depth: 1, capOK });
+        if (f && (!isC || score(f.to) >= 50)) { to = f.to; rule = f.why.join(' '); extra = f.c; }
+        else if (isC) extra = 0.6;
+        else if (unknownJoin(g, sol, j)) extra = 1.0;
+        else return null;
+      }
+      if (vj) { const alt = k2alt(j); if (alt) { to = alt.to; rule = alt.why.join(' '); } }
+      if (strong) return { c: -1, to, rule };
+      if (!vj && (docTok.get(j) || 0) >= 2) return { c: 0.1 + extra * 0.5, to, rule };       // diese Fehlschreibung steht oft im Dokument
+      // ein eigenständiges Wort hinten zu verschlucken ist teurer („ten in“) als vorn („Gar ten“)
+      return { c: 0.3 * (g.length - 1) + sol.reduce((x, y, q) => x + (y ? (q ? 0.4 * Math.min(1, Math.log10(fr(g[q]) + 10) / 5) : 0.1) : 0), 0) + extra, to, rule };
+    }
+    // Stücke eines Wortes, das die Wortlisten nicht kennen („Organisierun g“, „dia ktisch“, „Funktio nal“):
+    // nur wenn kein Stück ein eigenständiges Wort ist und das Ergebnis eine typische deutsche Endung hat
+    const END_RE = /(?:ung|ungen|isch|ische[nmrs]?|lich|keit|heit|ität|tion|ionen|ieren|iert|ismus|al|ale[nmrs]?|ell|iv|ive[nmrs]?|end|ende[nmrs]?)$/;
+    function unknownJoin(g, sol, j) {
+      if (j.length < 5 || !/^\p{L}+$/u.test(j)) return false;
+      // Fortsetzung, mit der kein deutsches Wort beginnt („Hau lsbau“): sicher ein Wortrest
+      if (g.length === 2 && j.length >= 7 && BAD_ONSET.test(g[1]) && !valid(g[1]) && g[0].length <= 4) return true;
+      if (sol.some(Boolean)) return false;
+      if (g.slice(1).some(t => /^\p{Lu}/u.test(t))) return false;
+      const last = g[g.length - 1];
+      if (last.length === 1 && !valid(g[0])) return true;
+      return j.length >= 8 && END_RE.test(j) && !valid(g[0]) && !compound(g[0]) && g.slice(1).every(t => !inDic(t) && (t.length <= 3 || BAD_ONSET.test(t)));
+    }
+    // Buchstabe am Wortende gehört zum nächsten Wort („Leutej eden“ → „Leute jeden“): Wörter enden nie auf j/q
+    function shiftCost(a, b) {
+      if (!/[jq]$/.test(a) || valid(a)) return null;
+      const a2 = a.slice(0, -1), b2 = a.slice(-1) + b;
+      if (solid(a2) && valid(b2) && fr(b2) >= 10 * Math.max(1, fr(b))) return { c: 0.1, to: a2 + ' ' + b2, rule: 'Wortgrenze' };
+      return null;
+    }
+    function fixRun(toks, ctx, log) {
+      const n = toks.length;
+      const best = new Array(n + 1).fill(null);
+      best[0] = { c: 0, parts: [] };
+      for (let i = 0; i < n; i++) {
+        if (!best[i]) continue;
+        const opts = [];
+        for (let k = i + 1; k <= Math.min(n, i + 5); k++) { const g = groupCost(toks, i, k, ctx); if (g) opts.push([k, g]); }
+        if (i + 1 < n) { const s = shiftCost(toks[i], toks[i + 1]); if (s) opts.push([i + 2, s]); }
+        for (const [k, g] of opts) {
+          // häufigere Wörter sind wahrscheinlicher; großgeschriebenes kurzes Funktionswort mitten im Satz („Ins“) ist verdächtig
+          let extra = 0;
+          for (const w of g.to.split(' ')) {
+            if (!/^\p{L}+$/u.test(w)) continue;
+            extra += Math.min(0.75, Math.max(0, 0.15 * (5 - Math.log10(fr(w) + 1))));
+            if (w === lc(w) && !inDic(w) && fr(w) < 300 && fe(w) >= 200) extra += 0.5;               // englisches Wort mitten im deutschen Satz
+            if (!(i === 0 && ctx.sentStart) && k - i === 1 && w.length <= 4 && w === cap(w) && !/^(?:Sie|Ihr|Ihm|Ihn|Ihre)$/.test(w) && !inDic(w) && inDic(lc(w))) extra += 1;
+          }
+          const c = best[i].c + g.c + extra;
+          if (!best[k] || c < best[k].c - 1e-9) best[k] = { c, parts: best[i].parts.concat([{ from: toks.slice(i, k).join(' '), to: g.to, rule: g.rule, n: k - i }]) };
+        }
+      }
+      const parts = best[n].parts;
+      for (const p of parts) if (p.from !== p.to) log.push({ from: p.from, to: p.to, rule: p.rule === 'Wortgrenze' ? p.rule : p.n > 1 ? 'Lücke im Wort' + (p.rule ? ' + ' + p.rule : '') : p.rule || '' });
+      return parts.map(p => p.to);
+    }
+    // ---- Anführungszeichen, die als „.J“, „.j“, „.,“, „,,“ gelesen wurden ----
+    // s beginnt mit dem verdorbenen Zeichen („J“ steht für einen Buchstaben, „Ji“ für „h“): Abstand relativ zur Länge
+    function quoteWord(s) {
+      const c = lc(s);
+      let best = null;
+      const consider = (w, f, bonus) => {
+        if (Math.abs(c.length - w.length) > 2) return;
+        const d = dl(c, w);
+        if (d > 3 || d >= w.length / 2) return;
+        const v = 3 * d / Math.max(c.length, w.length) - 0.15 * Math.log10(f + 1) - bonus;
+        if (!best || v < best.v) best = { w, v, d };
+      };
+      // verwandtes Wort im Dokument (deutsches Wort im Text → verwandtes englisches Wort) gibt einen Bonus
+      const stem = (x) => lc(x).replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u').slice(0, 4);
+      const stems = new Set();
+      for (const w of docWords) if (w.length >= 5) stems.add(stem(w));
+      const cog = (w) => (w.length >= 5 && stems.has(stem(w)) ? 0.4 : 0);
+      for (const [w] of docTok) if (w.length >= 3 && /^\p{Ll}+$/u.test(w) && valid(w)) consider(w, 100, 0.3);
+      for (const [w, f] of enF) if (f >= 100 && w.length >= 3) consider(w, f, cog(w));
+      for (const [w, f] of deF) if (f >= 100 && w.length >= 3) consider(w, f, cog(w));
+      return best;
+    }
+    function fixQuotes(text, log) {
+      return text.replace(/(^|[\s(])(\.J|\.j|\.,|,,|\.)(?=\p{L})([^"\n]{1,60}?)"/gu, (m, pre, q, inner) => {
+        const words = inner.trim().split(/\s+/);
+        let fixed = words[0], rest = words.slice(1).join(' ');
+        if (q === '.J' || q === '.j') {
+          // das Anführungszeichen hat den ersten Buchstaben verdeckt: über bekannte Wörter wiederherstellen
+          let b = null, take = 1;
+          for (let t = 1; t <= Math.min(3, words.length); t++) {
+            const x = quoteWord(q.slice(1) + words.slice(0, t).join(''));
+            if (x && t < words.length && !valid(words[t])) x.v += 1.5;              // Rest eines Wortes bliebe stehen
+            if (x && (!b || x.v < b.v)) { b = x; take = t; }
+          }
+          if (b) {
+            fixed = b.w; rest = words.slice(take).join(' ');
+            if (/^\p{Lu}/u.test(words[0].replace(/^[Jj]/, '')) && !/^[Jj]/.test(words[0])) fixed = fixed.charAt(0).toUpperCase() + fixed.slice(1);
+          }
+        }
+        const out = pre + '"' + fixed + (rest ? ' ' + rest : '') + '"';
+        log.push({ from: q + inner + '"', to: out.slice(pre.length), rule: 'Anführungszeichen' });
+        return out;
+      });
+    }
+    // ---- Satzzeichen, Zahlen und Quellenangaben ----
+    function fixPunct(text, log, pages) {
+      const rep = (re, f, rule) => {
+        text = text.replace(re, (...a) => {
+          const r = typeof f === 'string' ? f : f(...a);
+          if (r !== a[0]) log.push({ from: a[0], to: r, rule });
+          return r;
+        });
+      };
+      rep(/l\\1(?=\p{Ll})/gu, 'M', 'Großbuchstabe');                              // „l\1ax“ → „Max“
+      rep(/,,»\)/g, '"»', 'Anführungszeichen');
+      rep(/(?<=^|\s),,(?=[»\p{L}])/gu, '"', 'Anführungszeichen');
+      // Jahreszahlen: „I990b“ → „1990b“, „201 Gb“ → „1990b“ (nur vor Komma/Klammer)
+      rep(/(?<![\p{L}\d])[Il]9(\d\d[a-z]?)(?=[\s,;:)])/gu, (m, d) => '19' + d, 'Jahreszahl');
+      rep(/(?<![\p{L}\d])(1[5-9]\d|20\d) ?[GOoDQ]([a-z]?)(?= ?[,;:)])/gu, (m, d, s) => d + '0' + s, 'Jahreszahl');
+      // in Quellenangaben: „2019. S. 31“ → „2019, S. 31“, „S 654“ → „S. 654“, „S. 3 1“ → „S. 31“
+      rep(/(\((?:[^()]*?\s)?(?:1[5-9]\d\d|20\d\d)[a-z]?)\. (S\. ?\d)/gu, (m, a, b) => a + ', ' + b, 'Satzzeichen');
+      rep(/(\((?:[^()]*?\s)?(?:1[5-9]\d\d|20\d\d)[a-z]?, )S (\d)/gu, (m, a, b) => a + 'S. ' + b, 'Satzzeichen');
+      rep(/(S\. ?)(\d{1,2}) (\d)(?=[\s)f,;.–-]|$)/gu, (m, s, a, b) => {
+        const v = +(a + b);
+        return v <= 99 || pages.some(p => Math.abs(p - v) <= 30 && p !== v) ? s + a + b : m;
+      }, 'Seitenzahl');
+      rep(/(S\. ?)(\d{1,2}) (\d)(?=-\d{2,3}(?!\d))/gu, (m, s, a, b) => s + a + b, 'Seitenzahl');
+      // Leerzeichen vor Satzzeichen („gesehen , das“, „Weber :“)
+      rep(/(?<=[\p{L}\d"“”»«)]) ([,.;:?])(?=\s|$|["“”»«)])/gu, (m, p) => p, 'Leerzeichen');
+      // „arbeiten. dass“: Punkt mitten im Satz vor kleingeschriebenem Bindewort ist ein Komma
+      rep(/(\p{L}+)\. (?=(?:dass|weil|wenn|wie|was|die|der|das|indem|sondern|aber|denn|ob|als|um|und|oder|insbesondere|wäre|ist|sie|kurz)\s)/gu,
+        (m, w) => (w.length >= 4 && w === lc(w) && valid(w) && !ABBR_DOT.test(w) ? w + ', ' : m), 'Satzzeichen');
+      return text;
+    }
+    // ganzer Absatz → reparierter Text
+    function fixText(text, log, pages) {
+      text = fixPunct(text, log, pages || []);
+      text = fixQuotes(text, log);
+      text = fixCaps(text, log);
+      text = text.replace(/[\p{L}\d'’!]+(?: [\p{L}\d'’!]+)*/gu, (run, off, all) => {
+        const lead = /^!+/.exec(run);
+        if (lead) return run;
+        const toks = run.split(' ');
+        const before = all.slice(Math.max(0, off - 3), off);
+        const ctx = { nextCh: all[off + run.length] || '', sentStart: off === 0 || /[.!?:]\s*["“„»]?\s*$|^\s*$|\n\s*$/.test(before) };
+        return fixRun(toks, ctx, log).join(' ');
+      });
+      // „Namet Nächstes“ → „Name: Nächstes“ (Name + t vor großgeschriebenem Wort)
+      text = text.replace(/(?<![\p{L}])(\p{Lu}\p{Ll}+)t(?= \p{Lu})/gu, (m, n) => {
+        if (valid(m) || compound(m) || !names.has(lc(n))) return m;
+        log.push({ from: m, to: n + ':', rule: 'Doppelpunkt' });
+        return n + ':';
+      });
+      // Vorname vor bekanntem Nachnamen („Vorname“ neben bekanntem Nachnamen)
+      text = text.replace(/(?<![\p{L}])(\p{Lu}[\p{L}'’]{1,4}) (\p{Lu}\p{Ll}+)/gu, (m, a, b) => {
+        if (valid(a)) return m;
+        for (const [f, n] of firstNames) if (n === b && f !== a && dl(lc(a), lc(f)) <= 2) { log.push({ from: m, to: f + ' ' + b, rule: 'Vorname' }); return f + ' ' + b; }
+        return m;
+      });
+      return text;
+    }
+    let firstNames = [], docWords = [];
+    function fixDoc(texts, pages) {
+      prescan(texts);
+      // zitierte Seitenzahlen im Dokument („S. 123“) helfen, getrennte Zahlen („S. 12 4“) sicher zusammenzusetzen
+      if (!pages || !pages.length) { pages = []; for (const t of texts) for (const m of t.matchAll(/S\. ?(\d{2,4})(?!\d)/g)) pages.push(+m[1]); }
+      const log = [], tmp = [];
+      // erster Durchgang: Verwechslungen lernen, die in diesem Dokument mehrfach sicher waren („nn“ → „rm“)
+      confirmed.clear();
+      docWords = [...docTok.keys()];
+      const pass1 = texts.map(t => fixText(t, tmp, pages));
+      const fromQuotes = new Set(tmp.filter(e => e.rule === 'Anführungszeichen').flatMap(e => e.to.match(/\p{L}+/gu) || []));
+      docWords = [...new Set(pass1.join(' ').match(/\p{L}+/gu) || [])].filter(w => !fromQuotes.has(w));
+      for (const e of tmp) {
+        const r = (e.rule || '').replace(/^Lücke im Wort \+ /, '');
+        if (/^[^ ]+→[^ ]+$/.test(r) && !valid(e.from.replace(/ /g, '')) && (fr(e.to) >= 50 || inDic(e.to))) confirmed.set(r, (confirmed.get(r) || 0) + 1);
+      }
+      // Vorname-Nachname-Paare aus dem Dokument 
+      const pairs = new Set();
+      for (const t of pass1) for (const m of t.matchAll(/(?<![\p{L}])(\p{Lu}\p{Ll}{2,}) (\p{Lu}\p{Ll}{2,})(?![\p{L}])/gu)) if (names.has(lc(m[2])) && valid(m[1])) pairs.add(m[1] + '|' + m[2]);
+      firstNames = [...pairs].map(k => k.split('|'));
+      vcache.clear(); fmemo.clear();
+      const out = texts.map(t => fixText(t, log, pages));
+      return { texts: out, log };
+    }
+    return { fixDoc, fixText, valid, compound, fixWord, solid, names, prescan, groupCost, quoteWord, setDocWords: (w) => { docWords = w; } };
+  }
+
   function makePhon(espeakPh, post) {
     const PLACEHOLDER = 'Zwapf', PH_SEQ = ['t', 's', 'v', 'a', 'p', 'f'];
     const SEP = /[\s.,;:!?]/;
@@ -2879,6 +3598,8 @@ function piperWorkerMain() {
         exp.push(p);
       });
       parts = exp;
+      // Zahlwörter („zweihundert|acht|und|vierzig“) ohne Knacklaut zwischen den Teilen
+      const numItem = parts.every(p => /^[!~^]?(?:null|eins?|zwei|drei|vier|fünf|sechs|sieben|acht|neun|zehn|elf|zwölf|\p{L}*zehn|\p{L}*zig|dreißig|hundert|tausend|und|millionen?|milliarden?|st?e[nrsm]?|t)$/u.test(p));
       let primary = parts.findIndex(p => p.startsWith('!'));
       if (primary < 0) primary = 0;
       const res = [];
@@ -2892,19 +3613,22 @@ function piperWorkerMain() {
         const lastP = seq.includes(' ') ? -2 : seq.lastIndexOf('ˈ');      // Mehrwort-Einträge („Capability Approach“): wie eingetragen
         if (mode) seq = seq.filter(x => x !== 'ˈ' && x !== 'ˌ');
         else if (lastP === -2) { if (k !== primary) seq = seq.map(x => x === 'ˈ' ? 'ˌ' : x); }
+        else if (k !== primary && ST.soft) seq = seq.filter(x => x !== 'ˈ' && x !== 'ˌ');   // v0.8.2 „sanft“: keine Nebenbetonung
         else if (k !== primary) {
           const keep = lastP >= 0 ? lastP : seq.lastIndexOf('ˌ');
           seq = seq.map((x, i) => (x === 'ˈ' || x === 'ˌ') ? (i === keep ? 'ˌ' : null) : x).filter(x => x !== null);
         } else if (lastP >= 0) seq = seq.map((x, i) => x === 'ˈ' && i !== lastP ? 'ˌ' : x);
         else { const si = seq.indexOf('ˌ'); if (si >= 0) seq[si] = 'ˈ'; }
+        if (ST.soft && lastP !== -2 && k === primary) seq = seq.filter(x => x !== 'ˌ');
         if (k > 0 && res.length) {
           // v0.8.1 Wortfuge: stimmhaftes s nach stimmlosem Laut stimmlos („Nach|sorge“); Vokal am Teilanfang mit
-          // Einsatz („Kern|elemente“, „un|einheitlich“) – Thorsten kennt kein Knacklaut-Zeichen, der Akzent davor
-          // erzeugt den harten Einsatz ohne Wortgrenze (keine Pause, kein Leerzeichen).
+          // Einsatz („Kern|elemente“, „un|einheitlich“) – ohne Wortgrenze (keine Pause, kein Leerzeichen).
           const fi = seq.findIndex(x => x !== 'ˈ' && x !== 'ˌ');
           const prev = res[res.length - 1];
           if (fi >= 0 && seq[fi] === 'z' && VOICELESS_END.has(prev)) seq[fi] = 's';
-          if (fi === 0 && mode !== '~' && VOWEL.test(seq[0])) seq.unshift('ˌ');
+          // v0.8.2 Vokal am Teilanfang: echter Knacklaut ʔ (steht in Thorstens Lauttabelle, Messung: kurzer Einbruch
+          // mit Einsatz wie beim harten Stimmeinsatz) statt des Nebenakzents (v0.8.1)
+          if (fi >= 0 && fi <= 1 && mode !== '~' && VOWEL.test(seq[fi]) && prev !== 'ʔ' && !numItem) seq.unshift('ʔ');
         }
         res.push(...seq);
       }
@@ -2956,7 +3680,12 @@ function piperWorkerMain() {
   const PH = makePhon(espeakPh, post);
   const richPhonemes = PH.richPhonemes;
   // v0.8.1: Wortliste laden (aus dem Cache, sonst ≈ 1,1 MB) – fehlt sie, liest espeak Zusammensetzungen wie bisher
+  let lexDone = null;
+  const lexReady = new Promise(r => { lexDone = r; });
   async function loadLexicon(m) {
+    try { await loadLexicon0(m); } finally { lexDone(); }
+  }
+  async function loadLexicon0(m) {
     PH.ST.dict = new Map(m.dict || []);
     if (!m.lexBase) return;
     try {
@@ -2989,7 +3718,7 @@ function piperWorkerMain() {
   // --- v0.6 Klang-Feinschliff (auf den fertigen Audiodaten, im Worker; Wiedergabe weiter über <audio>) ---------
   // Stille am Anfang/Ende eines Teils kürzen, damit die eingestellten Pausen genau gelten (nicht doppelt):
   // es bleiben 50 ms vorn und 100 ms hinten vom eigenen Ausklang der Stimme.
-  function trimSil(x, sr) {
+  function trimSil(x, sr, t) {
     let peak = 0;
     for (let i = 0; i < x.length; i++) { const a = Math.abs(x[i]); if (a > peak) peak = a; }
     const thr = Math.max(0.003, peak * 0.02);
@@ -2997,7 +3726,7 @@ function piperWorkerMain() {
     while (a < x.length && Math.abs(x[a]) < thr) a++;
     while (b > a && Math.abs(x[b]) < thr) b--;
     if (a >= b) return x;
-    return x.subarray(Math.max(0, a - Math.round(0.05 * sr)), Math.min(x.length, b + 1 + Math.round(0.10 * sr)));
+    return x.subarray(Math.max(0, a - Math.round((t ? t[0] : 0.05) * sr)), Math.min(x.length, b + 1 + Math.round((t ? t[1] : 0.10) * sr)));
   }
   // Kuhschwanz-Filter (RBJ-Audio-EQ-Cookbook, Flankensteilheit S = 1)
   function shelf(high, f0, dB, sr) {
@@ -3059,6 +3788,7 @@ function piperWorkerMain() {
     const t0 = performance.now();
     const sr = cfg.audio.sample_rate;
     const fx = m.fx || {};
+    PH.ST.soft = !!m.soft;                                   // v0.8.2 Hörvergleich „Betonung langer Wörter“
     const pcs = [];
     let speech = 0;
     fxStat.gains = []; fxStat.limited = 0;
@@ -3073,7 +3803,7 @@ function piperWorkerMain() {
       if (cfg.num_speakers > 1) feeds.sid = new ort.Tensor('int64', BigInt64Array.from([BigInt(m.speakerId || 0)]), [1]);
       const out = await session.run(feeds);
       let pcm = (out.output || out[session.outputNames[0]]).data;
-      if (fx.trim) pcm = trimSil(pcm, sr);
+      if (fx.trim) pcm = trimSil(pcm, sr, m.trims && m.trims[k]);
       if (fx.warm) pcm = warm(pcm, sr);
       if (fx.norm) pcm = normalize(pcm, sr);
       if (m.gains && m.gains[k] !== 1) { const g = m.gains[k]; const y = new Float32Array(pcm.length); for (let i = 0; i < y.length; i++) y[i] = pcm[i] * g; pcm = y; }
@@ -3109,8 +3839,33 @@ function piperWorkerMain() {
     busy = false;
   }
 
+  // v0.8.2 Texterkennungs-Reparatur (OCR-PDFs): Wortliste ist hier schon geladen; Häufigkeitslisten nur bei Bedarf
+  let freqMaps = null, ocrFixer = null;
+  async function ocrFix(m) {
+    await lexReady;
+    if (!PH.ST.lex) throw new Error('Wortliste nicht verfügbar');
+    if (!freqMaps) {
+      const dec = new TextDecoder(), parse = (buf) => {
+        const map = new Map();
+        for (const l of dec.decode(buf).split('\n')) { const k = l.indexOf(' '); if (k > 0) map.set(l.slice(0, k), +l.slice(k + 1)); }
+        return map;
+      };
+      const de = await cachedFetch(m.freqDe, 'Häufigkeitsliste Deutsch'), en = await cachedFetch(m.freqEn, 'Häufigkeitsliste Englisch');
+      freqMaps = { de: parse(de.buf), en: parse(en.buf) };
+    }
+    ocrFixer = makeOcrFix(PH.ST.lex, PH.ST.split, freqMaps.de, freqMaps.en, m.names || []);
+    const t0 = performance.now();
+    const r = ocrFixer.fixDoc(m.texts, []);
+    return { texts: r.texts, log: r.log, ms: performance.now() - t0 };
+  }
+
   self.onmessage = async (e) => {
     const m = e.data;
+    if (m.type === 'ocrfix') {
+      try { const r = await ocrFix(m); post({ type: 'ocrfix', id: m.id, texts: r.texts, log: r.log, ms: r.ms }); }
+      catch (err) { post({ type: 'error', id: m.id, msg: (err && err.message) || String(err) }); }
+      return;
+    }
     if (m.type === 'init') {
       try { await init(m); } catch (err) { post({ type: 'init-error', msg: (err && err.message) || String(err) }); }
     } else if (m.type === 'synth') { queue.push(m); pump(); }
@@ -3118,6 +3873,7 @@ function piperWorkerMain() {
     else if (m.type === 'phtest') {                         // nur für automatische Tests: Phoneme/IDs eines Textes
       try {
         PH.ST.used = false;
+        PH.ST.soft = !!m.soft;
         const ph = await richPhonemes(m.text);
         post({ type: 'phtest', id: m.id, ph: ph.join(''), ids: toIds(ph), lex: PH.ST.used });
       }
@@ -3169,7 +3925,7 @@ class PiperEngine {
     const k = Object.assign({}, k0, { length: k0.length / tempo, gap: k0.gap / tempo, sent: k0.sent / tempo, para: k0.para / tempo });
     const parts = s.parts.filter(p => /[\p{L}\d]/u.test(p.speech));
     // v0.6 Pausenstaffel: Pause nach einem Satzteil je nach Satzzeichen, nach dem Satz je nach Satzende
-    const gaps = parts.slice(0, -1).map((p, n) => (p.law || parts[n + 1].law) ? +(LAW.gap / tempo).toFixed(3)     // v0.8.1 kurz vor/nach Gesetzesangabe
+    const gaps = parts.slice(0, -1).map((p, n) => (p.law || parts[n + 1].law) ? +(LAW.gap / tempo).toFixed(3)     // v0.8.2 kurz vor/nach Gesetzesangabe
       : polish.pause ? +(k.gap * gapFactor(s.text.slice(p.start - s.start, p.end - s.start))).toFixed(3) : k.gap);
     let pad = s.paraEnd ? k.para : k.sent;
     if (polish.pause) {
@@ -3182,8 +3938,19 @@ class PiperEngine {
     const lens = parts.map(p => +(k.length * (p.law ? LAW.len : nat && p.aside ? ASIDE.len : 1) * (nat && s.head ? HEAD.len : 1)).toFixed(4));
     const gains = parts.map(p => (nat && p.aside ? ASIDE.gain : 1));
     if (nat && s.head) pad = Math.max(pad, k.para + HEAD.after);
-    return { type: 'synth', id, parts: parts.map(p => p.piper || p.speech), padSec: pad, gaps, gapSec: k.gap,
-      scales: [k.noise, k.length, k.noiseW], lens, gains, leadSec: nat && s.head && s.i > 0 ? HEAD.before / tempo : 0, speakerId: this.speakerId,
+    // v0.8.2 Gesetzesangabe in kleine Teile mit eigenen, kurzen Pausen zerlegen (‖ = minimal länger, ¦ = kurz)
+    const X = { parts: [], gaps: [], lens: [], gains: [], trims: [] };
+    parts.forEach((p, n) => {
+      const txt = p.piper || p.speech;
+      const subs = p.law ? txt.split(/\s*([‖¦])\s*/) : [txt];
+      for (let q = 0; q < subs.length; q += 2) {
+        if (!subs[q]) continue;
+        if (X.parts.length) X.gaps.push(q > 0 ? +((subs[q - 1] === '‖' ? LAW.mid : LAW.short) / tempo).toFixed(3) : gaps[n - 1]);
+        X.parts.push(subs[q]); X.lens.push(lens[n]); X.gains.push(gains[n]); X.trims.push(p.law ? LAW.trim : null);
+      }
+    });
+    return { type: 'synth', id, parts: X.parts, padSec: pad, gaps: X.gaps, gapSec: k.gap, trims: X.trims, soft: longStress === 'sanft',
+      scales: [k.noise, k.length, k.noiseW], lens: X.lens, gains: X.gains, leadSec: nat && s.head && s.i > 0 ? HEAD.before / tempo : 0, speakerId: this.speakerId,
       fx: { norm: polish.norm, fade: polish.fade, trim: polish.pause, warm: polish.warm } };
   }
   cacheName() { return CONFIG.cacheName; }
@@ -3224,11 +3991,11 @@ class PiperEngine {
         } else if (m.type === 'init-error') {
           this.loading = null;
           reject(new Error(m.msg));
-        } else if (m.type === 'audio' || m.type === 'error' || m.type === 'phtest') {
+        } else if (m.type === 'audio' || m.type === 'error' || m.type === 'phtest' || m.type === 'ocrfix') {
           const r = this.reqs.get(m.id);
           this.reqs.delete(m.id);
           if (!r) return;
-          if (m.type === 'audio' || m.type === 'phtest') r.resolve(m); else r.reject(new Error(m.msg));
+          if (m.type !== 'error') r.resolve(m); else r.reject(new Error(m.msg));
         }
       };
       worker.onerror = (e) => {
@@ -3262,9 +4029,17 @@ class PiperEngine {
     return entry;
   }
   prefetch(list) { if (this.worker) for (const s of list) this.request(s); }
+  // v0.8.2 Texterkennungs-Reparatur einer OCR-PDF (Wortliste liegt im Worker); nur Text hin und zurück
+  ocrFix(texts, names) {
+    const id = ++this.seq;
+    return new Promise((resolve, reject) => {
+      this.reqs.set(id, { resolve, reject });
+      this.worker.postMessage({ type: 'ocrfix', id, texts, names, freqDe: CONFIG.freqBase + 'de/de_50k.txt', freqEn: CONFIG.freqBase + 'en/en_50k.txt' });
+    });
+  }
   phTest(text) {           // nur für Tests/Diagnose: Phoneme und IDs, wie die Stimme sie bekommt
     const id = ++this.seq;
-    return new Promise((resolve, reject) => { this.reqs.set(id, { resolve, reject }); this.worker.postMessage({ type: 'phtest', id, text }); });
+    return new Promise((resolve, reject) => { this.reqs.set(id, { resolve, reject }); this.worker.postMessage({ type: 'phtest', id, text, soft: longStress === 'sanft' }); });
   }
   release(i) {
     const e = this.byIdx.get(i);
@@ -3673,6 +4448,7 @@ async function pdfOpenFile(file) {
   $('pdfTitle').textContent = '📄 ' + file.name;
   $('pdfInfoLine').textContent = 'Wird geöffnet …';
   $('pdfRangeBox').hidden = true; $('pdfProg').hidden = true; pdfMsg('');
+  $('pdfSecBox').hidden = true; pdfJob = null;
   let lib;
   try { lib = await pdfLib(); }
   catch (e) { pdfMsg('Das PDF-Werkzeug konnte nicht geladen werden – bitte Internetverbindung prüfen, die Seite neu laden und es noch einmal versuchen.', true); log('pdf.js laden fehlgeschlagen: ' + (e.message || e), 'error'); return; }
@@ -3702,6 +4478,51 @@ const pageList = (ns) => {                                  // [2,3,4,7] → „
   for (let k = 0; k < ns.length; k++) { let e = k; while (e + 1 < ns.length && ns[e + 1] === ns[e] + 1) e++; out.push(e > k ? ns[k] + '–' + ns[e] : '' + ns[k]); k = e; }
   return out.join(', ');
 };
+// v0.8.2 Texterkennungs-PDF? (unsichtbare Textschicht = Darstellungsart 3 über einem Seitenbild) – Stichprobe von ≤ 3 Seiten
+async function pdfIsOcr(doc, from, to) {
+  const lib = pdfState.lib, O = lib.OPS;
+  const sample = [...new Set([from, Math.round((from + to) / 2), to])];
+  let yes = 0;
+  for (const n of sample) {
+    try {
+      const page = await doc.getPage(n);
+      const ol = await page.getOperatorList();
+      let m3 = 0, img = 0;
+      for (let i = 0; i < ol.fnArray.length; i++) {
+        const f = ol.fnArray[i];
+        if (f === O.setTextRenderingMode && ol.argsArray[i][0] === 3) m3++;
+        else if (f === O.paintImageXObject || f === O.paintJpegXObject || f === O.paintInlineImageXObject) img++;
+      }
+      if (m3 && img) yes++;
+      page.cleanup();
+    } catch (e) { log('OCR-Prüfung Seite ' + n + ': ' + ((e && e.message) || e), 'warn'); }
+  }
+  return yes * 2 >= sample.length;
+}
+// Lesezeichen (Inhaltsverzeichnis) der PDF → [{title, page}]
+async function pdfOutline(doc) {
+  const out = [];
+  try {
+    const walk = async (o, depth) => {
+      let d = o.dest;
+      if (typeof d === 'string') d = await doc.getDestination(d);
+      if (d && d[0]) { try { out.push({ title: (o.title || '').replace(/\s+/g, ' ').trim(), page: (await doc.getPageIndex(d[0])) + 1 }); } catch (e) {} }
+      if (depth < 3) for (const c of o.items || []) await walk(c, depth + 1);
+    };
+    for (const o of (await doc.getOutline()) || []) await walk(o, 0);
+  } catch (e) { log('Lesezeichen nicht lesbar: ' + ((e && e.message) || e), 'warn'); }
+  return out;
+}
+// Namen für die Texterkennungs-Reparatur (Großbuchstaben-Namen „ANTH ONY GID DENS“ zusammensetzen)
+const OCR_NAMES = ('Anthony Jürgen Hartmut Esser George Caspar Homans Frederick Niklas Max Alfred Schütz Talcott Karl Marx Émile Georg Norbert ' +
+  'Erving Herbert Blumer Peter Berger Thomas Luckmann Ulrich Beck Robert Merton Ralf Dahrendorf Heinz Abels Hans Joas Axel Hans-Georg Gadamer ' +
+  'Theodor Adorno Horkheimer Helmut Schelsky Gustav Schmoller Ferdinand Tönnies Vilfredo Pareto James Coleman Gary Becker Mancur Olson ' +
+  'Pierre Michel Judith Hannah Arendt Sigmund Erik Jean Paul Watzlawick Carl Abraham Burrhus Iwan Pawlow Lev Urie Albert Kurt Lewin ' +
+  'Alice Salomon Jane Addams Mary Richmond Silvia Hans Thiersch Lothar Böhnisch Wolfgang Hinte Bernd Dewe Hans-Uwe Otto Dieter Kreft ' +
+  'Simmel Durkheim Elias Mead Weber Luhmann Giddens Habermas Parsons Skinner Goffman Bourdieu Foucault Schütz Hillmann').split(' ');
+const NAME_SET = new Set(OCR_NAMES.concat(NAME_DICT.map(n => n[0])));
+const PDF_ENDE = /\b(?:ende|bis hier|nur bis|stop+|schluss|aufhören|nicht weiter)\b/i;
+let pdfJob = null;                                         // Ergebnis des letzten Einlesens (für die Abschnittswahl)
 async function pdfTake() {
   const doc = pdfState.doc, run = pdfState.run;
   if (!doc) return;
@@ -3712,46 +4533,153 @@ async function pdfTake() {
     $('pdfFrom').value = from; $('pdfTo').value = to;
   }
   $('pdfGo').disabled = true; $('pdfProg').hidden = false; $('pdfProg').max = to - from + 1; $('pdfProg').value = 0;
-  const pages = [], t0 = now();
+  const pages = [], targets = [], t0 = now();
   try {
+    pdfMsg('PDF wird geprüft …');
+    const ocr = await pdfIsOcr(doc, from, to);
+    const outline = (await pdfOutline(doc)).filter(o => o.page >= from && o.page <= to);
+    if (run !== pdfState.run) return;
     for (let p = from; p <= to; p++) {
       if (run !== pdfState.run) return;
       const page = await doc.getPage(p);
       const tc = await page.getTextContent();
-      const view = page.view;
-      pages.push({ num: p, W: view[2] - view[0], H: view[3] - view[1], items: pdfItems(tc, view) });
+      const view = page.view, H = view[3] - view[1];
+      pages.push({ num: p, W: view[2] - view[0], H, items: pdfItems(tc, view) });
+      // v0.8.2 Markierungen und Notizen (nur aus PDF-Anmerkungen, nie aus gedrucktem Text)
+      try {
+        for (const a of await page.getAnnotations()) {
+          const r = a.rect || [0, 0, 0, 0], top = view[3] - r[3], bottom = view[3] - r[1];
+          const note = (a.contentsObj && a.contentsObj.str || '').trim();
+          if (/^(?:Highlight|Underline|Squiggly)$/.test(a.subtype)) targets.push({ id: 'h' + targets.length, kind: 'line', page: p, top, bottom, note });
+          else if (/^(?:FreeText|Text)$/.test(a.subtype) && note) targets.push({ id: 'n' + targets.length, kind: 'after', page: p, top, bottom, note });
+        }
+      } catch (e) {}
       page.cleanup();
       $('pdfProg').value = p - from + 1;
       pdfMsg(`Text wird gelesen … Seite ${p} von ${to}`);
     }
-    const res = pdfBuild(pages);
-    if (run !== pdfState.run) return;
+    const B = pdfBlocks(pages, { ocr, outline, targets });
+    let ocrLog = null, ocrMs = 0;
+    if (ocr && B.scanPages.length < pages.length) {
+      // Texterkennung reparieren: braucht die Wortliste im Worker der Stimme
+      const eng = engines.piper;
+      if (!eng.worker && ctl.engine() === eng) { pdfMsg('Stimme wird geladen …'); await loadSelected(); }
+      if (eng.worker) {
+        pdfMsg('Texterkennung wird repariert …');
+        try {
+          const names = OCR_NAMES.concat(NAME_DICT.map(n => n[0]).filter(n => /^\p{Lu}\p{Ll}+$/u.test(n)));
+          const r = await pdfOcrRepair(B, (texts) => eng.ocrFix(texts, names));
+          ocrLog = r.log; ocrMs = r.ms;
+        } catch (e) { log('Texterkennung reparieren fehlgeschlagen: ' + ((e && e.message) || e), 'warn'); }
+      } else log('Texterkennung: Reparatur nicht möglich (Thorsten-Stimme nicht geladen)', 'warn');
+      if (run !== pdfState.run) return;
+    }
+    const res = pdfAssemble(B);
     if (res.scanPages.length === pages.length) {
       pdfMsg('Diese PDF enthält keinen lesbaren Text – vermutlich eingescannt. Das kann die App noch nicht vorlesen.', true);
       log('PDF ohne Text (Scan?)', 'warn');
       $('pdfGo').disabled = false; $('pdfProg').hidden = true; $('pdfRangeBox').hidden = true;
       return;
     }
-    pdfInfo = Object.assign(res, { name: pdfState.name, from, to, total: doc.numPages });
-    $('src').value = res.src;
-    pdfClose();
-    applyText();
-    ctl.cur = 0;
-    weiter.asked = '';                                      // neu geöffnet → wieder fragen
-    const offered = weiterOffer(null);                     // v0.8: diese PDF schon angefangen?
-    const grey = res.ranges.filter(r => r.kind !== 'fnref').length;
-    let msg = `PDF übernommen: ${to - from + 1} ${to > from ? 'Seiten' : 'Seite'} – ▶ drücken`;
-    if (res.scanPages.length) {
-      msg = `Achtung: Seite ${pageList(res.scanPages)} ohne lesbaren Text (vermutlich eingescannt) – wird übersprungen. ▶ drücken`;
-      toast(`Seite ${pageList(res.scanPages)} enthält keinen Text (Scan?) und wird übersprungen.`, 5000);
-    }
-    if (!offered) setStatus(msg);
-    log(`PDF „${pdfState.name || pdfInfo.name}“: Seiten ${from}–${to}, ${res.src.length} Zeichen, ${grey} graue Stellen, ${res.ranges.filter(r => r.kind === 'fnref').length} Fußnotenziffern, ${fmtMs(now() - t0)}` +
-      (res.scanPages.length ? `, ohne Text: ${pageList(res.scanPages)}` : ''));
+    Object.assign(res, { name: pdfState.name, from, to, total: doc.numPages, ocrLog });
+    res.jumps = pdfJumps(res, outline, targets);
+    res.t0 = t0; res.ocrMs = ocrMs;
+    log(`PDF „${pdfState.name}“: Seiten ${from}–${to}, ${res.src.length} Zeichen, ${res.ranges.filter(r => r.kind !== 'fnref').length} graue Stellen, ${res.ranges.filter(r => r.kind === 'fnref').length} Fußnotenziffern` +
+      (ocr ? `, Texterkennung (OCR): ${ocrLog ? ocrLog.length + ' Reparaturen in ' + fmtMs(ocrMs) : 'nicht repariert'}` : '') +
+      (res.jumps.length ? `, ${res.jumps.length} Sprungpunkte` : '') + `, ${fmtMs(now() - t0)}` + (res.scanPages.length ? `, ohne Text: ${pageList(res.scanPages)}` : ''));
+    pdfJob = res;
+    $('pdfProg').hidden = true; pdfMsg('');
+    if (res.jumps.length) pdfSections(res);
+    else pdfLoad(res, 0, res.src.length, '');
   } catch (e) {
     pdfMsg('Beim Lesen der PDF ist ein Fehler aufgetreten: ' + ((e && e.message) || e), true);
     log('PDF lesen fehlgeschlagen: ' + ((e && e.message) || e), 'error');
   } finally { $('pdfGo').disabled = false; }
+}
+// Sprungpunkte: Lesezeichen, nummerierte Überschriften, Markierungen (mit Textanfang), Notizen (mit Notiztext)
+function pdfJumps(res, outline, targets) {
+  const J = [];
+  const clean = (t) => t.replace(/\s+/g, ' ').trim();
+  const snip = (pos, n) => { const t = clean(res.src.slice(pos, pos + (n || 60)).split('\n')[0]); return t.length >= (n || 60) - 2 ? t.replace(/\s+\S*$/, '') + ' …' : t; };
+  const headAt = (pos) => res.heads.find(h => Math.abs(h.pos - pos) <= 2);
+  for (const a of res.anchors) {
+    const k = a.id[0], n = +a.id.slice(1);
+    if (k === 'o') { const h = headAt(a.pos); J.push({ pos: a.pos, kind: 'head', label: h ? h.text : clean(outline[n].title) }); }
+    else if (k === 'h') J.push({ pos: a.pos, kind: 'mark', label: 'Markierung: „' + snip(a.pos, 50) + '“' });
+    else if (k === 'n') { const t = targets.find(x => x.id === a.id); J.push({ pos: a.pos, kind: 'note', label: 'Notiz: „' + clean(t.note).slice(0, 60) + '“', note: clean(t.note), ende: PDF_ENDE.test(t.note) }); }
+  }
+  for (const h of res.heads) if (/^\d{1,2}(?:\.\d{1,2})*\.?\s+\p{Lu}/u.test(h.text) && !J.some(j => j.kind === 'head' && Math.abs(j.pos - h.pos) <= 2)) J.push({ pos: h.pos, kind: 'head', label: h.text });
+  for (const j of J) if (j.kind === 'head' && j.label.length > 70) j.label = j.label.slice(0, 68).replace(/\s+\S*$/, '') + ' …';
+  return J.sort((a, b) => a.pos - b.pos || 'head mark note'.indexOf(a.kind) - 'head mark note'.indexOf(b.kind));
+}
+const JUMP_ICON = { head: '📑 ', mark: '🖍 ', note: '🗒 ' };
+// Abschnitt wählen (Standard: ganze PDF); eine Notiz wie „ENDE: Nur bis hier lesen!“ wird nur vorgeschlagen
+function pdfSections(res) {
+  $('pdfRangeBox').hidden = true;
+  const fill = (sel, first, last) => {
+    sel.textContent = '';
+    const add = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); };
+    if (first) add(0, first);
+    for (const j of res.jumps) add(j.pos, JUMP_ICON[j.kind] + j.label);
+    if (last) add(res.src.length, last);
+  };
+  fill($('secFrom'), 'Anfang', null);
+  fill($('secTo'), null, 'Ende');
+  $('secFrom').selectedIndex = 0; $('secTo').selectedIndex = $('secTo').options.length - 1;
+  const end = res.jumps.find(j => j.kind === 'note' && j.ende);
+  $('secSuggest').hidden = !end;
+  if (end) {
+    const start = res.jumps.find(j => j.kind === 'mark' && j.pos < end.pos);
+    const startLabel = start ? (res.jumps.find(j => j.kind === 'head' && Math.abs(j.pos - start.pos) <= 2) || start).label : '';
+    $('secSuggestText').textContent = `Clara hat hier „${end.note}“ notiert – ` + (start ? `ab der Markierung „${startLabel.replace(/^Markierung: „|“$/g, '')}“ bis hier lesen?` : 'bis hier lesen?');
+    $('secSuggestYes').onclick = () => {
+      if (start) $('secFrom').value = String(start.pos);
+      $('secTo').value = String(end.pos);
+      $('secSuggest').hidden = true;
+      pdfSecGo();
+    };
+  }
+  $('pdfSecBox').hidden = false;
+}
+function pdfSecGo() {
+  const res = pdfJob;
+  if (!res) return;
+  let a = +$('secFrom').value || 0, b = +$('secTo').value;
+  if (!(b > a)) { pdfMsg('„Bis“ muss hinter „Von“ liegen.', true); return; }
+  const lab = (sel) => sel.options[sel.selectedIndex].textContent.replace(/^\S+ /, '').replace(/^(?:Markierung|Notiz): /, '');
+  const label = a === 0 && b === res.src.length ? '' : `${a === 0 ? 'Anfang' : lab($('secFrom'))} – ${b === res.src.length ? 'Ende' : lab($('secTo'))}`;
+  pdfLoad(res, a, b, label);
+}
+// Ausschnitt [a, b) des Lesetextes laden (Bereiche, Seitenmarken, Notizen verschoben)
+function pdfSlice(res, a, b) {
+  const src = res.src.slice(a, b).replace(/^\s+/, (m) => { a += m.length; return ''; });
+  const end = a + src.length;
+  const ranges = res.ranges.filter(r => r.end > a && r.start < end).map(r => ({ start: Math.max(0, r.start - a), end: Math.min(src.length, r.end - a), kind: r.kind }));
+  const marks = res.marks.filter(m => m.pos >= a && m.pos < end).map(m => Object.assign({}, m, { pos: m.pos - a }));
+  const before = res.marks.filter(m => m.pos <= a).pop();
+  if (before && (!marks.length || marks[0].pos > 0)) marks.unshift(Object.assign({}, before, { pos: 0 }));
+  const notes = res.jumps.filter(j => j.kind === 'note' && j.pos >= a && j.pos <= end).map(j => ({ pos: j.pos - a, text: j.note }));
+  const pagesIn = marks.map(m => m.page);
+  return { src, ranges, marks, notes, from: pagesIn.length ? Math.min(...pagesIn) : res.from, to: pagesIn.length ? Math.max(...pagesIn) : res.to };
+}
+function pdfLoad(res, a, b, label) {
+  const sl = pdfSlice(res, a, b);
+  pdfInfo = { src: sl.src, ranges: sl.ranges, marks: sl.marks, notes: sl.notes, scanPages: res.scanPages, name: res.name, from: sl.from, to: sl.to,
+    total: res.total, section: label, ocr: res.ocr, ocrLog: res.ocrLog };
+  $('src').value = sl.src;
+  pdfClose();
+  applyText();
+  ctl.cur = 0;
+  weiter.asked = '';                                      // neu geöffnet → wieder fragen
+  const offered = weiterOffer(null);                     // v0.8: diese PDF schon angefangen?
+  const n = sl.to - sl.from + 1;
+  let msg = `PDF übernommen: ${label ? label + ', ' : ''}${n} ${n > 1 ? 'Seiten' : 'Seite'} – ▶ drücken`;
+  if (res.scanPages.length) {
+    msg = `Achtung: Seite ${pageList(res.scanPages)} ohne lesbaren Text (vermutlich eingescannt) – wird übersprungen. ▶ drücken`;
+    toast(`Seite ${pageList(res.scanPages)} enthält keinen Text (Scan?) und wird übersprungen.`, 5000);
+  }
+  if (!offered) setStatus(msg);
+  if (label) log('PDF-Abschnitt: ' + label + ` (${sl.src.length} Zeichen)`);
 }
 /* =====================================================================
    v0.8 Leseposition merken – „Weiterhören“
@@ -3800,7 +4728,8 @@ function isBuiltinText(src) {
   return [SAMPLE_START, SAMPLE_TEXT, SAMPLE_PRON, SAMPLE_SA, COMPARE_TEXT, ...TEST_TEXTS.map(x => x[1])].some(x => x.trim() === t);
 }
 function textTitle(src) {
-  if (pdfInfo && pdfInfo.src === src && pdfInfo.name) return pdfInfo.name.replace(/\.pdf$/i, '') + (pdfInfo.from > 1 || pdfInfo.to < (pdfInfo.total || pdfInfo.to) ? ` (S. ${pdfInfo.from}–${pdfInfo.to})` : '');
+  if (pdfInfo && pdfInfo.src === src && pdfInfo.name) return pdfInfo.name.replace(/\.pdf$/i, '') + (pdfInfo.section ? ` · ${pdfInfo.section}` : '') +
+    (pdfInfo.from > 1 || pdfInfo.to < (pdfInfo.total || pdfInfo.to) ? ` (S. ${pdfInfo.from}–${pdfInfo.to})` : '');
   const line = (src.split('\n').map(l => l.trim()).find(l => /\p{L}/u.test(l)) || 'Text').replace(/\s+/g, ' ');
   if (line.length <= 60) return line;
   const cut = line.slice(0, 60);
@@ -3822,7 +4751,8 @@ async function weiterBegin() {
   weiter.cur = { id, title: textTitle(src), kind };
   let l = weiterList();
   if (!l.some(e => e.id === id)) {
-    const rec = { id, src, pdf: kind === 'pdf' ? { ranges: pdfInfo.ranges, marks: pdfInfo.marks, scanPages: pdfInfo.scanPages, name: pdfInfo.name, from: pdfInfo.from, to: pdfInfo.to } : null };
+    const rec = { id, src, pdf: kind === 'pdf' ? { ranges: pdfInfo.ranges, marks: pdfInfo.marks, scanPages: pdfInfo.scanPages, name: pdfInfo.name, from: pdfInfo.from, to: pdfInfo.to,
+      notes: pdfInfo.notes || [], section: pdfInfo.section || '', total: pdfInfo.total, ocr: !!pdfInfo.ocr } : null };
     for (let tries = 0; ; tries++) {
       try { await WDB.put(rec); break; }
       catch (e) {
@@ -3953,6 +4883,7 @@ $('btnPdf').onclick = () => $('pdfFile').click();
 $('pdfFile').onchange = () => { const f = $('pdfFile').files && $('pdfFile').files[0]; if (f) pdfOpenFile(f); };
 for (const b of $('segPages').children) b.onclick = () => { pdfState.all = b.dataset.v === 'all'; pdfShowRange(); };
 $('pdfGo').onclick = () => pdfTake();
+$('secGo').onclick = () => pdfSecGo();
 $('pdfClose').onclick = () => pdfClose();
 $('pdfModal').onclick = (e) => { if (e.target.id === 'pdfModal') pdfClose(); };
 // Seitenmarken „Seite 13“ (nur Anzeige: CSS-Inhalt, gehört nicht zum Text) vor dem ersten Satz der Seite
@@ -3965,6 +4896,15 @@ function pdfPageMarks() {
     const el = document.createElement('span');
     el.className = 'pgmark' + (m.scan ? ' scan' : '');
     el.dataset.p = 'Seite ' + m.page + (m.scan ? ' · kein lesbarer Text (vermutlich eingescannt)' : '');
+    if (lo < S.length) ui.spans[lo].before(el); else $('view').appendChild(el);
+  }
+  // v0.8.2 Notizen aus der PDF als kleines Zeichen (Text beim Antippen/Darüberfahren; wird nicht vorgelesen)
+  for (const n of pdfInfo.notes || []) {
+    let lo = 0, hi = S.length;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (S[mid].start < n.pos) lo = mid + 1; else hi = mid; }
+    const el = document.createElement('span');
+    el.className = 'pdfnote'; el.title = 'Notiz: ' + n.text; el.setAttribute('aria-label', 'Notiz: ' + n.text);
+    el.onclick = (e) => { e.stopPropagation(); toast('🗒 ' + n.text, 4000); };
     if (lo < S.length) ui.spans[lo].before(el); else $('view').appendChild(el);
   }
 }
@@ -4116,7 +5056,7 @@ function wordPiper(i, a, b) {
   let out = '';
   for (const p of s.parts) {
     if (!p.pieces) continue;
-    if (p.law && p.start <= a && p.end >= b) return lawPiper(ui.src.slice(a, b), false);   // Gesetzesangabe
+    if (p.law && p.start <= a && p.end >= b) return lawPiper(ui.src.slice(a, b), false).replace(/\s*[‖¦]\s*/g, ' ');   // Gesetzesangabe
     let first = -1;
     for (let k = 0; k < p.pieces.length; k++) if (p.map[k] < b && p.mapEnd[k] > a) { if (first < 0) first = k; out += p.pieces[k]; }
     // Wort mitten in einem mehrteiligen Wörterbuch-Eintrag („Diversity Management“): den ganzen Eintrag nehmen
@@ -4222,7 +5162,7 @@ function renderFlagList() {
     row.appendChild(tx); row.appendChild(del);
     box.appendChild(row);
   });
-  $('btnShare').disabled = !flags.length;
+  $('btnShare').disabled = !flags.length; $('btnListCopy').disabled = !flags.length;
   $('btnClearAll').disabled = !flags.length;
   $('clearConfirm').hidden = true; $('btnClearAll').hidden = false;
   $('shareFallback').hidden = true;
@@ -4279,6 +5219,12 @@ $('btnList').onclick = openList;
 $('listClose').onclick = () => { $('listModal').hidden = true; };
 $('listModal').onclick = (e) => { if (e.target === $('listModal')) $('listModal').hidden = true; };
 $('btnShare').onclick = shareFlags;
+// v0.8.2 Liste direkt kopieren (kurze Bestätigung; sonst Textfeld zum Markieren)
+$('btnListCopy').onclick = async () => {
+  const text = flagsText();
+  try { await navigator.clipboard.writeText(text); toast('Liste kopiert ✓', 2500); }
+  catch (e) { $('shareFallback').hidden = false; const ta = $('shareText'); ta.value = text; ta.focus(); ta.select(); }
+};
 $('btnClearAll').onclick = () => { $('btnClearAll').hidden = true; $('clearConfirm').hidden = false; };
 $('btnClearNo').onclick = () => { $('btnClearAll').hidden = false; $('clearConfirm').hidden = true; };
 $('btnClearYes').onclick = () => { flags = []; saveFlags(); renderFlagList(); toast('Liste gelöscht'); };
@@ -4312,7 +5258,7 @@ function curSound() {
   return p.sound === 'own' ? ownSound : SOUND_PRESETS[p.sound];
 }
 function saveSound() {
-  try { localStorage.setItem(SOUND_KEY, JSON.stringify({ profile: soundProfile, own: ownSound, polish, wsVoice, read: readOpts, tempo })); } catch (e) {}
+  try { localStorage.setItem(SOUND_KEY, JSON.stringify({ profile: soundProfile, own: ownSound, wsVoice, read: readOpts, tempo, chunk: chunkLen, stress: longStress })); } catch (e) {}
 }
 const SLIDERS = [   // [id, Feld, Anzeige]
   ['sTempo', 'length', (v) => Math.round(100 / v) + ' %'],
@@ -4388,7 +5334,7 @@ $('profileSel').onchange = () => applyProfile($('profileSel').value);
 $('btnSoundReset').onclick = () => { ownSound = Object.assign({}, SOUND_PRESETS.std); applyProfile('t-std'); };
 
 // Klang-Feinschliff: 6 Schalter (gespeichert). Satzteilung wirkt auf die Aufteilung → Text neu aufbereiten.
-const FX = [['fxNorm', 'norm'], ['fxFade', 'fade'], ['fxSplit', 'split'], ['fxPause', 'pause'], ['fxWarm', 'warm'], ['fxAside', 'aside']];
+const FX = [['fxNorm', 'norm'], ['fxFade', 'fade'], ['fxSplit', 'split'], ['fxPause', 'pause'], ['fxWarm', 'warm'], ['fxAside', 'aside']];   // (v0.8.2 ausgeblendet, fest an)
 function showPolish() { for (const [id, key] of FX) $(id).checked = !!polish[key]; }
 for (const [id, key] of FX) {
   $(id).onchange = () => {
@@ -4412,11 +5358,11 @@ let cmpRun = 0;
 function cmpBanner(t) { const b = $('cmpBanner'); b.hidden = !t; b.textContent = t || ''; }
 const pause = (ms) => new Promise(z => setTimeout(z, ms));
 // Allgemeiner Ablauf: mehrere Durchgänge desselben Probeabsatzes, vorher jeweils Anzeige, was läuft.
-async function runPasses(passes, title) {
+async function runPasses(passes, title, text) {
   const run = ++cmpRun;
   const keepProfile = soundProfile, keepPolish = Object.assign({}, polish);
   ctl.stop();
-  $('src').value = COMPARE_TEXT; applyText(); showRead(true);
+  $('src').value = text || COMPARE_TEXT; applyText(); showRead(true);
   const res = [];
   for (let k = 0; k < passes.length && run === cmpRun; k++) {
     const [label, prep] = passes[k];
@@ -4451,6 +5397,81 @@ function runBeforeAfter() {
   ], 'Vorher/Nachher');
 }
 $('btnCompare').onclick = () => { unlockAudio(); runCompare(); };
+
+/* ---------- v0.8.2 Hörvergleich (einmalig; die Gewinner-Variante wird in der nächsten Version fest eingestellt) ---------- */
+// fiktive Probetexte: zwei lange Sätze mit Nebensätzen / viele lange Zusammensetzungen
+const HV_CHUNK_TEXT = 'Wenn eine Fachkraft im Allgemeinen Sozialen Dienst gewichtige Anhaltspunkte für eine Gefährdung wahrnimmt, muss sie das Risiko ' +
+  'gemeinsam mit mehreren Kolleginnen und Kollegen einschätzen, die Eltern und das Kind einbeziehen, soweit dadurch der wirksame Schutz ' +
+  'nicht in Frage gestellt wird, und anschließend entscheiden, welche Hilfen geeignet und notwendig sind, um die Situation der Familie ' +
+  'dauerhaft zu verbessern. Gerade in solchen Momenten zeigt sich, ob die Beteiligten einander vertrauen, ob die Absprachen aus dem ' +
+  'letzten Gespräch eingehalten wurden und ob die Familie die angebotene Unterstützung als Hilfe erlebt oder eher als Kontrolle, die ' +
+  'ihr von außen aufgezwungen wird.';
+const HV_STRESS_TEXT = 'Im Hilfeplanverfahren wird die Hilfeplanung regelmäßig überprüft. Nach einer Inobhutnahme folgen oft weitere Inobhutnahmen. ' +
+  'Der Lebenslagenansatz beschreibt überproportional belastete Gruppen. Klientenzentrierte Beratung stärkt die Handlungskompetenz, ' +
+  'Strukturmaximen und Basisvariablen ordnen das Laborverfahren. Soziotherapie und Adaptionseinrichtungen ergänzen die Behandlung.';
+function showHv() {
+  for (const b of $('segChunk').children) b.classList.toggle('on', +b.dataset.v === chunkLen);
+  for (const b of $('segStress').children) b.classList.toggle('on', b.dataset.v === longStress);
+  $('cmpNow').textContent = `Eingestellt: Satzteile ${{ 150: 'kurz', 220: 'mittel', 300: 'lang' }[chunkLen]} (${chunkLen} Zeichen) · Betonung ${longStress}`;
+}
+let hvToken = null;                                         // läuft gerade ein Hörvergleich?
+function hvCancel() { if (hvToken) { hvToken = null; cmpRun++; cmpBanner(''); } }
+function setChunk(v, quiet) { if (!quiet) hvCancel(); ctl.stop(); chunkLen = v; CONFIG.maxPartCharsFine = v; if (ui.src) applyText(); if (!quiet) { saveSound(); log('Hörvergleich: Satzteile ' + v + ' Zeichen'); } showHv(); }
+function setStress(v, quiet) {
+  if (!quiet) hvCancel();
+  ctl.stop(); longStress = v;
+  const e = engines.piper; if (e.byIdx) for (const i of [...e.byIdx.keys()]) e.release(i);   // vorausberechnete Sätze verwerfen
+  if (!quiet) { saveSound(); log('Hörvergleich: Betonung ' + v); }
+  showHv();
+}
+async function runHv(kind) {
+  unlockAudio();
+  const keep = kind === 'chunk' ? chunkLen : longStress;
+  const passes = kind === 'chunk'
+    ? CHUNKS.map(v => [{ 150: 'kurz (≈ 150 Zeichen)', 220: 'mittel (≈ 220 Zeichen)', 300: 'lang (300 Zeichen)' }[v], async () => setChunk(v, true)])
+    : [['sanft (eine Hauptbetonung)', async () => setStress('sanft', true)], ['deutlich (mit Nebenbetonungen)', async () => setStress('deutlich', true)]];
+  hvCancel();                                               // anderer Vergleich lief noch → beenden
+  const token = {}; hvToken = token;
+  await runPasses(passes, kind === 'chunk' ? 'Satzteile' : 'Betonung', kind === 'chunk' ? HV_CHUNK_TEXT : HV_STRESS_TEXT);
+  if (hvToken !== token) { showHv(); return; }              // abgebrochen oder Variante gewählt: Wahl bleibt
+  hvToken = null;
+  if (kind === 'chunk') setChunk(keep, true); else setStress(keep, true);
+  showHv();
+  setStatus('Fertig – jetzt die besser klingende Variante antippen');
+}
+for (const b of $('segChunk').children) b.onclick = () => setChunk(+b.dataset.v);
+for (const b of $('segStress').children) b.onclick = () => setStress(b.dataset.v);
+$('btnCmpChunk').onclick = () => runHv('chunk');
+$('btnCmpStress').onclick = () => runHv('stress');
+
+/* ---------- v0.8.2 Fehlerbericht: alles Wichtige in die Zwischenablage (sonst Teilen-Menü oder Textfeld) ---------- */
+function reportText() {
+  const L = ['Hörlabor – Fehlerbericht', `Version: ${CONFIG.version} · ${new Date().toLocaleString('de-DE')} · ${location.href.split('#')[0]}`, ''];
+  L.push('Gerät: ' + navigator.userAgent);
+  L.push($('env').textContent || '');
+  L.push('');
+  L.push(`Einstellungen: Stimme ${soundProfile} · Klang ${JSON.stringify(curSound())} · Tempo ${tempo} · Vorlese-Optionen ${JSON.stringify(readOpts)} · Satzteile ${chunkLen} · Betonung ${longStress}`);
+  if (pdfInfo && pdfInfo.src === ui.src) L.push(`PDF: ${pdfInfo.name || '?'} · Seiten ${pdfInfo.from}–${pdfInfo.to}${pdfInfo.section ? ' · Abschnitt ' + pdfInfo.section : ''} · Texterkennung (OCR): ${pdfInfo.ocr ? 'ja' : 'nein'}`);
+  L.push('');
+  L.push(metricsText());
+  L.push('');
+  L.push('--- Protokoll (letzte Einträge) ---');
+  L.push(...[...$('log').childNodes].slice(-80).map(n => n.textContent));
+  const ol = pdfInfo && pdfInfo.src === ui.src ? pdfInfo.ocrLog : null;
+  if (ol) {
+    L.push('');
+    L.push(`--- Texterkennung: ${ol.length} Reparaturen (gelesen → repariert [Grund]) ---`);
+    for (const e of ol) L.push(`${e.from} → ${e.to}${e.rule ? ' [' + e.rule + ']' : ''}`);
+  }
+  return L.join('\n');
+}
+async function copyText(text, okMsg, box) {
+  try { if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(text); toast(okMsg, 3000); return true; } } catch (e) {}
+  try { if (navigator.share) { await navigator.share({ title: 'Hörlabor', text }); return true; } } catch (e) { if (e && e.name === 'AbortError') return false; }
+  if (box) { box.hidden = false; box.value = text; box.focus(); box.select(); toast('Bitte den Text im Feld markieren und kopieren.', 3500); }
+  return false;
+}
+$('btnReport').onclick = () => { const t = reportText(); log('Fehlerbericht erstellt (' + t.length + ' Zeichen)'); copyText(t, 'Fehlerbericht kopiert ✓ – jetzt z. B. in WhatsApp einfügen', $('reportBox')); };
 $('btnBeforeAfter').onclick = () => { unlockAudio(); runBeforeAfter(); };
 
 try { if (window.caches && window.isSecureContext) caches.delete('hoerlabor-supertonic-v1').then(ok => ok && log('Altes Testmodell (Supertonic, v0.5) aus dem Speicher entfernt.')); } catch (e) {}
@@ -4459,7 +5480,7 @@ $('src').value = SAMPLE_START;                       // Beispieltext, damit Clar
 showRead(false);
 fillProfiles(); showSliders(); showPolish();
 fillVoices().then(() => applyProfile(soundProfile, { save: false })).then(preloadIfCached);
-showEnv();
+showEnv(); showHv();
 log('Bereit. ' + (location.protocol === 'file:' ? 'Hinweis: Als lokale Datei geöffnet – Modell-Cache funktioniert nur über https.' : ''));
 </script>
 </body>
